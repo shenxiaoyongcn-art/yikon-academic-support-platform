@@ -73,7 +73,7 @@
 .symbolCorrection > span { color: #7b6674; font-size: 7px; font-weight: 800; white-space: nowrap; }
 .symbolCorrection button { min-width: 30px; padding: 0 5px; }
 .symbolCorrection button.activeSymbolTool { border-color: #a20d7b; background: #f8eaf4; box-shadow: inset 0 0 0 1px #a20d7b; }
-.canvasViewport { min-height: 0; overflow: scroll; background: #eef0f3; touch-action: none; overscroll-behavior: contain; scrollbar-gutter: stable both-edges; scrollbar-color: #a88b9f #e3e5e9; scrollbar-width: auto; }
+.canvasViewport { min-height: 0; overflow: scroll; background: #eef0f3; touch-action: none; overscroll-behavior: none; scrollbar-gutter: stable both-edges; scrollbar-color: #a88b9f #e3e5e9; scrollbar-width: auto; }
 .canvasViewport::-webkit-scrollbar { width: 11px; height: 11px; }
 .canvasViewport::-webkit-scrollbar-track { background: #e3e5e9; }
 .canvasViewport::-webkit-scrollbar-thumb { border: 2px solid #e3e5e9; border-radius: 8px; background: #a88b9f; }
@@ -82,8 +82,19 @@
 .snapHint, .deleteDropZone { min-width: 230px; padding: 8px 14px; position: absolute; top: 64px; left: 50%; z-index: 25; transform: translateX(-50%); border-radius: 18px; color: #fff; font-size: 9px; font-weight: 800; text-align: center; pointer-events: none; box-shadow: 0 8px 24px #2631472e; }
 .snapHint { background: #16816b; }
 .deleteDropZone { background: #c82948; }
+.lineContextPanel { max-width: calc(100% - 26px); padding: 7px 9px; position: absolute; top: 64px; left: 50%; z-index: 24; transform: translateX(-50%); display: flex; align-items: center; gap: 5px; border: 1px solid #9ed0c3; border-radius: 11px; background: #f1faf7; box-shadow: 0 9px 28px #173d342b; }
+.lineContextPanel > span { color: #176b59; font-size: 8px; font-weight: 800; white-space: nowrap; }
+.lineContextPanel button { height: 32px; padding: 0 9px; display: flex; align-items: center; gap: 4px; border: 1px solid #c3e2da; border-radius: 7px; background: #fff; color: #176b59; font-size: 8px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.lineContextPanel button b { font-size: 13px; }
+.lineContextPanel button:hover { border-color: #68af9d; background: #e8f7f2; }
+.lineContextPanel button.closeLineSelection { width: 28px; padding: 0; justify-content: center; border: 0; background: transparent; color: #7b8f89; font-size: 17px; }
 .canvasStage { min-width: 100%; min-height: 100%; margin: auto; transform-origin: left top; }
 .pedigreeSvg { display: block; background: #fff; box-shadow: 0 0 0 1px #e0e3e8; }
+.alignmentGuide { fill: none; stroke: #b11b86; stroke-width: 1.4; stroke-dasharray: 6 5; pointer-events: none; }
+.unionControl { cursor: pointer; }
+.unionControl > path:first-child { fill: none; stroke: #344054; stroke-width: 2; transition: stroke .12s, stroke-width .12s; }
+.unionControl > path.unionSelected { stroke: #a20d7b; stroke-width: 4; }
+.unionHit { fill: none; stroke: transparent; stroke-width: 26; }
 .personNode { cursor: grab; outline: 0; touch-action: none; user-select: none; }
 .personNode:active { cursor: grabbing; }
 .personNode:focus { filter: drop-shadow(0 0 4px #a20d7b77); }

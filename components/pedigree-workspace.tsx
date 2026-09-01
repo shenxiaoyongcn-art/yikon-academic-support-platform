@@ -204,6 +204,31 @@ function distanceToSegment(pointX: number, pointY: number, startX: number, start
   return Math.hypot(pointX - (startX + position * deltaX), pointY - (startY + position * deltaY));
 }
 
+function parentIdsForPair(first: Person, second: Person) {
+  const male = [first, second].find((person) => person.sex === 'male');
+  const female = [first, second].find((person) => person.sex === 'female');
+  return {
+    fatherId: male?.id || first.id,
+    motherId: female?.id || (male?.id === first.id ? second.id : first.id),
+  };
+}
+
+function orthogonalUnionPath(first: PositionedPerson, second: PositionedPerson) {
+  if (Math.abs(first.y - second.y) < 1) return `M ${first.x} ${first.y} L ${second.x} ${second.y}`;
+  const middleX = (first.x + second.x) / 2;
+  return `M ${first.x} ${first.y} H ${middleX} V ${second.y} H ${second.x}`;
+}
+
+function distanceToUnionPath(pointX: number, pointY: number, first: PositionedPerson, second: PositionedPerson) {
+  if (Math.abs(first.y - second.y) < 1) return distanceToSegment(pointX, pointY, first.x, first.y, second.x, second.y);
+  const middleX = (first.x + second.x) / 2;
+  return Math.min(
+    distanceToSegment(pointX, pointY, first.x, first.y, middleX, first.y),
+    distanceToSegment(pointX, pointY, middleX, first.y, middleX, second.y),
+    distanceToSegment(pointX, pointY, middleX, second.y, second.x, second.y),
+  );
+}
+
 function sampleCase(): PedigreeCase {
   const people: Person[] = [
     { id: 'p1', name: '', sex: 'male', phenotype: 'unaffected', deceased: false, proband: false, birthYear: '1952', clinicalId: '', diagnosis: '', genotype: '', notes: '', spouseIds: ['p2'], order: 1 },
@@ -388,9 +413,11 @@ export function PedigreeWorkspace() {
   const [showGuide, setShowGuide] = useState(false);
   const [snapHint, setSnapHint] = useState('');
   const [dragDeleteReady, setDragDeleteReady] = useState(false);
+  const [alignmentGuide, setAlignmentGuide] = useState<{ x?: number; y?: number } | null>(null);
+  const [selectedUnionKey, setSelectedUnionKey] = useState<string | null>(null);
   const importRef = useRef<HTMLInputElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
-  const touchPointsRef = useRef(new Map<number, { x: number; y: number }>());
+  const zoomRef = useRef(zoom);
   const pinchRef = useRef<{
     distance: number;
     startZoom: number;
@@ -407,7 +434,79 @@ export function PedigreeWorkspace() {
     snapshot: PedigreeCase;
     deleteCandidate: boolean;
     snapIntent: SnapIntent | null;
+    viewportScrollLeft: number;
+    viewportScrollTop: number;
+    pageScrollX: number;
+    pageScrollY: number;
   } | null>(null);
+
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const startPinch = (event: TouchEvent) => {
+      if (event.touches.length < 2) return;
+      event.preventDefault();
+      const pendingDrag = dragRef.current;
+      if (pendingDrag?.moved) {
+        setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? pendingDrag.snapshot : item));
+      }
+      dragRef.current = null;
+      setSnapHint('');
+      setAlignmentGuide(null);
+      setDragDeleteReady(false);
+      const first = event.touches[0];
+      const second = event.touches[1];
+      const rect = viewport.getBoundingClientRect();
+      const centerX = (first.clientX + second.clientX) / 2 - rect.left;
+      const centerY = (first.clientY + second.clientY) / 2 - rect.top;
+      const currentZoom = zoomRef.current;
+      pinchRef.current = {
+        distance: Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY) || 1,
+        startZoom: currentZoom,
+        contentX: (viewport.scrollLeft + centerX) / currentZoom,
+        contentY: (viewport.scrollTop + centerY) / currentZoom,
+      };
+    };
+
+    const movePinch = (event: TouchEvent) => {
+      const pinch = pinchRef.current;
+      if (!pinch || event.touches.length < 2) return;
+      event.preventDefault();
+      const first = event.touches[0];
+      const second = event.touches[1];
+      const distance = Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY) || 1;
+      const nextZoom = Math.max(.55, Math.min(2, pinch.startZoom * distance / pinch.distance));
+      const rect = viewport.getBoundingClientRect();
+      const centerX = (first.clientX + second.clientX) / 2 - rect.left;
+      const centerY = (first.clientY + second.clientY) / 2 - rect.top;
+      zoomRef.current = nextZoom;
+      setZoom(nextZoom);
+      window.requestAnimationFrame(() => {
+        viewport.scrollLeft = pinch.contentX * nextZoom - centerX;
+        viewport.scrollTop = pinch.contentY * nextZoom - centerY;
+      });
+    };
+
+    const endPinch = (event: TouchEvent) => {
+      if (event.touches.length < 2) pinchRef.current = null;
+    };
+
+    viewport.addEventListener('touchstart', startPinch, { passive: false });
+    viewport.addEventListener('touchmove', movePinch, { passive: false });
+    viewport.addEventListener('touchend', endPinch, { passive: false });
+    viewport.addEventListener('touchcancel', endPinch, { passive: false });
+    return () => {
+      viewport.removeEventListener('touchstart', startPinch);
+      viewport.removeEventListener('touchmove', movePinch);
+      viewport.removeEventListener('touchend', endPinch);
+      viewport.removeEventListener('touchcancel', endPinch);
+    };
+  }, [activeCaseId]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -552,11 +651,14 @@ export function PedigreeWorkspace() {
 
   const beginDrag = (event: ReactPointerEvent<SVGGElement>, person: PositionedPerson) => {
     if (event.button !== 0) return;
+    if (event.pointerType === 'touch' && dragRef.current) return;
     const point = pointerCoordinates(event);
     if (!point) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     setSelectedId(person.id);
+    setSelectedUnionKey(null);
+    const viewport = viewportRef.current;
     dragRef.current = {
       id: person.id,
       startX: point.x,
@@ -567,20 +669,30 @@ export function PedigreeWorkspace() {
       snapshot: cloneCase(activeCase),
       deleteCandidate: false,
       snapIntent: null,
+      viewportScrollLeft: viewport?.scrollLeft || 0,
+      viewportScrollTop: viewport?.scrollTop || 0,
+      pageScrollX: window.scrollX,
+      pageScrollY: window.scrollY,
     };
     setSnapHint('');
+    setAlignmentGuide(null);
     setDragDeleteReady(false);
   };
 
   const moveDrag = (event: ReactPointerEvent<SVGGElement>) => {
     const drag = dragRef.current;
     if (!drag) return;
+    const viewport = viewportRef.current;
+    if (viewport) {
+      viewport.scrollLeft = drag.viewportScrollLeft;
+      viewport.scrollTop = drag.viewportScrollTop;
+    }
+    if (window.scrollX !== drag.pageScrollX || window.scrollY !== drag.pageScrollY) window.scrollTo(drag.pageScrollX, drag.pageScrollY);
     const point = pointerCoordinates(event);
     if (!point) return;
     const deltaX = point.x - drag.startX;
     const deltaY = point.y - drag.startY;
     if (Math.abs(deltaX) + Math.abs(deltaY) > 3) drag.moved = true;
-    const viewport = viewportRef.current;
     const viewportRect = viewport?.getBoundingClientRect();
     const outside = Boolean(viewportRect && drag.moved && (
       event.clientX < viewportRect.left - 18 || event.clientX > viewportRect.right + 18 ||
@@ -593,6 +705,7 @@ export function PedigreeWorkspace() {
     let nextY = Math.max(45, Math.min(layout.height - 90, drag.originY + deltaY));
     drag.snapIntent = null;
     let hint = drag.deleteCandidate ? '' : '自由调整位置';
+    let nextGuide: { x?: number; y?: number } | null = null;
 
     if (!outside) {
       let bestParents: { distance: number; fatherId?: string; motherId?: string; x: number; y: number; label: string } | null = null;
@@ -601,15 +714,13 @@ export function PedigreeWorkspace() {
         const [first, second] = pair;
         if (first.id === drag.id || second.id === drag.id) continue;
         if (isAncestor(activeCase.people, drag.id, first.id) || isAncestor(activeCase.people, drag.id, second.id)) continue;
-        const distance = distanceToSegment(point.x, point.y, first.x, first.y, second.x, second.y);
+        const distance = distanceToUnionPath(point.x, point.y, first, second);
         if (distance > 34 || (bestParents && distance >= bestParents.distance)) continue;
-        const male = pair.find((person) => person.sex === 'male');
-        const female = pair.find((person) => person.sex === 'female');
+        const parentIds = parentIdsForPair(first, second);
         bestParents = {
           distance,
-          fatherId: male?.id || first.id,
-          motherId: female?.id || (male?.id === first.id ? second.id : first.id),
-          x: Math.max(45, Math.min(layout.width - 45, point.x)),
+          ...parentIds,
+          x: Math.max(45, Math.min(layout.width - 45, (first.x + second.x) / 2)),
           y: Math.max(first.y, second.y) + 170,
           label: `松手接入 ${first.displayId}－${second.displayId} 的子代线`,
         };
@@ -647,6 +758,7 @@ export function PedigreeWorkspace() {
         nextY = Math.max(45, Math.min(layout.height - 90, bestParents.y));
         drag.snapIntent = { type: 'parents', fatherId: bestParents.fatherId, motherId: bestParents.motherId, label: bestParents.label };
         hint = bestParents.label;
+        nextGuide = { x: nextX };
       } else {
         const currentPerson = positionedById.get(drag.id);
         const spouseTarget = layout.people
@@ -662,28 +774,30 @@ export function PedigreeWorkspace() {
           nextX = Math.max(45, Math.min(layout.width - 45, target.x + (point.x >= target.x ? 105 : -105)));
           drag.snapIntent = { type: 'spouse', targetId: target.id, label: `松手与 ${target.displayId} 建立配偶线` };
           hint = drag.snapIntent.label;
+          nextGuide = { y: target.y };
         } else {
-          for (const person of layout.people) {
-            if (person.id === drag.id) continue;
-            if (Math.abs(nextX - person.x) <= 12) {
-              nextX = person.x;
-              hint = `已与 ${person.displayId} 纵向对齐`;
-              break;
-            }
+          const verticalTarget = layout.people
+            .filter((person) => person.id !== drag.id && Math.abs(nextX - person.x) <= 18)
+            .sort((a, b) => Math.abs(nextX - a.x) - Math.abs(nextX - b.x))[0];
+          if (verticalTarget) {
+            nextX = verticalTarget.x;
+            hint = `已与 ${verticalTarget.displayId} 纵向对齐`;
+            nextGuide = { ...nextGuide, x: verticalTarget.x };
           }
-          for (const person of layout.people) {
-            if (person.id === drag.id) continue;
-            if (Math.abs(nextY - person.y) <= 12) {
-              nextY = person.y;
-              hint = `已与 ${person.displayId} 横向对齐`;
-              break;
-            }
+          const horizontalTarget = layout.people
+            .filter((person) => person.id !== drag.id && Math.abs(nextY - person.y) <= 18)
+            .sort((a, b) => Math.abs(nextY - a.y) - Math.abs(nextY - b.y))[0];
+          if (horizontalTarget) {
+            nextY = horizontalTarget.y;
+            hint = `已与 ${horizontalTarget.displayId} 横向对齐`;
+            nextGuide = { ...nextGuide, y: horizontalTarget.y };
           }
         }
       }
     }
 
     setSnapHint(drag.moved ? hint : '');
+    setAlignmentGuide(drag.moved ? nextGuide : null);
     setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? {
       ...item,
       people: item.people.map((person) => person.id === drag.id ? { ...person, manualX: nextX, manualY: nextY } : person),
@@ -696,6 +810,7 @@ export function PedigreeWorkspace() {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     dragRef.current = null;
     setSnapHint('');
+    setAlignmentGuide(null);
     setDragDeleteReady(false);
     if (cancelled) {
       if (drag.moved) setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? drag.snapshot : item));
@@ -734,67 +849,6 @@ export function PedigreeWorkspace() {
     setNotice(drag.snapIntent?.label ? drag.snapIntent.label.replace('松手', '已') : '成员位置已调整，画布保持固定');
   };
 
-  const canvasPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'touch') return;
-    touchPointsRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-
-    if (touchPointsRef.current.size >= 2) {
-      event.preventDefault();
-      const pendingDrag = dragRef.current;
-      if (pendingDrag?.moved) {
-        setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? pendingDrag.snapshot : item));
-      }
-      dragRef.current = null;
-      setSnapHint('');
-      setDragDeleteReady(false);
-      const [first, second] = Array.from(touchPointsRef.current.values());
-      const rect = viewport.getBoundingClientRect();
-      const centerX = (first.x + second.x) / 2 - rect.left;
-      const centerY = (first.y + second.y) / 2 - rect.top;
-      pinchRef.current = {
-        distance: Math.hypot(first.x - second.x, first.y - second.y) || 1,
-        startZoom: zoom,
-        contentX: (viewport.scrollLeft + centerX) / zoom,
-        contentY: (viewport.scrollTop + centerY) / zoom,
-      };
-      return;
-    }
-
-  };
-
-  const canvasPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'touch' || !touchPointsRef.current.has(event.pointerId)) return;
-    touchPointsRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-
-    if (pinchRef.current && touchPointsRef.current.size >= 2) {
-      event.preventDefault();
-      const [first, second] = Array.from(touchPointsRef.current.values());
-      const distance = Math.hypot(first.x - second.x, first.y - second.y) || 1;
-      const nextZoom = Math.max(.55, Math.min(2, pinchRef.current.startZoom * distance / pinchRef.current.distance));
-      const pinch = pinchRef.current;
-      const rect = viewport.getBoundingClientRect();
-      const currentCenterX = (first.x + second.x) / 2 - rect.left;
-      const currentCenterY = (first.y + second.y) / 2 - rect.top;
-      setZoom(nextZoom);
-      window.requestAnimationFrame(() => {
-        viewport.scrollLeft = pinch.contentX * nextZoom - currentCenterX;
-        viewport.scrollTop = pinch.contentY * nextZoom - currentCenterY;
-      });
-      return;
-    }
-
-  };
-
-  const canvasPointerEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
-    touchPointsRef.current.delete(event.pointerId);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-    if (touchPointsRef.current.size < 2) pinchRef.current = null;
-  };
-
   const autoArrange = () => {
     commit((current) => ({
       ...current,
@@ -803,6 +857,8 @@ export function PedigreeWorkspace() {
   };
 
   const addRelative = (kind: 'father' | 'mother' | 'spouse' | 'son' | 'daughter' | 'unknown_child' | 'pregnancy_loss' | 'sibling') => {
+    const childKinds = ['son', 'daughter', 'unknown_child', 'pregnancy_loss'] as const;
+    const addToSelectedUnion = Boolean(selectedUnionKey && childKinds.includes(kind as typeof childKinds[number]));
     if (!selected) {
       setNotice('请先选中一位成员');
       return;
@@ -830,6 +886,17 @@ export function PedigreeWorkspace() {
 
     commit((current) => {
       const target = current.people.find((person) => person.id === selected.id)!;
+      if (addToSelectedUnion && selectedUnionKey) {
+        const [firstId, secondId] = selectedUnionKey.split('|');
+        const first = current.people.find((person) => person.id === firstId);
+        const second = current.people.find((person) => person.id === secondId);
+        if (first && second) {
+          const parentIds = parentIdsForPair(first, second);
+          newPerson.fatherId = parentIds.fatherId;
+          newPerson.motherId = parentIds.motherId;
+          return { ...current, people: normalizePeople([...current.people, newPerson]) };
+        }
+      }
       if (kind === 'father') {
         target.fatherId = id;
         if (target.motherId) {
@@ -863,8 +930,9 @@ export function PedigreeWorkspace() {
         else if (spouse) newPerson.fatherId = spouse.id;
       }
       return { ...current, people: [...current.people, newPerson] };
-    }, '新成员已添加');
+    }, addToSelectedUnion ? '已从父母连线增加一位同胞并自动接线' : '新成员已添加');
     setSelectedId(id);
+    if (!addToSelectedUnion) setSelectedUnionKey(null);
   };
 
   const removeSelected = () => {
@@ -910,6 +978,7 @@ export function PedigreeWorkspace() {
     setHistory([]);
     setFuture([]);
     setZoom(1);
+    setSelectedUnionKey(null);
   };
 
   const exportJson = () => {
@@ -1021,6 +1090,8 @@ export function PedigreeWorkspace() {
     return Array.from(pairs.entries());
   })();
 
+  const selectedUnionPair = unionPairs.find(([key]) => key === selectedUnionKey)?.[1];
+
   if (!activeCase) return null;
 
   return (
@@ -1118,7 +1189,14 @@ export function PedigreeWorkspace() {
 
           {snapHint && !dragDeleteReady && <div className={styles.snapHint}>{snapHint}</div>}
           {dragDeleteReady && <div className={styles.deleteDropZone}>已拖出画布边框，松手删除（可撤销）</div>}
-          <div ref={viewportRef} className={`${styles.canvasViewport} ${dragDeleteReady ? styles.deleteArmed : ''}`} onPointerDown={canvasPointerDown} onPointerMove={canvasPointerMove} onPointerUp={canvasPointerEnd} onPointerCancel={canvasPointerEnd}>
+          {selectedUnionPair && !snapHint && !dragDeleteReady && <div className={styles.lineContextPanel}>
+            <span>已选 {selectedUnionPair[0].displayId}－{selectedUnionPair[1].displayId} 父母线</span>
+            <button type="button" onClick={() => addRelative('son')}><b>□</b>男性同胞</button>
+            <button type="button" onClick={() => addRelative('daughter')}><b>○</b>女性同胞</button>
+            <button type="button" onClick={() => addRelative('unknown_child')}><b>◇</b>不详同胞</button>
+            <button type="button" className={styles.closeLineSelection} onClick={() => setSelectedUnionKey(null)} aria-label="取消父母线选择">×</button>
+          </div>}
+          <div ref={viewportRef} className={`${styles.canvasViewport} ${dragDeleteReady ? styles.deleteArmed : ''}`} aria-label="家系画布，支持双指捏合缩放">
             <div className={styles.canvasStage} style={{ width: layout.width * zoom, height: layout.height * zoom }}>
               <svg id="pedigree-svg" className={styles.pedigreeSvg} viewBox={`0 0 ${layout.width} ${layout.height}`} style={{ width: layout.width * zoom, height: layout.height * zoom }} role="img" aria-label={`${activeCase.name}家系图`}>
                 <defs>
@@ -1134,11 +1212,23 @@ export function PedigreeWorkspace() {
                 </defs>
                 <rect width="100%" height="100%" fill="#fff" />
                 <rect width="100%" height="100%" fill="url(#pedigree-grid)" />
+                {alignmentGuide?.x !== undefined && <line x1={alignmentGuide.x} y1="18" x2={alignmentGuide.x} y2={layout.height - 86} className={styles.alignmentGuide} />}
+                {alignmentGuide?.y !== undefined && <line x1="18" y1={alignmentGuide.y} x2={layout.width - 18} y2={alignmentGuide.y} className={styles.alignmentGuide} />}
 
                 <g aria-label="亲缘关系" fill="none" stroke="#344054" strokeWidth="2">
                   {unionPairs.map(([key, pair]) => {
                     const [first, second] = pair;
-                    return <line key={`union-${key}`} x1={first.x} y1={first.y} x2={second.x} y2={second.y} />;
+                    const path = orthogonalUnionPath(first, second);
+                    const selectedLine = selectedUnionKey === key;
+                    return <g key={`union-${key}`} className={styles.unionControl} onClick={(event) => {
+                      event.stopPropagation();
+                      setSelectedUnionKey(key);
+                      setSelectedId(first.id);
+                      setNotice('父母连线已选中，可在上方直接增加男性、女性或不详同胞');
+                    }}>
+                      <path d={path} className={selectedLine ? styles.unionSelected : undefined} />
+                      <path d={path} className={styles.unionHit} pointerEvents="stroke" />
+                    </g>;
                   })}
 
                   {parentGroups.map(([key, children]) => {
@@ -1153,10 +1243,12 @@ export function PedigreeWorkspace() {
                     const siblingY = sortedChildren[0].y - 68;
                     const firstX = sortedChildren[0].x;
                     const lastX = sortedChildren[sortedChildren.length - 1].x;
+                    const branchStartX = Math.min(parentX, firstX);
+                    const branchEndX = Math.max(parentX, lastX);
                     return (
-                      <g key={`parents-${key}`}>
+                      <g key={`parents-${key}`} pointerEvents="none">
                         <line x1={parentX} y1={parentY} x2={parentX} y2={siblingY} />
-                        {sortedChildren.length > 1 && <line x1={firstX} y1={siblingY} x2={lastX} y2={siblingY} />}
+                        <line x1={branchStartX} y1={siblingY} x2={branchEndX} y2={siblingY} />
                         {sortedChildren.map((child) => <line key={`child-${child.id}`} x1={child.x} y1={siblingY} x2={child.x} y2={child.y - 22} />)}
                       </g>
                     );
@@ -1170,7 +1262,7 @@ export function PedigreeWorkspace() {
                     const stroke = isSelected ? '#a20d7b' : '#243047';
                     const strokeWidth = isSelected ? 3.5 : 2.2;
                     return (
-                      <g key={person.id} className={styles.personNode} role="button" tabIndex={0} aria-label={`${person.displayId} ${person.sex}`} onClick={() => setSelectedId(person.id)} onPointerDown={(event) => beginDrag(event, person)} onPointerMove={moveDrag} onPointerUp={(event) => endDrag(event)} onPointerCancel={(event) => endDrag(event, true)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setSelectedId(person.id); }}>
+                      <g key={person.id} className={styles.personNode} role="button" tabIndex={0} aria-label={`${person.displayId} ${person.sex}`} onClick={() => { setSelectedId(person.id); setSelectedUnionKey(null); }} onPointerDown={(event) => beginDrag(event, person)} onPointerMove={moveDrag} onPointerUp={(event) => endDrag(event)} onPointerCancel={(event) => endDrag(event, true)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { setSelectedId(person.id); setSelectedUnionKey(null); } }}>
                         {isSelected && <circle cx={person.x} cy={person.y} r="29" fill="#f8eaf4" stroke="none" />}
                         {person.sex === 'male' && <rect x={person.x - 18} y={person.y - 18} width="36" height="36" rx="1" fill={baseFill} stroke={stroke} strokeWidth={strokeWidth} />}
                         {person.sex === 'female' && <circle cx={person.x} cy={person.y} r="18" fill={baseFill} stroke={stroke} strokeWidth={strokeWidth} />}
@@ -1200,7 +1292,7 @@ export function PedigreeWorkspace() {
               </svg>
             </div>
           </div>
-          <div className={styles.canvasHint}><span>双指捏合只缩放；侧边滚动条查看画布；拖成员时画布保持固定</span><span>靠近关系线自动粘接，拖出边框删除</span></div>
+          <div className={styles.canvasHint}><span>双指在画布任意位置捏合缩放；拖成员时画布锁定不漂移</span><span>点父母连线可加同胞；偏移连线自动折成90°</span></div>
         </main>
 
         <aside className={styles.inspector}>
@@ -1238,8 +1330,8 @@ export function PedigreeWorkspace() {
             <div><i className={styles.guideProband}>←</i><p><b>先证者</b><small>箭头指向个体</small></p></div>
           </div>
           <div className={styles.guideSteps}>
-            <div><b>1. 建立关系</b><p>先点选一个成员，再添加父亲、母亲、配偶或子代。共同父母会自动形成配偶线并连接子代。</p></div>
-            <div><b>2. 智能调整画布</b><p>单指只拖成员，画布不会跟随移动；靠近关系线会自动吸附并重接。双指捏合缩放，超出区域用侧边滚动条查看；拖出边框可删除。</p></div>
+            <div><b>1. 建立关系</b><p>点选成员可添加父母、配偶或子代；也可直接点父母中间连线，在弹出的按钮中增加男性、女性或不详同胞。</p></div>
+            <div><b>2. 智能调整画布</b><p>单指只拖成员，画布锁定不漂移；接近水平或垂直位置会显示辅助线并吸附，明显错位的关系线自动使用90°拐角。双指可直接捏合缩放。</p></div>
             <div><b>3. 录入疾病和位点</b><p>可输入中文病名、英文病名、基因或 MONDO 编号；选定基因后再从常见位点中选择，变异类型会自动带出。</p></div>
           </div>
           <footer><span>提示：“236位点”等口头简称必须核对，系统统一按标准 HGVS 显示，例如 GJB2 c.235delC。</span><button type="button" onClick={() => setShowGuide(false)}>知道了</button></footer>
