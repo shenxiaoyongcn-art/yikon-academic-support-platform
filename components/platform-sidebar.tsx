@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 const navigation = [
   { icon: '总', label: '管理总览', slug: 'overview', href: '/' },
   { icon: '标', label: '招标中心', slug: 'tender', href: '/modules/tender' },
@@ -14,18 +12,20 @@ const navigation = [
 export function PlatformSidebar({ activeSlug }: { activeSlug: string }) {
   return (
     <aside className="sidebar">
-      <Link className="brand" href="/" aria-label="Yikon 学术支持中台首页">
+      {/* Native links are intentional: the Sites runtime must perform a full route request. */}
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+      <a className="brand" href="/" aria-label="Yikon 学术支持中台首页">
         <span className="brand-mark">Y</span>
         <span><strong>Yikon</strong><small>学术支持中台</small></span>
-      </Link>
+      </a>
       <nav className="primary-nav" aria-label="主导航">
         <p className="nav-label">业务工作台</p>
         {navigation.map((item) => (
-          <Link className={activeSlug === item.slug ? 'active' : ''} href={item.href} key={item.slug} aria-current={activeSlug === item.slug ? 'page' : undefined}>
+          <a className={activeSlug === item.slug ? 'active' : ''} href={item.href} key={item.slug} aria-current={activeSlug === item.slug ? 'page' : undefined}>
             <span className="nav-icon">{item.icon}</span>
             <span>{item.label}</span>
             {item.badge && <b className={item.danger ? 'danger' : ''}>{item.badge}</b>}
-          </Link>
+          </a>
         ))}
       </nav>
       <div className="sidebar-foot"><span className="sync-dot" /><div><strong>BMP 同步服务</strong><small>接口配置中</small></div></div>
