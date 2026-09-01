@@ -1,16 +1,7 @@
 import { getChatGPTUser } from './chatgpt-auth';
+import { PlatformSidebar } from '@/components/platform-sidebar';
 
 export const dynamic = 'force-dynamic';
-
-const navItems = [
-  ['总', '管理总览'],
-  ['标', '招标中心'],
-  ['研', '科研项目'],
-  ['售', '售后闭环'],
-  ['会', '推广会议'],
-  ['评', 'PGD资质评审'],
-  ['训', '遗传咨询培训'],
-];
 
 const moduleSlugs = ['tender', 'research', 'aftersales', 'events', 'pgd-review', 'training'];
 
@@ -65,9 +56,9 @@ const modules = [
     source: 'BMP / 文档库',
     state: '模板已设计',
     stateTone: 'teal',
-    desc: '申报资料、制度SOP、人员设备、现场评审问题全程陪跑。',
-    metric: '8',
-    metricLabel: '在建中心',
+    desc: '覆盖申报、筹建、试运行评审、正式运营及诊疗路径建设。',
+    metric: '5',
+    metricLabel: '全生命周期阶段',
     tone: 'teal',
   },
   {
@@ -95,35 +86,7 @@ export default async function Home() {
 
   return (
     <main className="app-shell">
-      <aside className="sidebar">
-        <a className="brand" href="#overview" aria-label="Yikon 学术支持中台首页">
-          <span className="brand-mark">Y</span>
-          <span>
-            <strong>Yikon</strong>
-            <small>学术支持中台</small>
-          </span>
-        </a>
-
-        <nav className="primary-nav" aria-label="主导航">
-          <p className="nav-label">业务工作台</p>
-          {navItems.map(([icon, label], index) => (
-            <a className={index === 0 ? 'active' : ''} href={index === 0 ? '#overview' : `/modules/${moduleSlugs[index - 1]}`} key={label}>
-              <span className="nav-icon">{icon}</span>
-              <span>{label}</span>
-              {index === 2 && <b>12</b>}
-              {index === 3 && <b className="danger">7</b>}
-            </a>
-          ))}
-        </nav>
-
-        <div className="sidebar-foot">
-          <span className="sync-dot" />
-          <div>
-            <strong>BMP 同步服务</strong>
-            <small>最近更新 10:26</small>
-          </div>
-        </div>
-      </aside>
+      <PlatformSidebar activeSlug="overview" />
 
       <section className="workspace" id="overview">
         <header className="topbar">
