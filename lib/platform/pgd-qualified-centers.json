@@ -1,0 +1,3538 @@
+{
+  "metadata": {
+    "sourceFile": "01 PGT资质单位2026年9月1.xlsx",
+    "sourceSheet": "全国PGD资质单位汇总",
+    "dataDate": "2026-09-01",
+    "importedRows": 165,
+    "uniqueCenters": 163,
+    "provinceCount": 29,
+    "statusSummary": {
+      "申报中的单位": 2,
+      "筹建中单位": 14,
+      "试运行评审": 40,
+      "正式运行": 107
+    },
+    "duplicateGroups": [
+      {
+        "hospital": "河北省人民医院",
+        "province": "河北",
+        "sourceRows": [
+          95,
+          150
+        ]
+      },
+      {
+        "hospital": "温州医科大学附属第一医院",
+        "province": "浙江",
+        "sourceRows": [
+          135,
+          159
+        ]
+      }
+    ],
+    "statusRule": "正式运行时间有值或两个评审时间均为空=正式运行；仅试运行时间有值=试运行；文本申报/筹建按对应阶段归类。"
+  },
+  "provinceSummary": [
+    {
+      "province": "广东",
+      "total": 21,
+      "formal": 7,
+      "trial": 13,
+      "construction": 0,
+      "application": 1
+    },
+    {
+      "province": "上海",
+      "total": 12,
+      "formal": 10,
+      "trial": 2,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "广西",
+      "total": 10,
+      "formal": 7,
+      "trial": 1,
+      "construction": 2,
+      "application": 0
+    },
+    {
+      "province": "江苏",
+      "total": 9,
+      "formal": 8,
+      "trial": 0,
+      "construction": 1,
+      "application": 0
+    },
+    {
+      "province": "湖北",
+      "total": 9,
+      "formal": 5,
+      "trial": 3,
+      "construction": 0,
+      "application": 1
+    },
+    {
+      "province": "北京",
+      "total": 8,
+      "formal": 4,
+      "trial": 1,
+      "construction": 3,
+      "application": 0
+    },
+    {
+      "province": "山东",
+      "total": 8,
+      "formal": 4,
+      "trial": 4,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "河北",
+      "total": 7,
+      "formal": 6,
+      "trial": 1,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "海南",
+      "total": 7,
+      "formal": 4,
+      "trial": 3,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "福建",
+      "total": 7,
+      "formal": 6,
+      "trial": 0,
+      "construction": 1,
+      "application": 0
+    },
+    {
+      "province": "河南",
+      "total": 6,
+      "formal": 2,
+      "trial": 3,
+      "construction": 1,
+      "application": 0
+    },
+    {
+      "province": "浙江",
+      "total": 6,
+      "formal": 6,
+      "trial": 0,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "四川",
+      "total": 5,
+      "formal": 3,
+      "trial": 2,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "安徽",
+      "total": 5,
+      "formal": 5,
+      "trial": 0,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "江西",
+      "total": 5,
+      "formal": 3,
+      "trial": 0,
+      "construction": 2,
+      "application": 0
+    },
+    {
+      "province": "湖南",
+      "total": 5,
+      "formal": 3,
+      "trial": 2,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "辽宁",
+      "total": 5,
+      "formal": 5,
+      "trial": 0,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "重庆",
+      "total": 5,
+      "formal": 3,
+      "trial": 1,
+      "construction": 1,
+      "application": 0
+    },
+    {
+      "province": "山西",
+      "total": 4,
+      "formal": 0,
+      "trial": 2,
+      "construction": 2,
+      "application": 0
+    },
+    {
+      "province": "云南",
+      "total": 3,
+      "formal": 2,
+      "trial": 1,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "贵州",
+      "total": 3,
+      "formal": 2,
+      "trial": 1,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "内蒙古",
+      "total": 2,
+      "formal": 2,
+      "trial": 0,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "天津",
+      "total": 2,
+      "formal": 2,
+      "trial": 0,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "新疆",
+      "total": 2,
+      "formal": 2,
+      "trial": 0,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "甘肃",
+      "total": 2,
+      "formal": 2,
+      "trial": 0,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "陕西",
+      "total": 2,
+      "formal": 2,
+      "trial": 0,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "吉林",
+      "total": 1,
+      "formal": 1,
+      "trial": 0,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "宁夏",
+      "total": 1,
+      "formal": 1,
+      "trial": 0,
+      "construction": 0,
+      "application": 0
+    },
+    {
+      "province": "青海",
+      "total": 1,
+      "formal": 0,
+      "trial": 0,
+      "construction": 1,
+      "application": 0
+    }
+  ],
+  "centers": [
+    {
+      "sourceId": "118",
+      "region": "华东区",
+      "hospital": "上海交通大学医学院附属仁济医院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        119
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-001"
+    },
+    {
+      "sourceId": "127",
+      "region": "华东区",
+      "hospital": "上海交通大学附属新华医院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024年04月（试运行）",
+      "formalReviewDate": "2025-03-18",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        128
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-002"
+    },
+    {
+      "sourceId": "119",
+      "region": "华东区",
+      "hospital": "上海交通大学附属瑞金医院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        120
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-003"
+    },
+    {
+      "sourceId": "128",
+      "region": "华东区",
+      "hospital": "上海交通大学附属第九人民医院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-07-25",
+      "formalReviewDate": "2025-07-28",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        129
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-004"
+    },
+    {
+      "sourceId": "124",
+      "region": "华东区",
+      "hospital": "上海市第一人民医院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        125
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-005"
+    },
+    {
+      "sourceId": "121",
+      "region": "华东区",
+      "hospital": "上海市第一妇婴保健院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        122
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-006"
+    },
+    {
+      "sourceId": "120",
+      "region": "华东区",
+      "hospital": "上海集爱遗传与不育诊疗中心",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        121
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-007"
+    },
+    {
+      "sourceId": "125",
+      "region": "华东区",
+      "hospital": "复旦大学附属中山医院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2022-08-04",
+      "formalReviewDate": "2023-07-06",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        126
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-008"
+    },
+    {
+      "sourceId": "123",
+      "region": "华东区",
+      "hospital": "海军军医大学长征医院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        124
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-009"
+    },
+    {
+      "sourceId": "122",
+      "region": "华东区",
+      "hospital": "海军军医大学长海医院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        123
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-010"
+    },
+    {
+      "sourceId": "126",
+      "region": "华东区",
+      "hospital": "上海交通大学附属第六人民医院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2022-08-05",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        127
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-011"
+    },
+    {
+      "sourceId": "117",
+      "region": "华东区",
+      "hospital": "中国福利会国际和平妇幼保健院",
+      "province": "上海",
+      "city": "上海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        118
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-012"
+    },
+    {
+      "sourceId": "36",
+      "region": "华南区",
+      "hospital": "昆明医科大学第一附属医院",
+      "province": "云南",
+      "city": "昆明",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-04-11",
+      "formalReviewDate": "2024-04-19",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        37
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-013"
+    },
+    {
+      "sourceId": "37",
+      "region": "华南区",
+      "hospital": "昆明医科大学第二附属医院（试）",
+      "province": "云南",
+      "city": "昆明",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "20230915\n2024.11.08（原表）",
+      "formalReviewDate": "2025-12-24",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        38
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-014"
+    },
+    {
+      "sourceId": "35",
+      "region": "华南区",
+      "hospital": "云南省第一人民医院",
+      "province": "云南",
+      "city": "昆明",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2020年04月",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        36
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-015"
+    },
+    {
+      "sourceId": "97",
+      "region": "华北二区",
+      "hospital": "内蒙古医科大学附属医院",
+      "province": "内蒙古",
+      "city": "呼和浩特",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        98
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-016"
+    },
+    {
+      "sourceId": "98",
+      "region": "华北二区",
+      "hospital": "赤峰市妇产医院",
+      "province": "内蒙古",
+      "city": "赤峰",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2022-09-03",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        99
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-017"
+    },
+    {
+      "sourceId": "67",
+      "region": "华北一区",
+      "hospital": "中国人民解放军总医院（301）",
+      "province": "北京",
+      "city": "北京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        68
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-018"
+    },
+    {
+      "sourceId": "68",
+      "region": "华北一区",
+      "hospital": "北京协和",
+      "province": "北京",
+      "city": "北京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-11-29",
+      "formalReviewDate": "2025-11-30",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        69
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-019"
+    },
+    {
+      "sourceId": "69",
+      "region": "华北一区",
+      "hospital": "北京妇产医院",
+      "province": "北京",
+      "city": "北京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2025-08-26",
+      "formalReviewDate": "2026-08-07",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        70
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-020"
+    },
+    {
+      "sourceId": "66",
+      "region": "华北一区",
+      "hospital": "解放军总医院第六医学中心（海军总医院）",
+      "province": "北京",
+      "city": "北京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        67
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-021"
+    },
+    {
+      "sourceId": "65",
+      "region": "华北一区",
+      "hospital": "北京大学第三医院",
+      "province": "北京",
+      "city": "北京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        66
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-022"
+    },
+    {
+      "sourceId": "",
+      "region": "华北一区",
+      "hospital": "中国人民解放军第七医学中心",
+      "province": "北京",
+      "city": "北京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        163
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-023"
+    },
+    {
+      "sourceId": "",
+      "region": "华北一区",
+      "hospital": "北京大学人民医院",
+      "province": "北京",
+      "city": "北京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        164
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-024"
+    },
+    {
+      "sourceId": "",
+      "region": "华北一区",
+      "hospital": "北京大学第一医院",
+      "province": "北京",
+      "city": "北京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        165
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-025"
+    },
+    {
+      "sourceId": "99",
+      "region": "华北二区",
+      "hospital": "吉林大学第一医院",
+      "province": "吉林",
+      "city": "长春",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2019-11-01",
+      "formalReviewDate": "2020-12-03",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        100
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-026"
+    },
+    {
+      "sourceId": "58",
+      "region": "华中区",
+      "hospital": "四川省人民医院",
+      "province": "四川",
+      "city": "成都",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-04-07",
+      "formalReviewDate": "2024-04-08",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "否",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        59
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-027"
+    },
+    {
+      "sourceId": "56",
+      "region": "华中区",
+      "hospital": "成都市妇女儿童中心医院",
+      "province": "四川",
+      "city": "成都",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2020-11-27",
+      "formalReviewDate": "2023-03-09",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        57
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-028"
+    },
+    {
+      "sourceId": "57",
+      "region": "华中区",
+      "hospital": "成都西囡妇女儿童医院",
+      "province": "四川",
+      "city": "成都",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "私立",
+      "trialReviewDate": "2023-06-16",
+      "formalReviewDate": "2024-06-17",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        58
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-029"
+    },
+    {
+      "sourceId": "55",
+      "region": "华中区",
+      "hospital": "四川大学华西第二医院",
+      "province": "四川",
+      "city": "成都",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2018-09-12",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        56
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-030"
+    },
+    {
+      "sourceId": "54",
+      "region": "华中区",
+      "hospital": "四川省妇幼保健院",
+      "province": "四川",
+      "city": "成都",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2019-03-01",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        55
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-031"
+    },
+    {
+      "sourceId": "79",
+      "region": "华北一区",
+      "hospital": "天津医科大学总医院",
+      "province": "天津",
+      "city": "天津",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-03-08",
+      "formalReviewDate": "2024-04-12",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        80
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-032"
+    },
+    {
+      "sourceId": "78",
+      "region": "华北一区",
+      "hospital": "天津市中心妇产科医院",
+      "province": "天津",
+      "city": "天津",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "-",
+      "nonPgtCooperation": "-",
+      "sourceRows": [
+        79
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-033"
+    },
+    {
+      "sourceId": "86",
+      "region": "华北二区",
+      "hospital": "宁夏医科大学总医院",
+      "province": "宁夏",
+      "city": "银川",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        87
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-034"
+    },
+    {
+      "sourceId": "105",
+      "region": "华东区",
+      "hospital": "中国科技大学附属第一医院（安徽省立医院）",
+      "province": "安徽",
+      "city": "合肥",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2018年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        106
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-035"
+    },
+    {
+      "sourceId": "104",
+      "region": "华东区",
+      "hospital": "安徽医科大学第一附属医院",
+      "province": "安徽",
+      "city": "合肥",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": "2017年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        105
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-036"
+    },
+    {
+      "sourceId": "107",
+      "region": "华东区",
+      "hospital": "安徽省妇幼保健院",
+      "province": "安徽",
+      "city": "合肥",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-05-04",
+      "formalReviewDate": "2024-11-05",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        108
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-037"
+    },
+    {
+      "sourceId": "106",
+      "region": "华东区",
+      "hospital": "解放军第901医院",
+      "province": "安徽",
+      "city": "合肥",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        107
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-038"
+    },
+    {
+      "sourceId": "108",
+      "region": "华东区",
+      "hospital": "马鞍山市妇幼保健院",
+      "province": "安徽",
+      "city": "马鞍山市",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2025-05-08",
+      "formalReviewDate": "2026-07-17",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        109
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-039"
+    },
+    {
+      "sourceId": "73",
+      "region": "华北一区",
+      "hospital": "临沂市人民医院",
+      "province": "山东",
+      "city": "临沂",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "否",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        74
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-040"
+    },
+    {
+      "sourceId": "72",
+      "region": "华北一区",
+      "hospital": "枣庄妇幼保健院",
+      "province": "山东",
+      "city": "枣庄",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-06-30",
+      "formalReviewDate": "2024-07-14",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        73
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-041"
+    },
+    {
+      "sourceId": "74",
+      "region": "华北一区",
+      "hospital": "济宁医学院附属医院",
+      "province": "山东",
+      "city": "济宁",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "22年（原表）",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "否",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        75
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-042"
+    },
+    {
+      "sourceId": "76",
+      "region": "华北一区",
+      "hospital": "烟台毓璜顶医院",
+      "province": "山东",
+      "city": "烟台",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2021-04-22",
+      "formalReviewDate": "2023-07-27",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "否",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        77
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-043"
+    },
+    {
+      "sourceId": "70",
+      "region": "华北一区",
+      "hospital": "山东大学附属生殖医院",
+      "province": "山东",
+      "city": "济南",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "民营",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        71
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-044"
+    },
+    {
+      "sourceId": "75",
+      "region": "华北一区",
+      "hospital": "山东大学齐鲁医院",
+      "province": "山东",
+      "city": "济宁",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-11-20",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "否",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        76
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-045"
+    },
+    {
+      "sourceId": "77",
+      "region": "华北一区",
+      "hospital": "潍坊医学院生殖医学中心",
+      "province": "山东",
+      "city": "潍坊",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2022-07-12",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "否",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        78
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-046"
+    },
+    {
+      "sourceId": "71",
+      "region": "华北一区",
+      "hospital": "青岛妇女儿童医院",
+      "province": "山东",
+      "city": "青岛",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2021-03-18",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        72
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-047"
+    },
+    {
+      "sourceId": "150",
+      "region": "华北一区",
+      "hospital": "山西白求恩医院",
+      "province": "山西",
+      "city": "太原",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2026年07月",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        151
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-048"
+    },
+    {
+      "sourceId": "96",
+      "region": "华北一区",
+      "hospital": "山西省妇幼保健院",
+      "province": "山西",
+      "city": "太原",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        97
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-049"
+    },
+    {
+      "sourceId": "",
+      "region": "华北一区",
+      "hospital": "山西医科大学第一附属医院",
+      "province": "山西",
+      "city": "太原",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        153
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-050"
+    },
+    {
+      "sourceId": "",
+      "region": "华北一区",
+      "hospital": "长治医学院附属和平医院",
+      "province": "山西",
+      "city": "长治",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        154
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-051"
+    },
+    {
+      "sourceId": "22",
+      "region": "华南区",
+      "hospital": "东莞市妇幼保健院",
+      "province": "广东",
+      "city": "东莞",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-12-28",
+      "formalReviewDate": "2025-04-08",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        23
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-052"
+    },
+    {
+      "sourceId": "19",
+      "region": "华南区",
+      "hospital": "中山大学附属第三医院",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2026-01-13",
+      "formalReviewDate": "1.13（原表）",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        20
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-053"
+    },
+    {
+      "sourceId": "15",
+      "region": "华南区",
+      "hospital": "中山市博爱医院",
+      "province": "广东",
+      "city": "中山",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        16
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-054"
+    },
+    {
+      "sourceId": "16",
+      "region": "华南区",
+      "hospital": "南方医科大学南方医院",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2022-09-29",
+      "formalReviewDate": "2023-10-23",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        17
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-055"
+    },
+    {
+      "sourceId": "17",
+      "region": "华南区",
+      "hospital": "广东省第二人民医院",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-09-01",
+      "formalReviewDate": "2024-10-16",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        18
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-056"
+    },
+    {
+      "sourceId": "5",
+      "region": "华南区",
+      "hospital": "江门市中心医院",
+      "province": "广东",
+      "city": "江门",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2025-04-23",
+      "formalReviewDate": "2025-04-23",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        6
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-057"
+    },
+    {
+      "sourceId": "21",
+      "region": "华南区",
+      "hospital": "韶关市妇幼保健院",
+      "province": "广东",
+      "city": "韶关",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-12-04",
+      "formalReviewDate": "2024-11-29",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        22
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-058"
+    },
+    {
+      "sourceId": "9",
+      "region": "华南区",
+      "hospital": "中山大学孙逸仙纪念医院",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2017-12-13",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        10
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-059"
+    },
+    {
+      "sourceId": "6",
+      "region": "华南区",
+      "hospital": "中山大学附属第一医院",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        7
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-060"
+    },
+    {
+      "sourceId": "10",
+      "region": "华南区",
+      "hospital": "中山大学附属第六医院",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2018-06-21",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        11
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-061"
+    },
+    {
+      "sourceId": "23",
+      "region": "华南区",
+      "hospital": "佛山市妇幼保健院(试)",
+      "province": "广东",
+      "city": "佛山",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-08-13",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        24
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-062"
+    },
+    {
+      "sourceId": "12",
+      "region": "华南区",
+      "hospital": "北京大学深圳医院",
+      "province": "广东",
+      "city": "深圳",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2018-11-02",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        13
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-063"
+    },
+    {
+      "sourceId": "18",
+      "region": "华南区",
+      "hospital": "广东省人民医院",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2025-12-10",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        19
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-064"
+    },
+    {
+      "sourceId": "8",
+      "region": "华南区",
+      "hospital": "广东省妇幼保健院",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2016-11-01",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        9
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-065"
+    },
+    {
+      "sourceId": "7",
+      "region": "华南区",
+      "hospital": "广州医科大学附属第三医院",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2018-11-23",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        8
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-066"
+    },
+    {
+      "sourceId": "11",
+      "region": "华南区",
+      "hospital": "广州市妇女儿童医疗中心",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2018-04-20",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        12
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-067"
+    },
+    {
+      "sourceId": "4",
+      "region": "华南区",
+      "hospital": "汕头大学第一附属医院",
+      "province": "广东",
+      "city": "汕头",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-09-24",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        5
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-068"
+    },
+    {
+      "sourceId": "13",
+      "region": "华南区",
+      "hospital": "深圳市妇幼保健院",
+      "province": "广东",
+      "city": "深圳",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2019-04-09",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        14
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-069"
+    },
+    {
+      "sourceId": "14",
+      "region": "华南区",
+      "hospital": "珠海市妇幼保健院",
+      "province": "广东",
+      "city": "珠海",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2019-08-02",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        15
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-070"
+    },
+    {
+      "sourceId": "20",
+      "region": "华南区",
+      "hospital": "香港大学深圳医院",
+      "province": "广东",
+      "city": "深圳",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2025年11月",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        21
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-071"
+    },
+    {
+      "sourceId": "148",
+      "region": "华南区",
+      "hospital": "南部战区总医院",
+      "province": "广东",
+      "city": "广州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": "申报中",
+      "formalReviewDate": null,
+      "qualificationStatus": "申报中的单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        149
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-072"
+    },
+    {
+      "sourceId": "32",
+      "region": "华南区",
+      "hospital": "南宁市第二人民医院",
+      "province": "广西",
+      "city": "南宁",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2021-05-28",
+      "formalReviewDate": "2022-05-29",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        33
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-073"
+    },
+    {
+      "sourceId": "34",
+      "region": "华南区",
+      "hospital": "广西区人民医院",
+      "province": "广西",
+      "city": "南宁",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-05-30",
+      "formalReviewDate": "2025-05-28",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        35
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-074"
+    },
+    {
+      "sourceId": "3",
+      "region": "华南区",
+      "hospital": "广西区生殖医院",
+      "province": "广西",
+      "city": "南宁",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-04-29",
+      "formalReviewDate": "2025-04-30",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "否",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        4
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-075"
+    },
+    {
+      "sourceId": "30",
+      "region": "华南区",
+      "hospital": "广西壮族自治区妇幼保健院",
+      "province": "广西",
+      "city": "南宁",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2019-11-26",
+      "formalReviewDate": "2020-11-27",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        31
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-076"
+    },
+    {
+      "sourceId": "31",
+      "region": "华南区",
+      "hospital": "柳州市妇幼保健院",
+      "province": "广西",
+      "city": "柳州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2015年10月.",
+      "formalReviewDate": "2016年11月.",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        32
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-077"
+    },
+    {
+      "sourceId": "33",
+      "region": "华南区",
+      "hospital": "玉林市妇幼保健院",
+      "province": "广西",
+      "city": "玉林",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-05-12",
+      "formalReviewDate": "2024-05-13",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        34
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-078"
+    },
+    {
+      "sourceId": "2",
+      "region": "华南区",
+      "hospital": "联勤保障部队第九二四医院",
+      "province": "广西",
+      "city": "桂林",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": "2014年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "否",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        3
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-079"
+    },
+    {
+      "sourceId": "145",
+      "region": "华南区",
+      "hospital": "桂林医科大学第一附属医院",
+      "province": "广西",
+      "city": "桂林",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2026-08-05",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        146
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-080"
+    },
+    {
+      "sourceId": "147",
+      "region": "华南区",
+      "hospital": "右江民族医学院附属医院",
+      "province": "广西",
+      "city": "百色",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        148
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-081"
+    },
+    {
+      "sourceId": "146",
+      "region": "华南区",
+      "hospital": "广西医科大学第一附属医院",
+      "province": "广西",
+      "city": "南宁",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        147
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-082"
+    },
+    {
+      "sourceId": "63",
+      "region": "华北二区",
+      "hospital": "新疆佳音医院集团有限公司",
+      "province": "新疆",
+      "city": "乌鲁木齐",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "民营",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        64
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-083"
+    },
+    {
+      "sourceId": "64",
+      "region": "华北二区",
+      "hospital": "新疆医科大学第一附属医院",
+      "province": "新疆",
+      "city": "乌鲁木齐",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        65
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-084"
+    },
+    {
+      "sourceId": "115",
+      "region": "华东区",
+      "hospital": "东部战区总医院",
+      "province": "江苏",
+      "city": "南京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": "2017年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        116
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-085"
+    },
+    {
+      "sourceId": "112",
+      "region": "华东区",
+      "hospital": "南京市妇幼保健院",
+      "province": "江苏",
+      "city": "南京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2016年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        113
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-086"
+    },
+    {
+      "sourceId": "110",
+      "region": "华东区",
+      "hospital": "南京鼓楼医院",
+      "province": "江苏",
+      "city": "南京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": "2016年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        111
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-087"
+    },
+    {
+      "sourceId": "116",
+      "region": "华东区",
+      "hospital": "南通市妇幼保健院",
+      "province": "江苏",
+      "city": "南通",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-12-19",
+      "formalReviewDate": "2025年04月,25",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "否",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        117
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-088"
+    },
+    {
+      "sourceId": "113",
+      "region": "华东区",
+      "hospital": "徐州市妇幼保健院",
+      "province": "江苏",
+      "city": "徐州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2018年01月",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        114
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-089"
+    },
+    {
+      "sourceId": "109",
+      "region": "华东区",
+      "hospital": "江苏省人民医院",
+      "province": "江苏",
+      "city": "南京",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": "2014年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        110
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-090"
+    },
+    {
+      "sourceId": "111",
+      "region": "华东区",
+      "hospital": "苏州大学附属第一医院",
+      "province": "江苏",
+      "city": "苏州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2018年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        112
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-091"
+    },
+    {
+      "sourceId": "114",
+      "region": "华东区",
+      "hospital": "苏州市立医院",
+      "province": "江苏",
+      "city": "苏州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2017年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        115
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-092"
+    },
+    {
+      "sourceId": "",
+      "region": "华东区",
+      "hospital": "无锡市妇幼保健院",
+      "province": "江苏",
+      "city": "无锡",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        156
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-093"
+    },
+    {
+      "sourceId": "143",
+      "region": "华东区",
+      "hospital": "南昌市生殖医院",
+      "province": "江西",
+      "city": "南昌",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2022-07-10",
+      "formalReviewDate": "2023-09-06",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        144
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-094"
+    },
+    {
+      "sourceId": "141",
+      "region": "华东区",
+      "hospital": "江西省妇幼保健院",
+      "province": "江西",
+      "city": "南昌",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        142
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-095"
+    },
+    {
+      "sourceId": "142",
+      "region": "华东区",
+      "hospital": "赣州市妇幼保健院",
+      "province": "江西",
+      "city": "赣州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2020-09-01",
+      "formalReviewDate": "023.9.8（原表）",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        143
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-096"
+    },
+    {
+      "sourceId": "",
+      "region": "华东区",
+      "hospital": "南昌大学第一附属医院",
+      "province": "江西",
+      "city": "南昌",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        157
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-097"
+    },
+    {
+      "sourceId": "",
+      "region": "华东区",
+      "hospital": "赣州市人民医院",
+      "province": "江西",
+      "city": "赣州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        158
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-098"
+    },
+    {
+      "sourceId": "92",
+      "region": "华北二区",
+      "hospital": "唐山市妇幼保健院",
+      "province": "河北",
+      "city": "唐山市",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2022-11-02",
+      "formalReviewDate": "2025-07-29",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        93
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-099"
+    },
+    {
+      "sourceId": "89",
+      "region": "华北二区",
+      "hospital": "河北医科大学第二医院",
+      "province": "河北",
+      "city": "石家庄",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2019-08-25",
+      "formalReviewDate": "2020-08-25",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        90
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-100"
+    },
+    {
+      "sourceId": "91",
+      "region": "华北二区",
+      "hospital": "河北生殖妇产医院",
+      "province": "河北",
+      "city": "石家庄",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "私立",
+      "trialReviewDate": "2024-01-30",
+      "formalReviewDate": "2025-09-10",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        92
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-101"
+    },
+    {
+      "sourceId": "149",
+      "region": "华北二区",
+      "hospital": "河北省人民医院",
+      "province": "河北",
+      "city": "石家庄",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2022-06-08",
+      "formalReviewDate": "2023-06-08",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        95,
+        150
+      ],
+      "dataQualityNotes": [
+        "原表存在重复记录，已按最高资质阶段归并"
+      ],
+      "id": "PGD-102"
+    },
+    {
+      "sourceId": "90",
+      "region": "华北二区",
+      "hospital": "石家庄市妇产医院",
+      "province": "河北",
+      "city": "石家庄",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2019-01-25",
+      "formalReviewDate": "2020-01-25",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        91
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-103"
+    },
+    {
+      "sourceId": "93",
+      "region": "华北二区",
+      "hospital": "秦皇岛妇幼保健院",
+      "province": "河北",
+      "city": "秦皇岛",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-05-18",
+      "formalReviewDate": "2025-05-14",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        94
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-104"
+    },
+    {
+      "sourceId": "95",
+      "region": "华北一区",
+      "hospital": "保定妇幼保健院（试）",
+      "province": "河北",
+      "city": "保定",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2025-10-24",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        96
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-105"
+    },
+    {
+      "sourceId": "83",
+      "region": "华北二区",
+      "hospital": "河南省人民医院",
+      "province": "河南",
+      "city": "郑州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        84
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-106"
+    },
+    {
+      "sourceId": "84",
+      "region": "华北二区",
+      "hospital": "郑州大学第三附属医院",
+      "province": "河南",
+      "city": "郑州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        85
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-107"
+    },
+    {
+      "sourceId": "85",
+      "region": "华北二区",
+      "hospital": "洛阳市妇幼保健院",
+      "province": "河南",
+      "city": "洛阳",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-09-25",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        86
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-108"
+    },
+    {
+      "sourceId": "144",
+      "region": "华北二区",
+      "hospital": "焦作市妇幼保健院",
+      "province": "河南",
+      "city": "焦作",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2026-07-02",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        145
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-109"
+    },
+    {
+      "sourceId": "82",
+      "region": "华北二区",
+      "hospital": "郑州大学第一附属医院",
+      "province": "河南",
+      "city": "郑州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        83
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-110"
+    },
+    {
+      "sourceId": "",
+      "region": "华北二区",
+      "hospital": "漯河市中心医院",
+      "province": "河南",
+      "city": "漯河",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        155
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-111"
+    },
+    {
+      "sourceId": "133",
+      "region": "华东区",
+      "hospital": "嘉兴市妇幼保健院",
+      "province": "浙江",
+      "city": "嘉兴",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-06-14",
+      "formalReviewDate": "2025-06-13",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        134
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-112"
+    },
+    {
+      "sourceId": "131",
+      "region": "华东区",
+      "hospital": "宁波市妇女儿童医院",
+      "province": "浙江",
+      "city": "宁波",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2022-06-21",
+      "formalReviewDate": "2023-06-17",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        132
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-113"
+    },
+    {
+      "sourceId": "129",
+      "region": "华东区",
+      "hospital": "浙江大学医学院附属妇产科医院",
+      "province": "浙江",
+      "city": "杭州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": "2014年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        130
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-114"
+    },
+    {
+      "sourceId": "130",
+      "region": "华东区",
+      "hospital": "浙江大学医学院附属邵逸夫医院",
+      "province": "浙江",
+      "city": "杭州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2016年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        131
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-115"
+    },
+    {
+      "sourceId": "132",
+      "region": "华东区",
+      "hospital": "浙江省人民医院",
+      "province": "浙江",
+      "city": "杭州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-04-07",
+      "formalReviewDate": "2024-04-12",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        133
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-116"
+    },
+    {
+      "sourceId": "134",
+      "region": "华东区",
+      "hospital": "温州医科大学附属第一医院",
+      "province": "浙江",
+      "city": "温州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-03-16",
+      "formalReviewDate": "2014年04月",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "否",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        135,
+        159
+      ],
+      "dataQualityNotes": [
+        "正式运行评审时间早于试运行评审时间，请复核原表",
+        "原表存在重复记录，已按最高资质阶段归并"
+      ],
+      "id": "PGD-117"
+    },
+    {
+      "sourceId": "28",
+      "region": "华南区",
+      "hospital": "德雅国际医院（自贸区）",
+      "province": "海南",
+      "city": "海口",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "私立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        29
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-118"
+    },
+    {
+      "sourceId": "29",
+      "region": "华南区",
+      "hospital": "海南永远幸医院",
+      "province": "海南",
+      "city": "海口",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "私立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        30
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-119"
+    },
+    {
+      "sourceId": "25",
+      "region": "华南区",
+      "hospital": "海南省妇幼保健院",
+      "province": "海南",
+      "city": "海口",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-03-29",
+      "formalReviewDate": "2024-04-25",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        26
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-120"
+    },
+    {
+      "sourceId": "26",
+      "region": "华南区",
+      "hospital": "海南省现代妇女儿童医院",
+      "province": "海南",
+      "city": "海口",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "私立",
+      "trialReviewDate": "2024-01-30",
+      "formalReviewDate": "2025-07-18",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        27
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-121"
+    },
+    {
+      "sourceId": "1",
+      "region": "华南区",
+      "hospital": "慈铭博鳌国际医院",
+      "province": "海南",
+      "city": "海口",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "民营",
+      "trialReviewDate": "2019-03-25",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "否",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        2
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-122"
+    },
+    {
+      "sourceId": "27",
+      "region": "华南区",
+      "hospital": "海南乐樱国际医院（自贸区）",
+      "province": "海南",
+      "city": "海口",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "私立",
+      "trialReviewDate": "2024-03-20",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        28
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-123"
+    },
+    {
+      "sourceId": "24",
+      "region": "华南区",
+      "hospital": "海南医学院第一附属医院",
+      "province": "海南",
+      "city": "海口",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2019-04-11",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        25
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-124"
+    },
+    {
+      "sourceId": "42",
+      "region": "华中区",
+      "hospital": "华中科技大学同济医学院附属协和医院",
+      "province": "湖北",
+      "city": "武汉",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        43
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-125"
+    },
+    {
+      "sourceId": "41",
+      "region": "华中区",
+      "hospital": "华中科技大学同济医学院附属同济医院",
+      "province": "湖北",
+      "city": "武汉",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        42
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-126"
+    },
+    {
+      "sourceId": "48",
+      "region": "华中区",
+      "hospital": "宜昌市中心医院",
+      "province": "湖北",
+      "city": "宜昌",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2022-09-16",
+      "formalReviewDate": "2023-09-22",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        49
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-127"
+    },
+    {
+      "sourceId": "43",
+      "region": "华中区",
+      "hospital": "武汉大学人民医院",
+      "province": "湖北",
+      "city": "武汉",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        44
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-128"
+    },
+    {
+      "sourceId": "44",
+      "region": "华中区",
+      "hospital": "湖北省妇幼保健院",
+      "province": "湖北",
+      "city": "武汉",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2019年08月",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        45
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-129"
+    },
+    {
+      "sourceId": "45",
+      "region": "华中区",
+      "hospital": "十堰市人民医院",
+      "province": "湖北",
+      "city": "十堰",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2017年11月",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        46
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-130"
+    },
+    {
+      "sourceId": "46",
+      "region": "华中区",
+      "hospital": "十堰市太和医院",
+      "province": "湖北",
+      "city": "十堰",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2021-06-30",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        47
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-131"
+    },
+    {
+      "sourceId": "47",
+      "region": "华中区",
+      "hospital": "武汉大学中南医院",
+      "province": "湖北",
+      "city": "武汉",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2021-07-27",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        48
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-132"
+    },
+    {
+      "sourceId": "",
+      "region": "华中区",
+      "hospital": "襄阳市中心医院",
+      "province": "湖北",
+      "city": "宜昌",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "申报中",
+      "formalReviewDate": null,
+      "qualificationStatus": "申报中的单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        161
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-133"
+    },
+    {
+      "sourceId": "49",
+      "region": "华中区",
+      "hospital": "中信湘雅生殖与遗传专科医院",
+      "province": "湖南",
+      "city": "长沙",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "民营",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": "2014年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        50
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-134"
+    },
+    {
+      "sourceId": "50",
+      "region": "华中区",
+      "hospital": "中南大学湘雅医院",
+      "province": "湖南",
+      "city": "长沙",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": "2014年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        51
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-135"
+    },
+    {
+      "sourceId": "51",
+      "region": "华中区",
+      "hospital": "湘潭市中心医院",
+      "province": "湖南",
+      "city": "湘潭",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2014-09-19",
+      "formalReviewDate": "2015-09-20",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        52
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-136"
+    },
+    {
+      "sourceId": "52",
+      "region": "华中区",
+      "hospital": "常德市第一人民医院",
+      "province": "湖南",
+      "city": "常德",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2025-11-20",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        53
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-137"
+    },
+    {
+      "sourceId": "53",
+      "region": "华中区",
+      "hospital": "长沙市妇幼保健院",
+      "province": "湖南",
+      "city": "长沙",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2025-11-07",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        54
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-138"
+    },
+    {
+      "sourceId": "80",
+      "region": "华北二区",
+      "hospital": "兰州大学第一医院",
+      "province": "甘肃",
+      "city": "兰州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        81
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-139"
+    },
+    {
+      "sourceId": "81",
+      "region": "华北二区",
+      "hospital": "甘肃省妇幼保健院",
+      "province": "甘肃",
+      "city": "兰州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        82
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-140"
+    },
+    {
+      "sourceId": "137",
+      "region": "华东区",
+      "hospital": "厦门市妇幼保健院",
+      "province": "福建",
+      "city": "厦门",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2022-07-08",
+      "formalReviewDate": "2023-09-26",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        138
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-141"
+    },
+    {
+      "sourceId": "140",
+      "region": "华东区",
+      "hospital": "泉州妇幼保健院",
+      "province": "福建",
+      "city": "泉州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-07-25",
+      "formalReviewDate": "2025-08-06",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        141
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-142"
+    },
+    {
+      "sourceId": "139",
+      "region": "华东区",
+      "hospital": "福建医科大学附属第一医院",
+      "province": "福建",
+      "city": "福州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2025-04-18",
+      "formalReviewDate": "2026-04-29",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        140
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-143"
+    },
+    {
+      "sourceId": "138",
+      "region": "华东区",
+      "hospital": "福建医科大学附属第二医院",
+      "province": "福建",
+      "city": "泉州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-07-24",
+      "formalReviewDate": "2025-08-26",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        139
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-144"
+    },
+    {
+      "sourceId": "135",
+      "region": "华东区",
+      "hospital": "福建省妇幼保健院",
+      "province": "福建",
+      "city": "福州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2014年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        136
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-145"
+    },
+    {
+      "sourceId": "136",
+      "region": "华东区",
+      "hospital": "联勤保障部队第900医院",
+      "province": "福建",
+      "city": "福州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": "2017年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        137
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-146"
+    },
+    {
+      "sourceId": "",
+      "region": "华东区",
+      "hospital": "陆军第七十三集团军医院",
+      "province": "福建",
+      "city": "福州",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        166
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-147"
+    },
+    {
+      "sourceId": "39",
+      "region": "华中区",
+      "hospital": "贵州医科大学附属医院",
+      "province": "贵州",
+      "city": "贵阳",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        40
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-148"
+    },
+    {
+      "sourceId": "40",
+      "region": "华中区",
+      "hospital": "遵义医科大学附属医院",
+      "province": "贵州",
+      "city": "遵义",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-06-26",
+      "formalReviewDate": "2024年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        41
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-149"
+    },
+    {
+      "sourceId": "38",
+      "region": "华中区",
+      "hospital": "贵阳市妇幼保健院",
+      "province": "贵州",
+      "city": "贵阳",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2019-04-10",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        39
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-150"
+    },
+    {
+      "sourceId": "101",
+      "region": "华北二区",
+      "hospital": "中国医科大学附属盛京医院",
+      "province": "辽宁",
+      "city": "沈阳",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2018年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        102
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-151"
+    },
+    {
+      "sourceId": "103",
+      "region": "华北二区",
+      "hospital": "北部战区总医院和平分院",
+      "province": "辽宁",
+      "city": "沈阳",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": "2014年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "否",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        104
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-152"
+    },
+    {
+      "sourceId": "102",
+      "region": "华北二区",
+      "hospital": "大连市妇女儿童医疗中心",
+      "province": "辽宁",
+      "city": "大连",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2024-03-18",
+      "formalReviewDate": "2025-04-19",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        103
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-153"
+    },
+    {
+      "sourceId": "100",
+      "region": "华北二区",
+      "hospital": "沈阳市妇婴医院",
+      "province": "辽宁",
+      "city": "沈阳",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": "2018年",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "否",
+      "nonPgtCooperation": "否",
+      "sourceRows": [
+        101
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-154"
+    },
+    {
+      "sourceId": "151",
+      "region": "华北二区",
+      "hospital": "沈阳菁华医院",
+      "province": "辽宁",
+      "city": "沈阳",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "民营",
+      "trialReviewDate": null,
+      "formalReviewDate": "2026-07-15",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        152
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-155"
+    },
+    {
+      "sourceId": "61",
+      "region": "华中区",
+      "hospital": "重庆医科大学附属第一医院",
+      "province": "重庆",
+      "city": "重庆",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2021年",
+      "formalReviewDate": "2023-03-10",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        62
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-156"
+    },
+    {
+      "sourceId": "62",
+      "region": "华中区",
+      "hospital": "重庆医科大学附属第二医院",
+      "province": "重庆",
+      "city": "重庆",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "2023-11-16",
+      "formalReviewDate": "2024-12-17",
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        63
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-157"
+    },
+    {
+      "sourceId": "60",
+      "region": "华中区",
+      "hospital": "陆军军医大学西南医院",
+      "province": "重庆",
+      "city": "重庆",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        61
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-158"
+    },
+    {
+      "sourceId": "59",
+      "region": "华中区",
+      "hospital": "重庆市妇幼保健院",
+      "province": "重庆",
+      "city": "重庆",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "15年第一批13家试点单位（原表）",
+      "formalReviewDate": null,
+      "qualificationStatus": "试运行评审",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        60
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-159"
+    },
+    {
+      "sourceId": "",
+      "region": "华中区",
+      "hospital": "陆军军医大学新桥医院",
+      "province": "重庆",
+      "city": "重庆",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        160
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-160"
+    },
+    {
+      "sourceId": "87",
+      "region": "华北二区",
+      "hospital": "空军军医大学唐都医院",
+      "province": "陕西",
+      "city": "西安",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "部队",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        88
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-161"
+    },
+    {
+      "sourceId": "88",
+      "region": "华北二区",
+      "hospital": "西北妇女儿童医院(陕西省妇幼保健院)",
+      "province": "陕西",
+      "city": "西安",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": null,
+      "formalReviewDate": null,
+      "qualificationStatus": "正式运行",
+      "yikonCooperation": "是",
+      "pgtCooperation": "是",
+      "nonPgtCooperation": "是",
+      "sourceRows": [
+        89
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-162"
+    },
+    {
+      "sourceId": "",
+      "region": "华北二区",
+      "hospital": "青海省人民医院",
+      "province": "青海",
+      "city": "西宁",
+      "technology": "植入前胚胎遗传学诊断技术",
+      "nature": "公立",
+      "trialReviewDate": "筹建中",
+      "formalReviewDate": null,
+      "qualificationStatus": "筹建中单位",
+      "yikonCooperation": "",
+      "pgtCooperation": "",
+      "nonPgtCooperation": "",
+      "sourceRows": [
+        162
+      ],
+      "dataQualityNotes": [],
+      "id": "PGD-163"
+    }
+  ]
+}
