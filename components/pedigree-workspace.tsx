@@ -134,7 +134,29 @@ function translateInheritance(value: string) {
   if (normalized.includes('y-linked')) return 'Y连锁';
   if (normalized.includes('mitochondrial') || normalized.includes('maternal')) return '线粒体遗传';
   if (normalized.includes('semidominant')) return '半显性';
+  if (normalized.includes('unknown')) return '待确定';
   return value || '待确定';
+}
+
+function chooseDefaultCatalogRecord(records: CatalogRecord[]) {
+  const evidenceWeight: Record<string, number> = { Definitive: 8, Strong: 5, Moderate: 3, Limited: 1, 'ClinVar快捷库': 2 };
+  const modes = new Map<string, { score: number; strongest: number; count: number }>();
+  records.forEach((record) => {
+    const mode = translateInheritance(record[4]);
+    const weight = evidenceWeight[record[5]] ?? 1;
+    const current = modes.get(mode) || { score: 0, strongest: 0, count: 0 };
+    modes.set(mode, {
+      score: current.score + weight,
+      strongest: Math.max(current.strongest, weight),
+      count: current.count + 1,
+    });
+  });
+  const defaultMode = Array.from(modes.entries()).sort((a, b) =>
+    b[1].score - a[1].score || b[1].strongest - a[1].strongest || b[1].count - a[1].count || a[0].localeCompare(b[0], 'zh-CN')
+  )[0]?.[0];
+  return [...records]
+    .filter((record) => translateInheritance(record[4]) === defaultMode)
+    .sort((a, b) => (evidenceWeight[b[5]] ?? 1) - (evidenceWeight[a[5]] ?? 1) || a[3].localeCompare(b[3], 'en'))[0] || records[0];
 }
 
 function makeId(prefix: string) {
@@ -149,14 +171,30 @@ function cloneCase(value: PedigreeCase): PedigreeCase {
   return JSON.parse(JSON.stringify(value)) as PedigreeCase;
 }
 
+function areSiblings(people: Person[], firstId: string, secondId: string) {
+  const first = people.find((person) => person.id === firstId);
+  const second = people.find((person) => person.id === secondId);
+  if (!first || !second) return false;
+  return Boolean(
+    (first.fatherId && first.fatherId === second.fatherId) ||
+    (first.motherId && first.motherId === second.motherId),
+  );
+}
+
 function normalizePeople(people: Person[]): Person[] {
-  const normalized = people.map((person) => ({ ...person, spouseIds: Array.from(new Set(person.spouseIds || [])) }));
+  const normalized = people.map((person) => ({
+    ...person,
+    spouseIds: Array.from(new Set(person.spouseIds || [])).filter((spouseId) => spouseId !== person.id),
+  }));
   const byId = new Map(normalized.map((person) => [person.id, person]));
+  normalized.forEach((person) => {
+    person.spouseIds = person.spouseIds.filter((spouseId) => byId.has(spouseId) && !areSiblings(normalized, person.id, spouseId));
+  });
   normalized.forEach((child) => {
     if (!child.fatherId || !child.motherId) return;
     const father = byId.get(child.fatherId);
     const mother = byId.get(child.motherId);
-    if (father && mother) {
+    if (father && mother && !areSiblings(normalized, father.id, mother.id)) {
       if (!father.spouseIds.includes(mother.id)) father.spouseIds.push(mother.id);
       if (!mother.spouseIds.includes(father.id)) mother.spouseIds.push(father.id);
     }
@@ -588,7 +626,8 @@ export function PedigreeWorkspace() {
       if (!current) return currentCases;
       setHistory((items) => [...items.slice(-39), cloneCase(current)]);
       setFuture([]);
-      const next = { ...updater(cloneCase(current)), updatedAt: isoNow() };
+      const updated = updater(cloneCase(current));
+      const next = { ...updated, people: normalizePeople(updated.people), updatedAt: isoNow() };
       return currentCases.map((item) => item.id === activeCaseId ? next : item);
     });
     setNotice(message);
@@ -607,9 +646,9 @@ export function PedigreeWorkspace() {
   };
 
   const chooseDisease = (option: DiseaseOption) => {
-    const rank: Record<string, number> = { Definitive: 0, Strong: 1, Moderate: 2, Limited: 3 };
-    const sorted = [...option.records].sort((a, b) => (rank[a[5]] ?? 9) - (rank[b[5]] ?? 9));
-    const preferred = sorted.find((record) => record[3] === activeCase.gene) || sorted[0];
+    const preferred = chooseDefaultCatalogRecord(option.records);
+    const preferredVariants = commonVariants.filter((variant) => variant.gene === preferred?.[3]);
+    const defaultVariant = preferredVariants[0];
     setDiseaseQuery(option.name);
     setDiseaseOpen(false);
     commit((current) => ({
@@ -618,18 +657,21 @@ export function PedigreeWorkspace() {
       diseaseId: option.id,
       gene: preferred?.[3] || '',
       inheritance: translateInheritance(preferred?.[4] || ''),
-      variant: '',
-    }), '已关联疾病、基因与遗传模式');
+      variant: defaultVariant?.hgvs || '',
+      variantType: defaultVariant?.type || 'other',
+    }), defaultVariant ? '已带出默认遗传模式、常用位点与变异类型，请确认' : '已按证据权重带出默认基因与遗传模式');
   };
 
   const chooseGene = (value: string) => {
     const [gene, inheritance] = value.split('|');
-    commit((current) => ({ ...current, gene, inheritance: translateInheritance(inheritance), variant: '' }), '目标基因已更新，可选择常见位点');
+    const geneVariants = commonVariants.filter((variant) => variant.gene === gene);
+    const defaultVariant = geneVariants[0];
+    commit((current) => ({ ...current, gene, inheritance: translateInheritance(inheritance), variant: defaultVariant?.hgvs || '', variantType: defaultVariant?.type || 'other' }), defaultVariant ? '已带出该基因常用位点与变异类型，请确认' : '目标基因与默认遗传模式已更新');
   };
 
   const chooseVariant = (value: string) => {
     const known = commonVariants.find((variant) => variant.gene === activeCase.gene && variant.hgvs === value.trim());
-    commit((current) => ({ ...current, variant: value, variantType: known?.type || current.variantType }), known ? '已带入标准位点与变异类型' : '已保存手工位点');
+    commit((current) => ({ ...current, variant: value, variantType: known?.type || 'other' }), known ? '已带入标准位点与变异类型' : '已保存手工位点，请确认变异类型');
   };
 
   const useManualDisease = () => {
@@ -761,9 +803,11 @@ export function PedigreeWorkspace() {
         nextGuide = { x: nextX };
       } else {
         const currentPerson = positionedById.get(drag.id);
+        const siblingNear = layout.people.find((person) => person.id !== drag.id && areSiblings(activeCase.people, drag.id, person.id) && Math.hypot(point.x - person.x, point.y - person.y) < 125 && Math.abs(point.y - person.y) < 52);
         const spouseTarget = layout.people
           .filter((person) => person.id !== drag.id && person.sex !== 'pregnancy_loss')
           .filter((person) => !isAncestor(activeCase.people, drag.id, person.id) && !isAncestor(activeCase.people, person.id, drag.id))
+          .filter((person) => !areSiblings(activeCase.people, drag.id, person.id))
           .map((person) => ({ person, distance: Math.hypot(point.x - person.x, point.y - person.y) }))
           .filter(({ person, distance }) => distance < 125 && Math.abs(point.y - person.y) < 52)
           .sort((a, b) => a.distance - b.distance)[0];
@@ -776,22 +820,33 @@ export function PedigreeWorkspace() {
           hint = drag.snapIntent.label;
           nextGuide = { y: target.y };
         } else {
-          const verticalTarget = layout.people
-            .filter((person) => person.id !== drag.id && Math.abs(nextX - person.x) <= 18)
+          const verticalSnapThreshold = Math.max(24, Math.min(46, layout.width * .05));
+          const horizontalSnapThreshold = Math.max(18, Math.min(30, layout.height * .05));
+          const verticalAnchors = [
+            ...layout.people
+              .filter((person) => person.id !== drag.id)
+              .map((person) => ({ x: person.x, label: person.displayId })),
+            ...unionPairs
+              .filter(([, pair]) => !pair.some((person) => person.id === drag.id))
+              .map(([, pair]) => ({ x: (pair[0].x + pair[1].x) / 2, label: `${pair[0].displayId}－${pair[1].displayId} 连线中点` })),
+          ];
+          const verticalTarget = verticalAnchors
+            .filter((anchor) => Math.abs(nextX - anchor.x) <= verticalSnapThreshold)
             .sort((a, b) => Math.abs(nextX - a.x) - Math.abs(nextX - b.x))[0];
           if (verticalTarget) {
             nextX = verticalTarget.x;
-            hint = `已与 ${verticalTarget.displayId} 纵向对齐`;
+            hint = `已与 ${verticalTarget.label} 纵向强制拉直`;
             nextGuide = { ...nextGuide, x: verticalTarget.x };
           }
           const horizontalTarget = layout.people
-            .filter((person) => person.id !== drag.id && Math.abs(nextY - person.y) <= 18)
+            .filter((person) => person.id !== drag.id && Math.abs(nextY - person.y) <= horizontalSnapThreshold)
             .sort((a, b) => Math.abs(nextY - a.y) - Math.abs(nextY - b.y))[0];
           if (horizontalTarget) {
             nextY = horizontalTarget.y;
             hint = `已与 ${horizontalTarget.displayId} 横向对齐`;
             nextGuide = { ...nextGuide, y: horizontalTarget.y };
           }
+          if (siblingNear) hint = `已与 ${siblingNear.displayId} 对齐；同胞之间禁止建立配偶线`;
         }
       }
     }
@@ -838,6 +893,7 @@ export function PedigreeWorkspace() {
         people = normalizePeople(people);
       } else if (drag.snapIntent?.type === 'spouse') {
         const targetId = drag.snapIntent.targetId;
+        if (areSiblings(people, drag.id, targetId)) return { ...item, people: normalizePeople(people), updatedAt: isoNow() };
         people = people.map((person) => {
           if (person.id === drag.id && !person.spouseIds.includes(targetId)) return { ...person, spouseIds: [...person.spouseIds, targetId] };
           if (person.id === targetId && !person.spouseIds.includes(drag.id)) return { ...person, spouseIds: [...person.spouseIds, drag.id] };
@@ -938,7 +994,7 @@ export function PedigreeWorkspace() {
   const removeSelected = () => {
     if (!selected || activeCase.people.length === 1) return setNotice('家系至少需保留一位成员');
     const fallback = activeCase.people.find((person) => person.id !== selected.id)?.id || '';
-    commit((current) => removePersonFromCase(current, selected.id), '成员已删除');
+    commit((current) => removePersonFromCase(current, selected.id), '成员已删除，可点撤销恢复');
     setSelectedId(fallback);
   };
 
@@ -947,7 +1003,7 @@ export function PedigreeWorkspace() {
     if (!previous || !activeCase) return;
     setHistory((items) => items.slice(0, -1));
     setFuture((items) => [...items, cloneCase(activeCase)]);
-    setCases((items) => items.map((item) => item.id === activeCaseId ? previous : item));
+    setCases((items) => items.map((item) => item.id === activeCaseId ? { ...previous, people: normalizePeople(previous.people) } : item));
     setNotice('已撤销上一步');
   };
 
@@ -956,7 +1012,7 @@ export function PedigreeWorkspace() {
     if (!next || !activeCase) return;
     setFuture((items) => items.slice(0, -1));
     setHistory((items) => [...items, cloneCase(activeCase)]);
-    setCases((items) => items.map((item) => item.id === activeCaseId ? next : item));
+    setCases((items) => items.map((item) => item.id === activeCaseId ? { ...next, people: normalizePeople(next.people) } : item));
     setNotice('已恢复操作');
   };
 
@@ -1077,6 +1133,7 @@ export function PedigreeWorkspace() {
     const pairs = new Map<string, [PositionedPerson, PositionedPerson]>();
     const addPair = (firstId?: string, secondId?: string) => {
       if (!firstId || !secondId || firstId === secondId) return;
+      if (areSiblings(activeCase.people, firstId, secondId)) return;
       const first = positionedById.get(firstId);
       const second = positionedById.get(secondId);
       if (!first || !second) return;
@@ -1131,12 +1188,12 @@ export function PedigreeWorkspace() {
           {geneOptions.length > 0 && !geneOptions.some((record) => record[3] === activeCase.gene && translateInheritance(record[4]) === activeCase.inheritance) && <option value="">{activeCase.gene || '请选择'}</option>}
           {geneOptions.map((record) => <option value={`${record[3]}|${record[4]}`} key={`${record[3]}-${record[4]}`}>{record[3]} · {translateInheritance(record[4])} · {record[5]}</option>)}
         </select></label>
-        <label><span>遗传模式</span><select value={activeCase.inheritance} onChange={(event) => commit((item) => ({ ...item, inheritance: event.target.value }))}><option>待确定</option><option>常染色体显性</option><option>常染色体隐性</option><option>X连锁显性</option><option>X连锁隐性</option><option>Y连锁</option><option>线粒体遗传</option><option>多因素/未知</option></select></label>
+        <label><span>遗传模式（证据优先默认，可修改）</span><select value={activeCase.inheritance} onChange={(event) => commit((item) => ({ ...item, inheritance: event.target.value }))}><option>待确定</option><option>常染色体显性</option><option>常染色体隐性</option><option>X连锁显性</option><option>X连锁隐性</option><option>Y连锁</option><option>线粒体遗传</option><option>半显性</option><option>多因素/未知</option></select></label>
         <label className={styles.variantPicker}><span>目标变异位点</span><input list={`variant-options-${activeCase.id}`} value={activeCase.variant || ''} placeholder={variantOptions.length ? `可选 ${variantOptions.length} 个常见位点` : '输入标准 HGVS 位点'} onChange={(event) => chooseVariant(event.target.value)} />
           <datalist id={`variant-options-${activeCase.id}`}>{variantOptions.map((variant) => <option value={variant.hgvs} key={`${variant.gene}-${variant.hgvs}`}>{variant.reference} · {variant.protein} · {variant.classification}</option>)}</datalist>
           <small className={styles.variantEvidence}>{selectedVariant ? `${selectedVariant.reference} · ${selectedVariant.protein} · ${selectedVariant.classification}` : variantOptions.length ? '可输入 109、235 等关键词筛选；最终按 HGVS 复核' : '暂无快捷位点，可手工输入'}</small>
         </label>
-        <label><span>变异类型</span><select value={activeCase.variantType || 'other'} onChange={(event) => commit((item) => ({ ...item, variantType: event.target.value }))}>{variantTypes.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
+        <label><span>变异类型（选择快捷位点后自动带出）</span><select value={activeCase.variantType || 'other'} onChange={(event) => commit((item) => ({ ...item, variantType: event.target.value }))}>{variantTypes.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
         <div className={styles.privacyNote}><b>本地模式 · GenCC + ClinVar快捷位点</b><span>疾病关系 {catalog.metadata.relationshipCount.toLocaleString()} 条；位点仅辅助录入，临床/PGT使用前必须复核</span></div>
       </div>
 
@@ -1168,6 +1225,8 @@ export function PedigreeWorkspace() {
               <button type="button" onClick={() => addRelative('unknown_child')}><b>◇</b>不详子代</button>
               <button type="button" onClick={() => addRelative('pregnancy_loss')}><b>▽</b>妊娠丢失</button>
               <button type="button" onClick={autoArrange}><b>✦</b>自动排版</button>
+              <span className={styles.divider} />
+              <button type="button" className={styles.deleteTool} disabled={!selected || activeCase.people.length <= 1 || Boolean(selectedUnionKey)} onClick={removeSelected} aria-label="删除所选成员" title="删除当前选中成员（可撤销）"><b>⌫</b>删除所选</button>
             </div>
             <div className={`${styles.toolGroup} ${styles.symbolCorrection}`} aria-label="更正当前成员图例">
               <span>更正图例</span>
@@ -1292,7 +1351,7 @@ export function PedigreeWorkspace() {
               </svg>
             </div>
           </div>
-          <div className={styles.canvasHint}><span>双指在画布任意位置捏合缩放；拖成员时画布锁定不漂移</span><span>点父母连线可加同胞；偏移连线自动折成90°</span></div>
+          <div className={styles.canvasHint}><span>双指捏合缩放；顶部“删除所选”可移除误加成员</span><span>纵向偏差约5%内强制拉直；同胞之间不会生成配偶线</span></div>
         </main>
 
         <aside className={styles.inspector}>
@@ -1330,9 +1389,9 @@ export function PedigreeWorkspace() {
             <div><i className={styles.guideProband}>←</i><p><b>先证者</b><small>箭头指向个体</small></p></div>
           </div>
           <div className={styles.guideSteps}>
-            <div><b>1. 建立关系</b><p>点选成员可添加父母、配偶或子代；也可直接点父母中间连线，在弹出的按钮中增加男性、女性或不详同胞。</p></div>
-            <div><b>2. 智能调整画布</b><p>单指只拖成员，画布锁定不漂移；接近水平或垂直位置会显示辅助线并吸附，明显错位的关系线自动使用90°拐角。双指可直接捏合缩放。</p></div>
-            <div><b>3. 录入疾病和位点</b><p>可输入中文病名、英文病名、基因或 MONDO 编号；选定基因后再从常见位点中选择，变异类型会自动带出。</p></div>
+            <div><b>1. 建立关系</b><p>点选成员可添加父母、配偶或子代；点父母中间连线可快速增加同胞。同胞只共享父母支线，系统禁止同胞之间生成配偶线。</p></div>
+            <div><b>2. 智能调整画布</b><p>拖成员时画布锁定；纵向偏差约5%以内会强制拉直，明显错位的关系线自动使用90°拐角。误加成员可点顶部“删除所选”，并可撤销。</p></div>
+            <div><b>3. 录入疾病和位点</b><p>选择疾病后按 GenCC 证据强度和支持记录数默认遗传模式；选择已收录快捷位点后，变异类型自动带出，全部字段仍可人工修改。</p></div>
           </div>
           <footer><span>提示：“236位点”等口头简称必须核对，系统统一按标准 HGVS 显示，例如 GJB2 c.235delC。</span><button type="button" onClick={() => setShowGuide(false)}>知道了</button></footer>
         </section>
