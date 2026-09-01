@@ -3,7 +3,7 @@ import { PlatformSidebar } from '@/components/platform-sidebar';
 
 export const dynamic = 'force-dynamic';
 
-const moduleSlugs = ['tender', 'research', 'aftersales', 'events', 'pgd-review', 'training'];
+const moduleSlugs = ['tender', 'research', 'aftersales', 'events', 'analytics', 'pgd-review', 'training'];
 
 const modules = [
   {
@@ -49,6 +49,17 @@ const modules = [
     metric: '26',
     metricLabel: '本季度已落地',
     tone: 'orange',
+  },
+  {
+    code: '析',
+    name: '数据分析与汇报',
+    source: 'BMP / 医检所',
+    state: '接口待对接',
+    stateTone: 'blue',
+    desc: '薄弱产品、医院运营质量、人员贡献及季度汇报一体化分析。',
+    metric: 'PPT',
+    metricLabel: '季度汇报可生成',
+    tone: 'magenta',
   },
   {
     code: '评',
@@ -152,7 +163,7 @@ export default async function Home() {
 
           <section className="module-section">
             <div className="section-heading">
-              <div><p className="eyebrow">核心能力地图</p><h2>六大学术业务底座</h2></div>
+              <div><p className="eyebrow">核心能力地图</p><h2>七大学术业务底座</h2></div>
               <div className="legend"><span><i className="ok" />可用</span><span><i />待对接</span></div>
             </div>
             <div className="module-grid">

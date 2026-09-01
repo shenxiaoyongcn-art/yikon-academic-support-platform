@@ -4,6 +4,7 @@ const navigation = [
   { icon: '研', label: '科研项目', slug: 'research', href: '/modules/research', badge: '12' },
   { icon: '售', label: '售后闭环', slug: 'aftersales', href: '/modules/aftersales', badge: '7', danger: true },
   { icon: '会', label: '推广会议', slug: 'events', href: '/modules/events' },
+  { icon: '析', label: '数据分析汇报', slug: 'analytics', href: '/modules/analytics' },
   { icon: '评', label: 'PGD资质评审', slug: 'pgd-review', href: '/modules/pgd-review' },
   { icon: '训', label: '遗传咨询培训', slug: 'training', href: '/modules/training' },
 ];

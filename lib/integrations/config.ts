@@ -25,9 +25,22 @@ export function bmpConfig() {
       research: process.env.BMP_RESEARCH_PATH || '/api/v1/research-projects',
       aftersales: process.env.BMP_AFTERSALES_PATH || '/api/v1/aftersales-tickets',
       events: process.env.BMP_EVENTS_PATH || '/api/v1/academic-events',
+      salesAnalytics: process.env.BMP_SALES_ANALYTICS_PATH || '/api/v1/sales-analytics',
       pgdReview: process.env.BMP_PGD_REVIEW_PATH || '/api/v1/pgd-reviews',
+      pgdCenters: process.env.BMP_PGD_CENTERS_PATH || '/api/v1/pgd-centers',
       training: process.env.BMP_TRAINING_PATH || '/api/v1/genetic-counseling-training',
     },
+  };
+}
+
+export function medicalLabConfig() {
+  const baseUrl = process.env.MEDICAL_LAB_BASE_URL ? normalizeHttpsUrl(process.env.MEDICAL_LAB_BASE_URL) : '';
+  const token = process.env.MEDICAL_LAB_SERVICE_TOKEN?.trim() || '';
+  return {
+    baseUrl,
+    token,
+    metricsPath: process.env.MEDICAL_LAB_METRICS_PATH || '/api/v1/hospital-operation-metrics',
+    state: !baseUrl ? 'not_configured' as const : token ? 'ready' as const : 'missing_credentials' as const,
   };
 }
 

@@ -13,7 +13,7 @@ export const users = sqliteTable('users', {
 
 export const integrations = sqliteTable('integrations', {
   id: text('id').primaryKey(),
-  provider: text('provider', { enum: ['synology', 'bmp'] }).notNull(),
+  provider: text('provider', { enum: ['synology', 'bmp', 'medical_lab'] }).notNull(),
   displayName: text('display_name').notNull(),
   baseUrl: text('base_url').notNull(),
   state: text('state', { enum: ['ready', 'degraded', 'offline', 'not_configured'] }).notNull(),
@@ -25,7 +25,7 @@ export const integrations = sqliteTable('integrations', {
 export const workItems = sqliteTable('work_items', {
   id: text('id').primaryKey(),
   externalId: text('external_id'),
-  module: text('module', { enum: ['tender', 'research', 'aftersales', 'events', 'pgd_review', 'training'] }).notNull(),
+  module: text('module', { enum: ['tender', 'research', 'aftersales', 'events', 'analytics', 'pgd_review', 'training'] }).notNull(),
   title: text('title').notNull(),
   customerId: text('customer_id'),
   customerName: text('customer_name'),
@@ -60,6 +60,82 @@ export const researchProjects = sqliteTable('research_projects', {
   plannedAt: integer('planned_at', { mode: 'timestamp_ms' }),
   actualAt: integer('actual_at', { mode: 'timestamp_ms' }),
 }, (table) => [index('idx_research_parent').on(table.parentProjectId)]);
+
+export const researchEconomics = sqliteTable('research_economics', {
+  workItemId: text('work_item_id').primaryKey().references(() => workItems.id),
+  hospitalId: text('hospital_id').notNull(),
+  hospitalName: text('hospital_name').notNull(),
+  laborHours: integer('labor_hours').notNull().default(0),
+  sampleCostCents: integer('sample_cost_cents').notNull().default(0),
+  externalCostCents: integer('external_cost_cents').notNull().default(0),
+  otherCostCents: integer('other_cost_cents').notNull().default(0),
+  attributableRevenueCents: integer('attributable_revenue_cents'),
+  paperCount: integer('paper_count').notNull().default(0),
+  patentCount: integer('patent_count').notNull().default(0),
+  conversionNote: text('conversion_note'),
+  calculatedAt: integer('calculated_at', { mode: 'timestamp_ms' }).notNull(),
+}, (table) => [index('idx_research_economics_hospital').on(table.hospitalId, table.calculatedAt)]);
+
+export const salesFacts = sqliteTable('sales_facts', {
+  id: text('id').primaryKey(),
+  externalId: text('external_id'),
+  hospitalId: text('hospital_id').notNull(),
+  hospitalName: text('hospital_name').notNull(),
+  productCode: text('product_code').notNull(),
+  productName: text('product_name').notNull(),
+  ownerId: text('owner_id').references(() => users.id),
+  period: text('period').notNull(),
+  salesQuantity: integer('sales_quantity').notNull().default(0),
+  targetQuantity: integer('target_quantity'),
+  revenueCents: integer('revenue_cents').notNull().default(0),
+  sourceUpdatedAt: integer('source_updated_at', { mode: 'timestamp_ms' }),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+}, (table) => [
+  uniqueIndex('uq_sales_facts_external').on(table.externalId),
+  index('idx_sales_product_period').on(table.productCode, table.period),
+  index('idx_sales_hospital_period').on(table.hospitalId, table.period),
+  index('idx_sales_owner_period').on(table.ownerId, table.period),
+]);
+
+export const medicalLabMetrics = sqliteTable('medical_lab_metrics', {
+  id: text('id').primaryKey(),
+  externalId: text('external_id'),
+  hospitalId: text('hospital_id').notNull(),
+  hospitalName: text('hospital_name').notNull(),
+  period: text('period').notNull(),
+  sampleCount: integer('sample_count').notNull().default(0),
+  amplificationSuccessBp: integer('amplification_success_bp'),
+  positiveBp: integer('positive_bp'),
+  negativeBp: integer('negative_bp'),
+  mosaicBp: integer('mosaic_bp'),
+  sourceUpdatedAt: integer('source_updated_at', { mode: 'timestamp_ms' }),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+}, (table) => [
+  uniqueIndex('uq_medical_lab_external').on(table.externalId),
+  uniqueIndex('uq_medical_lab_hospital_period').on(table.hospitalId, table.period),
+  index('idx_medical_lab_period').on(table.period),
+]);
+
+export const pgdCenterOperations = sqliteTable('pgd_center_operations', {
+  id: text('id').primaryKey(),
+  externalId: text('external_id'),
+  hospitalId: text('hospital_id').notNull(),
+  hospitalName: text('hospital_name').notNull(),
+  province: text('province').notNull(),
+  stage: text('stage').notNull(),
+  period: text('period').notNull(),
+  totalCycleCount: integer('total_cycle_count'),
+  pgdCycleCount: integer('pgd_cycle_count'),
+  conversionBp: integer('conversion_bp'),
+  dataOwnerId: text('data_owner_id').references(() => users.id),
+  sourceUpdatedAt: integer('source_updated_at', { mode: 'timestamp_ms' }),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+}, (table) => [
+  uniqueIndex('uq_pgd_center_external').on(table.externalId),
+  uniqueIndex('uq_pgd_center_hospital_period').on(table.hospitalId, table.period),
+  index('idx_pgd_center_stage_period').on(table.stage, table.period),
+  index('idx_pgd_center_province').on(table.province),
+]);
 
 export const aftersalesTickets = sqliteTable('aftersales_tickets', {
   workItemId: text('work_item_id').primaryKey().references(() => workItems.id),
@@ -124,7 +200,7 @@ export const evidenceDocuments = sqliteTable('evidence_documents', {
 
 export const syncRuns = sqliteTable('sync_runs', {
   id: text('id').primaryKey(),
-  provider: text('provider', { enum: ['synology', 'bmp'] }).notNull(),
+  provider: text('provider', { enum: ['synology', 'bmp', 'medical_lab'] }).notNull(),
   module: text('module').notNull(),
   status: text('status', { enum: ['running', 'succeeded', 'failed', 'partial'] }).notNull(),
   cursor: text('cursor'),

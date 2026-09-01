@@ -8,6 +8,13 @@
       "when": 1788230220260,
       "tag": "0000_cheerful_the_initiative",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788232811060,
+      "tag": "0001_abnormal_odin",
+      "breakpoints": true
     }
   ]
 }

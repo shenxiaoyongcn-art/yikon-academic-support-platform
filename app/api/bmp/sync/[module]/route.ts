@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { BmpConnector, type BmpModule } from '@/lib/integrations/bmp';
 import { AccessDeniedError, requireAdmin } from '@/lib/security/access';
 
-const allowedModules = new Set<BmpModule>(['research', 'aftersales', 'events', 'pgdReview', 'training']);
+const allowedModules = new Set<BmpModule>(['research', 'aftersales', 'events', 'salesAnalytics', 'pgdReview', 'pgdCenters', 'training']);
 type Props = { params: Promise<{ module: string }> };
 
 export async function POST(request: NextRequest, { params }: Props) {

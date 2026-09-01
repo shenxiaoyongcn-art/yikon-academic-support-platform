@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation';
 import { getPlatformModule, platformModules } from '@/lib/platform/catalog';
 import { TenderSearch } from '@/components/tender-search';
+import { AnalyticsDashboard } from '@/components/analytics-dashboard';
+import { ResearchRoiPanel } from '@/components/research-roi-panel';
+import { PgdNationalPanel } from '@/components/pgd-national-panel';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -33,6 +36,10 @@ export default async function ModulePage({ params }: Props) {
         <section className="module-kpis">
           {module.kpis.map((item) => <article key={item.label}><p>{item.label}</p><strong>{item.value}</strong><small>{item.note}</small></article>)}
         </section>
+
+        {module.slug === 'analytics' && <AnalyticsDashboard />}
+        {module.slug === 'research' && <ResearchRoiPanel />}
+        {module.slug === 'pgd-review' && <PgdNationalPanel />}
 
         {module.lifecycle && (
           <section className="lifecycle-card">
