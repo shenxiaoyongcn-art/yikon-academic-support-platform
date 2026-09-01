@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { PlatformSidebar } from '@/components/platform-sidebar';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -10,12 +9,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-CN">
-      <body>
-        <div className="app-shell">
-          <PlatformSidebar />
-          <div className="workspace">{children}</div>
-        </div>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
