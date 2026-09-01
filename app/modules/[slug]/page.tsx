@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getPlatformModule, platformModules } from '@/lib/platform/catalog';
 import { TenderSearch } from '@/components/tender-search';
-import { PlatformSidebar } from '@/components/platform-sidebar';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -15,11 +14,9 @@ export default async function ModulePage({ params }: Props) {
   if (!module) notFound();
 
   return (
-    <main className="app-shell">
-      <PlatformSidebar activeSlug={module.slug} />
-      <section className="workspace module-page">
+      <section className="module-page">
         <header className="module-header">
-        <a href="/" className="back-link">← 返回管理总览</a>
+        <span className="module-context">业务工作台 / {module.name}</span>
         <div className="module-user"><span>学</span>全国学术支持部</div>
         </header>
         <div className="module-container">
@@ -74,6 +71,5 @@ export default async function ModulePage({ params }: Props) {
         </section>
         </div>
       </section>
-    </main>
   );
 }

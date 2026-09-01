@@ -125,7 +125,7 @@ button { color: inherit; }
 
 .module-page { min-height: 100vh; background: var(--canvas); }
 .module-header { height: 66px; padding: 0 max(28px, calc((100vw - 1340px) / 2)); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); background: #fff; }
-.back-link { color: var(--brand); font-size: 12px; font-weight: 800; }
+.module-context { color: #8d6c83; font-size: 11px; font-weight: 800; }
 .module-user { display: flex; align-items: center; gap: 8px; color: #777c8d; font-size: 10px; font-weight: 700; }
 .module-user span { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; color: white; background: var(--brand); }
 .module-container { max-width: 1340px; margin: 0 auto; padding: 32px 28px 60px; }

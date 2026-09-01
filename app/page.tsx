@@ -1,5 +1,4 @@
 import { getChatGPTUser } from './chatgpt-auth';
-import { PlatformSidebar } from '@/components/platform-sidebar';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,10 +84,7 @@ export default async function Home() {
   const displayName = user?.fullName || '学术支持总监';
 
   return (
-    <main className="app-shell">
-      <PlatformSidebar activeSlug="overview" />
-
-      <section className="workspace" id="overview">
+    <div id="overview">
         <header className="topbar">
           <div className="search-box">
             <span>⌕</span>
@@ -167,7 +163,6 @@ export default async function Home() {
             </div>
           </section>
         </div>
-      </section>
-    </main>
+    </div>
   );
 }
