@@ -1,10 +1,17 @@
 'use client';
 
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './pedigree-workspace.module.css';
+import monogenicCatalog from '../data/monogenic-catalog.json';
 
 type Sex = 'male' | 'female' | 'unknown';
 type Phenotype = 'unaffected' | 'affected' | 'carrier' | 'unknown';
+
+declare global {
+  interface Window {
+    AndroidBridge?: { saveBase64: (fileName: string, base64Data: string, mimeType: string) => void };
+  }
+}
 
 type Person = {
   id: string;
@@ -22,13 +29,18 @@ type Person = {
   motherId?: string;
   spouseIds: string[];
   order: number;
+  manualX?: number;
+  manualY?: number;
 };
 
 type PedigreeCase = {
   id: string;
   name: string;
+  disease: string;
+  diseaseId: string;
   gene: string;
   inheritance: string;
+  variantType: string;
   updatedAt: string;
   people: Person[];
 };
@@ -42,6 +54,63 @@ type PositionedPerson = Person & {
 
 const STORAGE_KEY = 'yikon-pedigree-cases-v1';
 const SVG_NODE_SIZE = 36;
+
+type CatalogRecord = [string, string, string, string, string, string];
+type DiseaseOption = { id: string; name: string; records: CatalogRecord[] };
+
+const catalog = monogenicCatalog as unknown as {
+  metadata: { releaseDate: string; relationshipCount: number; diseaseCount: number; geneCount: number };
+  records: CatalogRecord[];
+};
+
+const chineseGeneAliases: Record<string, string> = {
+  APC: '家族性腺瘤性息肉病 结直肠癌', ATP7B: '肝豆状核变性 Wilson病', BRCA1: '遗传性乳腺癌 卵巢癌', BRCA2: '遗传性乳腺癌 卵巢癌',
+  CFTR: '囊性纤维化', CYP21A2: '先天性肾上腺皮质增生', DMD: '杜氏肌营养不良 贝氏肌营养不良', F8: 'A型血友病 血友病A', F9: 'B型血友病 血友病B',
+  FBN1: '马凡综合征 Marfan', FMR1: '脆性X综合征', GJB2: '遗传性耳聋 耳聋', HBB: '地中海贫血 β地贫 镌状细胞病', HEXA: '泰萨氏病 Tay-Sachs', HTT: '亨廷顿舞蹈病',
+  LDLR: '家族性高胆固醇血症', MECP2: 'Rett综合征 雷特综合征', NF1: '1型神经纤维瘤病', PAH: '苯丙酮尿症', PKD1: '常染色体显性多囊肾', PKD2: '常染色体显性多囊肾',
+  RB1: '视网膜母细胞瘤', RET: '多发性内分泌腺瘤', SLC26A4: '大前庭导水管 Pendred综合征', SMN1: '脊髓性肌萎缩 SMA', TSC1: '结节性硬化', TSC2: '结节性硬化', VHL: 'VHL综合征 希林二氏病',
+};
+
+const diseaseOptions: DiseaseOption[] = (() => {
+  const grouped = new Map<string, DiseaseOption>();
+  catalog.records.forEach((record) => {
+    const key = record[0] || record[1];
+    const current = grouped.get(key) || { id: record[0], name: record[1], records: [] };
+    current.records.push(record);
+    grouped.set(key, current);
+  });
+  return Array.from(grouped.values());
+})();
+
+const variantTypes = [
+  ['single nucleotide variant', '单核苷酸变异（SNV）'],
+  ['multiple nucleotide variant', '多核苷酸变异（MNV）'],
+  ['Deletion', '缺失（Deletion）'],
+  ['Insertion', '插入（Insertion）'],
+  ['Indel', '缺失-插入（Indel/Delins）'],
+  ['Duplication', '重复（Duplication）'],
+  ['Inversion', '倒位（Inversion）'],
+  ['Microsatellite', '重复序列/微卫星变异'],
+  ['copy number loss', '拷贝数丢失（CNV loss）'],
+  ['copy number gain', '拷贝数增加（CNV gain）'],
+  ['mobile element insertion', '移动元件插入'],
+  ['complex variant', '复杂变异/重排'],
+  ['Haplotype', '单体型/复合变异集'],
+  ['other', '其他/待确定'],
+] as const;
+
+function translateInheritance(value: string) {
+  const normalized = value.toLowerCase();
+  if (normalized.includes('autosomal dominant')) return '常染色体显性';
+  if (normalized.includes('autosomal recessive')) return '常染色体隐性';
+  if (normalized.includes('x-linked dominant')) return 'X连锁显性';
+  if (normalized.includes('x-linked recessive')) return 'X连锁隐性';
+  if (normalized.includes('x-linked')) return 'X连锁';
+  if (normalized.includes('y-linked')) return 'Y连锁';
+  if (normalized.includes('mitochondrial') || normalized.includes('maternal')) return '线粒体遗传';
+  if (normalized.includes('semidominant')) return '半显性';
+  return value || '待确定';
+}
 
 function makeId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -66,8 +135,11 @@ function sampleCase(): PedigreeCase {
   return {
     id: 'case-demo',
     name: 'GJB2 遗传性耳聋家系',
+    disease: 'autosomal recessive nonsyndromic hearing loss 1A',
+    diseaseId: 'MONDO:0010711',
     gene: 'GJB2',
     inheritance: '常染色体隐性',
+    variantType: 'Deletion',
     updatedAt: isoNow(),
     people,
   };
@@ -78,8 +150,11 @@ function blankCase(): PedigreeCase {
   return {
     id: makeId('case'),
     name: '未命名家系',
+    disease: '',
+    diseaseId: '',
     gene: '',
     inheritance: '待确定',
+    variantType: 'other',
     updatedAt: isoNow(),
     people: [{
       id: personId,
@@ -178,10 +253,12 @@ function buildLayout(people: Person[]) {
     const gap = Math.min(170, (width - 150) / Math.max(members.length - 1, 1));
     const startX = members.length === 1 ? width / 2 : (width - gap * (members.length - 1)) / 2;
     members.forEach((person, index) => {
+      const automaticX = startX + index * gap;
+      const automaticY = 88 + level * 190;
       positioned.push({
         ...person,
-        x: startX + index * gap,
-        y: 88 + level * 190,
+        x: person.manualX ?? automaticX,
+        y: person.manualY ?? automaticY,
         generation: level,
         displayId: `${roman(level)}-${index + 1}`,
       });
@@ -192,12 +269,22 @@ function buildLayout(people: Person[]) {
 }
 
 function downloadFile(name: string, content: BlobPart, type: string) {
-  const url = URL.createObjectURL(new Blob([content], { type }));
+  const blob = new Blob([content], { type });
+  if (window.AndroidBridge) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = String(reader.result).split(',')[1] || '';
+      window.AndroidBridge?.saveBase64(name, base64, type);
+    };
+    reader.readAsDataURL(blob);
+    return;
+  }
+  const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
   anchor.download = name;
   anchor.click();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => URL.revokeObjectURL(url), 500);
 }
 
 export function PedigreeWorkspace() {
@@ -210,7 +297,18 @@ export function PedigreeWorkspace() {
   const [future, setFuture] = useState<PedigreeCase[]>([]);
   const [notice, setNotice] = useState('已自动保存到本机');
   const [storageReady, setStorageReady] = useState(false);
+  const [diseaseQuery, setDiseaseQuery] = useState(sampleCase().disease);
+  const [diseaseOpen, setDiseaseOpen] = useState(false);
   const importRef = useRef<HTMLInputElement>(null);
+  const dragRef = useRef<{
+    id: string;
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+    moved: boolean;
+    snapshot: PedigreeCase;
+  } | null>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -219,9 +317,16 @@ export function PedigreeWorkspace() {
         if (!saved) return;
         const parsed = JSON.parse(saved) as PedigreeCase[];
         if (Array.isArray(parsed) && parsed.length) {
-          setCases(parsed);
-          setActiveCaseId(parsed[0].id);
-          setSelectedId(parsed[0].people.find((person) => person.proband)?.id || parsed[0].people[0]?.id || '');
+          const migrated = parsed.map((item) => ({
+            ...item,
+            disease: item.disease || '',
+            diseaseId: item.diseaseId || '',
+            variantType: item.variantType || 'other',
+          }));
+          setCases(migrated);
+          setActiveCaseId(migrated[0].id);
+          setSelectedId(migrated[0].people.find((person) => person.proband)?.id || migrated[0].people[0]?.id || '');
+          setDiseaseQuery(migrated[0].disease || '');
         }
       } catch {
         setNotice('本地数据读取失败，已加载示例');
@@ -246,7 +351,33 @@ export function PedigreeWorkspace() {
   const layout = useMemo(() => buildLayout(activeCase?.people || []), [activeCase]);
   const positionedById = useMemo(() => new Map(layout.people.map((person) => [person.id, person])), [layout.people]);
 
-  const filteredCases = cases.filter((item) => `${item.name} ${item.gene}`.toLowerCase().includes(query.toLowerCase()));
+  const catalogResults = useMemo(() => {
+    const queryValue = diseaseQuery.trim().toLowerCase();
+    const scored = diseaseOptions.flatMap((option) => {
+      const genes = Array.from(new Set(option.records.map((record) => record[3])));
+      const aliases = genes.map((gene) => chineseGeneAliases[gene] || '').join(' ').toLowerCase();
+      const name = option.name.toLowerCase();
+      const geneText = genes.join(' ').toLowerCase();
+      if (!queryValue) return aliases ? [{ option, score: 4 }] : [];
+      if (!name.includes(queryValue) && !option.id.toLowerCase().includes(queryValue) && !geneText.includes(queryValue) && !aliases.includes(queryValue)) return [];
+      const score = name.startsWith(queryValue) ? 0 : geneText.split(' ').includes(queryValue) ? 1 : aliases.includes(queryValue) ? 2 : 3;
+      return [{ option, score }];
+    });
+    return scored.sort((a, b) => a.score - b.score || a.option.name.localeCompare(b.option.name, 'en')).slice(0, 40).map((item) => item.option);
+  }, [diseaseQuery]);
+
+  const selectedDisease = diseaseOptions.find((option) => option.id === activeCase?.diseaseId || option.name === activeCase?.disease);
+  const geneOptions = useMemo(() => {
+    if (!selectedDisease) return [];
+    const unique = new Map<string, CatalogRecord>();
+    selectedDisease.records.forEach((record) => {
+      const key = `${record[3]}|${record[4]}`;
+      if (!unique.has(key)) unique.set(key, record);
+    });
+    return Array.from(unique.values()).sort((a, b) => a[3].localeCompare(b[3], 'en'));
+  }, [selectedDisease]);
+
+  const filteredCases = cases.filter((item) => `${item.name} ${item.disease || ''} ${item.gene}`.toLowerCase().includes(query.toLowerCase()));
 
   const commit = (updater: (value: PedigreeCase) => PedigreeCase, message = '已保存') => {
     setCases((currentCases) => {
@@ -266,6 +397,96 @@ export function PedigreeWorkspace() {
       ...current,
       people: current.people.map((person) => person.id === selected.id ? { ...person, ...patch } : person),
     }));
+  };
+
+  const chooseDisease = (option: DiseaseOption) => {
+    const rank: Record<string, number> = { Definitive: 0, Strong: 1, Moderate: 2, Limited: 3 };
+    const sorted = [...option.records].sort((a, b) => (rank[a[5]] ?? 9) - (rank[b[5]] ?? 9));
+    const preferred = sorted.find((record) => record[3] === activeCase.gene) || sorted[0];
+    setDiseaseQuery(option.name);
+    setDiseaseOpen(false);
+    commit((current) => ({
+      ...current,
+      disease: option.name,
+      diseaseId: option.id,
+      gene: preferred?.[3] || '',
+      inheritance: translateInheritance(preferred?.[4] || ''),
+    }), '已关联疾病、基因与遗传模式');
+  };
+
+  const chooseGene = (value: string) => {
+    const [gene, inheritance] = value.split('|');
+    commit((current) => ({ ...current, gene, inheritance: translateInheritance(inheritance) }), '目标基因已更新');
+  };
+
+  const useManualDisease = () => {
+    const disease = diseaseQuery.trim();
+    if (!disease) return;
+    setDiseaseOpen(false);
+    commit((current) => ({ ...current, disease, diseaseId: '' }), '已保存手工疾病名称');
+  };
+
+  const pointerCoordinates = (event: ReactPointerEvent<SVGGElement>) => {
+    const svg = event.currentTarget.ownerSVGElement;
+    const matrix = svg?.getScreenCTM();
+    if (!svg || !matrix) return null;
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    return point.matrixTransform(matrix.inverse());
+  };
+
+  const beginDrag = (event: ReactPointerEvent<SVGGElement>, person: PositionedPerson) => {
+    if (event.button !== 0) return;
+    const point = pointerCoordinates(event);
+    if (!point) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setSelectedId(person.id);
+    dragRef.current = {
+      id: person.id,
+      startX: point.x,
+      startY: point.y,
+      originX: person.x,
+      originY: person.y,
+      moved: false,
+      snapshot: structuredClone(activeCase),
+    };
+  };
+
+  const moveDrag = (event: ReactPointerEvent<SVGGElement>) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const point = pointerCoordinates(event);
+    if (!point) return;
+    const deltaX = point.x - drag.startX;
+    const deltaY = point.y - drag.startY;
+    if (Math.abs(deltaX) + Math.abs(deltaY) > 3) drag.moved = true;
+    const nextX = Math.max(45, Math.min(layout.width - 45, drag.originX + deltaX));
+    const nextY = Math.max(45, Math.min(layout.height - 90, drag.originY + deltaY));
+    setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? {
+      ...item,
+      people: item.people.map((person) => person.id === drag.id ? { ...person, manualX: nextX, manualY: nextY } : person),
+    } : item));
+  };
+
+  const endDrag = (event: ReactPointerEvent<SVGGElement>) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    dragRef.current = null;
+    if (!drag.moved) return;
+    setHistory((items) => [...items.slice(-39), drag.snapshot]);
+    setFuture([]);
+    setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? { ...item, updatedAt: isoNow() } : item));
+    setNotice('成员位置已调整');
+  };
+
+  const autoArrange = () => {
+    commit((current) => ({
+      ...current,
+      people: current.people.map((person) => ({ ...person, manualX: undefined, manualY: undefined })),
+    }), '已恢复自动排版');
   };
 
   const addRelative = (kind: 'father' | 'mother' | 'spouse' | 'son' | 'daughter' | 'sibling') => {
@@ -373,6 +594,7 @@ export function PedigreeWorkspace() {
     setCases((items) => [next, ...items]);
     setActiveCaseId(next.id);
     setSelectedId(next.people[0].id);
+    setDiseaseQuery('');
     setHistory([]);
     setFuture([]);
     setNotice('已创建新家系');
@@ -381,6 +603,7 @@ export function PedigreeWorkspace() {
   const selectCase = (item: PedigreeCase) => {
     setActiveCaseId(item.id);
     setSelectedId(item.people.find((person) => person.proband)?.id || item.people[0]?.id || '');
+    setDiseaseQuery(item.disease || '');
     setHistory([]);
     setFuture([]);
     setZoom(1);
@@ -444,10 +667,18 @@ export function PedigreeWorkspace() {
       try {
         const parsed = JSON.parse(String(reader.result)) as PedigreeCase;
         if (!parsed.name || !Array.isArray(parsed.people)) throw new Error('invalid');
-        const next = { ...parsed, id: makeId('case'), updatedAt: isoNow() };
+        const next = {
+          ...parsed,
+          id: makeId('case'),
+          disease: parsed.disease || '',
+          diseaseId: parsed.diseaseId || '',
+          variantType: parsed.variantType || 'other',
+          updatedAt: isoNow(),
+        };
         setCases((items) => [next, ...items]);
         setActiveCaseId(next.id);
         setSelectedId(next.people.find((person) => person.proband)?.id || next.people[0]?.id || '');
+        setDiseaseQuery(next.disease);
         setNotice('家系数据已导入');
       } catch {
         setNotice('导入失败：请选择本工具导出的 JSON 文件');
@@ -490,9 +721,25 @@ export function PedigreeWorkspace() {
 
       <div className={styles.caseMeta}>
         <label><span>家系名称</span><input value={activeCase.name} onChange={(event) => commit((item) => ({ ...item, name: event.target.value }))} /></label>
-        <label><span>目标基因</span><input value={activeCase.gene} placeholder="例：F8 / DMD / BRCA1" onChange={(event) => commit((item) => ({ ...item, gene: event.target.value }))} /></label>
+        <label className={styles.diseasePicker}><span>单基因病</span><input value={diseaseQuery} placeholder="输入疾病、基因或 MONDO 编号" onFocus={() => setDiseaseOpen(true)} onChange={(event) => { setDiseaseQuery(event.target.value); setDiseaseOpen(true); }} onBlur={() => window.setTimeout(() => setDiseaseOpen(false), 120)} />
+          {diseaseOpen && <div className={styles.diseaseResults}>
+            <div className={styles.catalogSummary}>GenCC {catalog.metadata.releaseDate} · {catalog.metadata.diseaseCount.toLocaleString()} 种疾病</div>
+            {catalogResults.length ? catalogResults.map((option) => {
+              const genes = Array.from(new Set(option.records.map((record) => record[3])));
+              const chineseLabels = Array.from(new Set(genes.map((gene) => chineseGeneAliases[gene]).filter(Boolean)));
+              return <button type="button" key={option.id || option.name} onMouseDown={(event) => event.preventDefault()} onClick={() => chooseDisease(option)}><strong>{option.name}</strong><small>{option.id || '无标准ID'} · {genes.slice(0, 5).join(' / ')}{genes.length > 5 ? ` +${genes.length - 5}` : ''}{chineseLabels.length ? ` · ${chineseLabels.join(' / ')}` : ''}</small></button>;
+            }) : <p>未找到匹配条目</p>}
+            {diseaseQuery.trim() && !catalogResults.some((option) => option.name.toLowerCase() === diseaseQuery.trim().toLowerCase() || option.id.toLowerCase() === diseaseQuery.trim().toLowerCase()) && <button type="button" className={styles.manualDisease} onMouseDown={(event) => event.preventDefault()} onClick={useManualDisease}><strong>使用手工名称</strong><small>{diseaseQuery.trim()}</small></button>}
+          </div>}
+        </label>
+        <label><span>目标基因</span><select value={geneOptions.find((record) => record[3] === activeCase.gene && translateInheritance(record[4]) === activeCase.inheritance) ? `${activeCase.gene}|${geneOptions.find((record) => record[3] === activeCase.gene && translateInheritance(record[4]) === activeCase.inheritance)![4]}` : ''} onChange={(event) => chooseGene(event.target.value)}>
+          {!geneOptions.length && <option value="">{activeCase.gene || '请先选择疾病'}</option>}
+          {geneOptions.length > 0 && !geneOptions.some((record) => record[3] === activeCase.gene && translateInheritance(record[4]) === activeCase.inheritance) && <option value="">{activeCase.gene || '请选择'}</option>}
+          {geneOptions.map((record) => <option value={`${record[3]}|${record[4]}`} key={`${record[3]}-${record[4]}`}>{record[3]} · {translateInheritance(record[4])} · {record[5]}</option>)}
+        </select></label>
         <label><span>遗传模式</span><select value={activeCase.inheritance} onChange={(event) => commit((item) => ({ ...item, inheritance: event.target.value }))}><option>待确定</option><option>常染色体显性</option><option>常染色体隐性</option><option>X连锁显性</option><option>X连锁隐性</option><option>Y连锁</option><option>线粒体遗传</option><option>多因素/未知</option></select></label>
-        <div className={styles.privacyNote}><b>本地模式</b><span>病例数据仅保存在当前浏览器</span></div>
+        <label><span>变异类型</span><select value={activeCase.variantType || 'other'} onChange={(event) => commit((item) => ({ ...item, variantType: event.target.value }))}>{variantTypes.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
+        <div className={styles.privacyNote}><b>本地模式 · GenCC CC0</b><span>{catalog.metadata.relationshipCount.toLocaleString()} 条疾病-基因关系；临床/PGT使用前必须复核</span></div>
       </div>
 
       <div className={styles.mainGrid}>
@@ -520,6 +767,7 @@ export function PedigreeWorkspace() {
               <button type="button" onClick={() => addRelative('sibling')}><b>≡</b>同胞</button>
               <button type="button" onClick={() => addRelative('son')}><b>▣</b>儿子</button>
               <button type="button" onClick={() => addRelative('daughter')}><b>◉</b>女儿</button>
+              <button type="button" onClick={autoArrange}><b>✦</b>自动排版</button>
             </div>
             <div className={styles.toolGroup}>
               <button type="button" disabled={!history.length} onClick={undo} aria-label="撤销">↶</button>
@@ -587,7 +835,7 @@ export function PedigreeWorkspace() {
                     const stroke = isSelected ? '#a20d7b' : '#243047';
                     const strokeWidth = isSelected ? 3.5 : 2.2;
                     return (
-                      <g key={person.id} className={styles.personNode} role="button" tabIndex={0} aria-label={`${person.displayId} ${person.sex}`} onClick={() => setSelectedId(person.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setSelectedId(person.id); }}>
+                      <g key={person.id} className={styles.personNode} role="button" tabIndex={0} aria-label={`${person.displayId} ${person.sex}`} onClick={() => setSelectedId(person.id)} onPointerDown={(event) => beginDrag(event, person)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setSelectedId(person.id); }}>
                         {isSelected && <circle cx={person.x} cy={person.y} r="29" fill="#f8eaf4" stroke="none" />}
                         {person.sex === 'male' && <rect x={person.x - 18} y={person.y - 18} width="36" height="36" rx="1" fill={baseFill} stroke={stroke} strokeWidth={strokeWidth} />}
                         {person.sex === 'female' && <circle cx={person.x} cy={person.y} r="18" fill={baseFill} stroke={stroke} strokeWidth={strokeWidth} />}
@@ -614,7 +862,7 @@ export function PedigreeWorkspace() {
               </svg>
             </div>
           </div>
-          <div className={styles.canvasHint}><span>先点选成员，再添加关系</span><span>系谱编号随排版自动生成</span></div>
+          <div className={styles.canvasHint}><span>拖动任意成员调整位置；先选中成员再添加关系</span><span>位置不满意可一键恢复自动排版</span></div>
         </main>
 
         <aside className={styles.inspector}>

@@ -14,7 +14,7 @@
 .exportMenu > div button { padding: 9px 10px; border: 0; border-radius: 7px; background: transparent; color: #4c5668; font-size: 10px; text-align: left; cursor: pointer; }
 .exportMenu > div button:hover { background: #faf0f7; color: #8d176e; }
 
-.caseMeta { min-height: 72px; padding: 12px 24px; display: grid; grid-template-columns: minmax(210px, 1.2fr) minmax(150px, .7fr) minmax(170px, .8fr) minmax(190px, .85fr); align-items: end; gap: 12px; border-bottom: 1px solid #e3e6eb; background: #fbfbfc; }
+.caseMeta { min-height: 72px; padding: 12px 24px; position: relative; z-index: 12; display: grid; grid-template-columns: minmax(150px, .8fr) minmax(235px, 1.45fr) minmax(145px, .75fr) minmax(145px, .75fr) minmax(165px, .9fr) minmax(185px, .95fr); align-items: end; gap: 10px; border-bottom: 1px solid #e3e6eb; background: #fbfbfc; }
 .caseMeta label, .inspectorForm label { min-width: 0; }
 .caseMeta label > span, .inspectorForm label > span, .inspectorForm legend { margin-bottom: 5px; display: block; color: #70798a; font-size: 8px; font-weight: 800; }
 .caseMeta input, .caseMeta select { width: 100%; height: 34px; padding: 0 10px; border: 1px solid #dfe2e8; border-radius: 8px; outline: 0; background: #fff; color: #273248; font-size: 10px; }
@@ -22,6 +22,16 @@
 .privacyNote { height: 34px; padding: 0 10px; display: flex; flex-direction: column; justify-content: center; border: 1px solid #dcebe6; border-radius: 8px; background: #f2faf7; }
 .privacyNote b { color: #167862; font-size: 8px; }
 .privacyNote span { margin-top: 2px; color: #70817d; font-size: 7px; }
+.diseasePicker { position: relative; }
+.diseaseResults { width: min(530px, 78vw); max-height: 390px; padding: 6px; position: absolute; left: 0; top: 55px; z-index: 50; overflow-y: auto; display: grid; align-content: start; gap: 2px; border: 1px solid #dedfe6; border-radius: 11px; background: #fff; box-shadow: 0 16px 42px #17203326; }
+.catalogSummary { padding: 8px 9px; position: sticky; top: -6px; z-index: 2; border-bottom: 1px solid #eeeaf0; background: #fff; color: #8d4c75; font-size: 8px; font-weight: 800; }
+.diseaseResults button { padding: 9px 10px; display: block; border: 0; border-radius: 8px; background: transparent; text-align: left; cursor: pointer; }
+.diseaseResults button:hover { background: #faf0f7; }
+.diseaseResults .manualDisease { border-top: 1px dashed #d8c3d1; color: #8b1769; }
+.diseaseResults strong, .diseaseResults small { display: block; }
+.diseaseResults strong { color: #2e384b; font-size: 9px; }
+.diseaseResults small { margin-top: 4px; color: #8b92a0; font-size: 7px; }
+.diseaseResults p { margin: 0; padding: 18px 10px; color: #8b92a0; font-size: 9px; text-align: center; }
 
 .mainGrid { height: calc(100vh - 144px); min-height: 630px; display: grid; grid-template-columns: 216px minmax(520px, 1fr) 286px; }
 .caseRail, .inspector { min-width: 0; overflow: hidden; background: #fff; }
@@ -59,7 +69,8 @@
 .canvasViewport { min-height: 0; overflow: auto; background: #eef0f3; }
 .canvasStage { min-width: 100%; min-height: 100%; margin: auto; transform-origin: left top; }
 .pedigreeSvg { display: block; background: #fff; box-shadow: 0 0 0 1px #e0e3e8; }
-.personNode { cursor: pointer; outline: 0; }
+.personNode { cursor: grab; outline: 0; touch-action: none; user-select: none; }
+.personNode:active { cursor: grabbing; }
 .personNode:focus { filter: drop-shadow(0 0 4px #a20d7b77); }
 .canvasHint { padding: 0 12px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #e1e4e9; background: #fff; color: #8b92a0; font-size: 7px; }
 
@@ -88,6 +99,8 @@
 .emptyInspector p { font-size: 9px; }
 
 @media (max-width: 1280px) {
+  .caseMeta { min-height: 122px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mainGrid { height: calc(100vh - 194px); }
   .mainGrid { grid-template-columns: 180px minmax(450px, 1fr) 260px; }
   .toolGroup:first-child button { padding: 0 6px; font-size: 0; }
   .toolGroup:first-child b { font-size: 13px; }
