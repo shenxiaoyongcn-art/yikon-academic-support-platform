@@ -36,7 +36,7 @@
 .variantPicker input { padding-right: 24px; }
 .variantEvidence { max-width: 100%; margin-top: 4px; display: block; overflow: hidden; color: #8a6680; font-size: 7px; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
 
-.mainGrid { height: clamp(500px, calc(100vh - 160px), 620px); min-height: 0; display: grid; grid-template-columns: 216px minmax(520px, 1fr) 286px; }
+.mainGrid { height: clamp(540px, calc(100vh - 160px), 680px); min-height: 0; display: grid; grid-template-columns: 216px minmax(520px, 1fr) 286px; }
 .caseRail, .inspector { min-width: 0; overflow: hidden; background: #fff; }
 .caseRail { display: flex; flex-direction: column; border-right: 1px solid #e2e5ea; }
 .railHeading, .inspectorHeading { height: 54px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eceef2; }
@@ -140,6 +140,11 @@
 .guideSymbols b, .guideSymbols small { display: block; }
 .guideSymbols b { color: #354056; font-size: 10px; }
 .guideSymbols small { margin-top: 3px; color: #8b92a0; font-size: 8px; }
+.guideTools { margin: 0 22px 18px; padding: 12px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; border: 1px solid #dce9e5; border-radius: 13px; background: #f6faf9; }
+.guideTools > div { min-width: 0; padding: 8px; border-radius: 8px; background: #fff; }
+.guideTools b, .guideTools small { display: block; }
+.guideTools b { color: #236b5b; font-size: 9px; }
+.guideTools small { margin-top: 4px; color: #71817d; font-size: 8px; line-height: 1.45; }
 .guideShape { width: 26px; height: 26px; flex: 0 0 auto; position: relative; display: block; border: 2px solid #263147; background: #fff; }
 .guideFemale { border-radius: 50%; }
 .guideUnknown { transform: rotate(45deg) scale(.78); }
@@ -159,21 +164,19 @@
 
 @media (max-width: 1280px) {
   .caseMeta { min-height: 122px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .mainGrid { height: clamp(480px, calc(100vh - 194px), 600px); }
+  .mainGrid { height: clamp(520px, calc(100vh - 194px), 650px); }
   .mainGrid { grid-template-columns: 180px minmax(450px, 1fr) 260px; }
-  .toolGroup:first-child button { padding: 0 6px; font-size: 0; }
-  .toolGroup:first-child b { font-size: 13px; }
-  .toolGroup:first-child button.deleteTool { padding: 0 8px; font-size: 8px; }
 }
 
 @media (max-width: 980px) {
   .caseMeta { grid-template-columns: 1fr 1fr; }
   .mainGrid { height: auto; min-height: 0; grid-template-columns: 165px minmax(0, 1fr); }
-  .caseRail, .canvasPanel { height: clamp(460px, 58vh, 540px); min-height: 0; }
+  .caseRail, .canvasPanel { height: clamp(500px, 62vh, 580px); min-height: 0; }
   .inspector { min-height: 460px; grid-column: 1 / -1; border-top: 1px solid #e2e5ea; border-left: 0; }
   .inspectorForm { height: auto; grid-template-columns: repeat(2, 1fr); }
   .inspectorForm fieldset, .checkRow, .relationSummary { grid-column: auto; }
   .guideSymbols { grid-template-columns: repeat(2, 1fr); }
+  .guideTools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .guideSteps { grid-template-columns: 1fr; }
 }
 
@@ -185,13 +188,14 @@
   .caseRail { height: auto; min-height: auto; max-height: 210px; border-right: 0; border-bottom: 1px solid #e2e5ea; }
   .caseList { grid-template-columns: repeat(2, minmax(150px, 1fr)); overflow-x: auto; }
   .railFoot { display: none; }
-  .canvasPanel { height: clamp(400px, 52vh, 470px); min-height: 0; }
+  .canvasPanel { height: clamp(450px, 58vh, 520px); min-height: 0; }
   .toolbar { overflow-x: auto; }
   .canvasHint span:last-child { display: none; }
   .inspectorForm { grid-template-columns: 1fr; }
   .guideBackdrop { padding: 8px; place-items: start center; }
   .guideDialog { margin-block: 10px; border-radius: 14px; }
   .guideSymbols { grid-template-columns: 1fr 1fr; padding: 14px; }
+  .guideTools { margin: 0 14px 14px; grid-template-columns: 1fr; }
   .guideSteps { padding: 0 14px 14px; }
   .guideDialog > footer { padding: 12px 14px; align-items: flex-start; flex-direction: column; }
 }

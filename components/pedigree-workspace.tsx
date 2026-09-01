@@ -395,7 +395,7 @@ function buildLayout(people: Person[]) {
   const widest = Math.max(...Array.from(orderedGroups.values()).map((group) => group.length), 1);
   const width = Math.max(920, widest * 145 + 120);
   const maxGeneration = Math.max(...Array.from(orderedGroups.keys()), 0);
-  const height = Math.max(590, (maxGeneration + 1) * 190 + 120);
+  const height = Math.max(590, (maxGeneration + 1) * 165 + 120);
   const positioned: PositionedPerson[] = [];
 
   orderedGroups.forEach((members, level) => {
@@ -403,7 +403,7 @@ function buildLayout(people: Person[]) {
     const startX = members.length === 1 ? width / 2 : (width - gap * (members.length - 1)) / 2;
     members.forEach((person, index) => {
       const automaticX = startX + index * gap;
-      const automaticY = 88 + level * 190;
+      const automaticY = 88 + level * 165;
       positioned.push({
         ...person,
         x: person.manualX ?? automaticX,
@@ -518,7 +518,7 @@ export function PedigreeWorkspace() {
       const first = event.touches[0];
       const second = event.touches[1];
       const distance = Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY) || 1;
-      const nextZoom = Math.max(.55, Math.min(2, pinch.startZoom * distance / pinch.distance));
+      const nextZoom = Math.max(.1, Math.min(2, pinch.startZoom * distance / pinch.distance));
       const rect = viewport.getBoundingClientRect();
       const centerX = (first.clientX + second.clientX) / 2 - rect.left;
       const centerY = (first.clientY + second.clientY) / 2 - rect.top;
@@ -763,7 +763,7 @@ export function PedigreeWorkspace() {
           distance,
           ...parentIds,
           x: Math.max(45, Math.min(layout.width - 45, (first.x + second.x) / 2)),
-          y: Math.max(first.y, second.y) + 170,
+          y: Math.max(first.y, second.y) + 145,
           label: `松手接入 ${first.displayId}－${second.displayId} 的子代线`,
         };
       }
@@ -912,6 +912,34 @@ export function PedigreeWorkspace() {
     }), '已恢复自动排版');
   };
 
+  const revealCanvasPoint = (pointX: number, pointY: number) => {
+    window.requestAnimationFrame(() => {
+      const viewport = viewportRef.current;
+      if (!viewport) return;
+      const currentZoom = zoomRef.current;
+      const screenX = pointX * currentZoom;
+      const screenY = pointY * currentZoom;
+      const margin = 72;
+      if (screenX < viewport.scrollLeft + margin) viewport.scrollLeft = Math.max(0, screenX - margin);
+      else if (screenX > viewport.scrollLeft + viewport.clientWidth - margin) viewport.scrollLeft = Math.max(0, screenX - viewport.clientWidth + margin);
+      if (screenY < viewport.scrollTop + margin) viewport.scrollTop = Math.max(0, screenY - margin);
+      else if (screenY > viewport.scrollTop + viewport.clientHeight - margin) viewport.scrollTop = Math.max(0, screenY - viewport.clientHeight + margin);
+    });
+  };
+
+  const fitWholePedigree = () => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const nextZoom = Math.max(.1, Math.min(1, (viewport.clientWidth - 24) / layout.width, (viewport.clientHeight - 24) / layout.height));
+    zoomRef.current = nextZoom;
+    setZoom(nextZoom);
+    window.requestAnimationFrame(() => {
+      viewport.scrollLeft = 0;
+      viewport.scrollTop = 0;
+    });
+    setNotice('已缩放到可查看完整家系图');
+  };
+
   const addRelative = (kind: 'father' | 'mother' | 'spouse' | 'son' | 'daughter' | 'unknown_child' | 'pregnancy_loss' | 'sibling') => {
     const childKinds = ['son', 'daughter', 'unknown_child', 'pregnancy_loss'] as const;
     const addToSelectedUnion = Boolean(selectedUnionKey && childKinds.includes(kind as typeof childKinds[number]));
@@ -922,6 +950,61 @@ export function PedigreeWorkspace() {
     if (kind === 'father' && selected.fatherId) return setNotice('该成员已有父亲记录');
     if (kind === 'mother' && selected.motherId) return setNotice('该成员已有母亲记录');
     if (kind === 'sibling' && !selected.fatherId && !selected.motherId) return setNotice('请先添加父亲或母亲，再添加同胞');
+
+    const targetPosition = positionedById.get(selected.id);
+    if (!targetPosition) return setNotice('当前成员位置读取失败，请重新点选');
+    const clampX = (value: number) => Math.max(45, Math.min(layout.width - 45, value));
+    const staggerOffset = (count: number) => count === 0 ? 0 : (count % 2 ? -1 : 1) * Math.ceil(count / 2) * 105;
+    let shiftExistingY = 0;
+    let nextX = targetPosition.x;
+    let nextY = targetPosition.y;
+
+    if (addToSelectedUnion && selectedUnionPair) {
+      const [first, second] = selectedUnionPair;
+      const parentIds = new Set([first.id, second.id]);
+      const children = layout.people.filter((person) => parentIds.has(person.fatherId || '') && parentIds.has(person.motherId || ''));
+      nextX = (first.x + second.x) / 2 + staggerOffset(children.length);
+      nextY = Math.max(first.y, second.y) + 145;
+    } else if (kind === 'father' || kind === 'mother') {
+      const otherParentId = kind === 'father' ? selected.motherId : selected.fatherId;
+      const otherParent = otherParentId ? positionedById.get(otherParentId) : undefined;
+      if (otherParent) {
+        nextX = otherParent.x + (kind === 'father' ? -115 : 115);
+        nextY = otherParent.y;
+      } else {
+        shiftExistingY = targetPosition.y < 205 ? 145 : 0;
+        nextX = targetPosition.x + (kind === 'father' ? -58 : 58);
+        nextY = Math.max(55, targetPosition.y + shiftExistingY - 145);
+      }
+    } else if (kind === 'spouse') {
+      const distance = 115 * (Math.floor(selected.spouseIds.length / 2) + 1);
+      const direction = selected.spouseIds.length % 2 ? -1 : targetPosition.x < layout.width / 2 ? 1 : -1;
+      nextX = targetPosition.x + direction * distance;
+      nextY = targetPosition.y;
+    } else if (kind === 'sibling') {
+      const siblings = layout.people.filter((person) => person.id !== selected.id && (
+        (selected.fatherId && person.fatherId === selected.fatherId) ||
+        (selected.motherId && person.motherId === selected.motherId)
+      ));
+      const family = [targetPosition, ...siblings];
+      const right = Math.max(...family.map((person) => person.x)) + 110;
+      const left = Math.min(...family.map((person) => person.x)) - 110;
+      nextX = right <= layout.width - 45 ? right : left;
+      nextY = targetPosition.y;
+    } else {
+      const spouse = layout.people.find((person) => selected.spouseIds.includes(person.id));
+      const parents = spouse ? [targetPosition, spouse] : [targetPosition];
+      const parentIds = new Set(parents.map((person) => person.id));
+      const children = layout.people.filter((person) =>
+        [person.fatherId, person.motherId].filter(Boolean).every((parentId) => parentIds.has(parentId!)) &&
+        [person.fatherId, person.motherId].some((parentId) => parentIds.has(parentId || ''))
+      );
+      nextX = parents.reduce((sum, person) => sum + person.x, 0) / parents.length + staggerOffset(children.length);
+      nextY = Math.max(...parents.map((person) => person.y)) + 145;
+    }
+
+    nextX = clampX(nextX);
+    nextY = Math.max(55, nextY);
 
     const id = makeId('person');
     const newPerson: Person = {
@@ -938,26 +1021,32 @@ export function PedigreeWorkspace() {
       notes: '',
       spouseIds: [],
       order: Math.max(...activeCase.people.map((person) => person.order), 0) + 1,
+      manualX: nextX,
+      manualY: nextY,
     };
 
     commit((current) => {
-      const target = current.people.find((person) => person.id === selected.id)!;
+      const people = current.people.map((person) => {
+        const position = positionedById.get(person.id);
+        return position ? { ...person, manualX: position.x, manualY: position.y + shiftExistingY } : person;
+      });
+      const target = people.find((person) => person.id === selected.id)!;
       if (addToSelectedUnion && selectedUnionKey) {
         const [firstId, secondId] = selectedUnionKey.split('|');
-        const first = current.people.find((person) => person.id === firstId);
-        const second = current.people.find((person) => person.id === secondId);
+        const first = people.find((person) => person.id === firstId);
+        const second = people.find((person) => person.id === secondId);
         if (first && second) {
           const parentIds = parentIdsForPair(first, second);
           newPerson.fatherId = parentIds.fatherId;
           newPerson.motherId = parentIds.motherId;
-          return { ...current, people: normalizePeople([...current.people, newPerson]) };
+          return { ...current, people: normalizePeople([...people, newPerson]) };
         }
       }
       if (kind === 'father') {
         target.fatherId = id;
         if (target.motherId) {
           newPerson.spouseIds = [target.motherId];
-          const mother = current.people.find((person) => person.id === target.motherId);
+          const mother = people.find((person) => person.id === target.motherId);
           if (mother && !mother.spouseIds.includes(id)) mother.spouseIds.push(id);
         }
       }
@@ -965,7 +1054,7 @@ export function PedigreeWorkspace() {
         target.motherId = id;
         if (target.fatherId) {
           newPerson.spouseIds = [target.fatherId];
-          const father = current.people.find((person) => person.id === target.fatherId);
+          const father = people.find((person) => person.id === target.fatherId);
           if (father && !father.spouseIds.includes(id)) father.spouseIds.push(id);
         }
       }
@@ -979,16 +1068,17 @@ export function PedigreeWorkspace() {
         newPerson.motherId = target.motherId;
       }
       if (kind === 'son' || kind === 'daughter' || kind === 'unknown_child' || kind === 'pregnancy_loss') {
-        const spouse = current.people.find((person) => target.spouseIds.includes(person.id));
+        const spouse = people.find((person) => target.spouseIds.includes(person.id));
         if (target.sex === 'female') newPerson.motherId = target.id;
         else newPerson.fatherId = target.id;
         if (spouse?.sex === 'female') newPerson.motherId = spouse.id;
         else if (spouse) newPerson.fatherId = spouse.id;
       }
-      return { ...current, people: [...current.people, newPerson] };
-    }, addToSelectedUnion ? '已从父母连线增加一位同胞并自动接线' : '新成员已添加');
-    setSelectedId(id);
+      return { ...current, people: [...people, newPerson] };
+    }, addToSelectedUnion ? '同胞已在父母线下方就近生成，可继续拖动微调' : '新成员已在当前成员附近生成');
+    setSelectedId(kind === 'father' || kind === 'mother' ? selected.id : id);
     if (!addToSelectedUnion) setSelectedUnionKey(null);
+    revealCanvasPoint(nextX, nextY);
   };
 
   const removeSelected = () => {
@@ -1216,33 +1306,35 @@ export function PedigreeWorkspace() {
         <main className={styles.canvasPanel}>
           <div className={styles.toolbar}>
             <div className={styles.toolGroup}>
-              <button type="button" onClick={() => addRelative('father')}><b>□</b>父亲</button>
-              <button type="button" onClick={() => addRelative('mother')}><b>○</b>母亲</button>
-              <button type="button" onClick={() => addRelative('spouse')}><b>∞</b>配偶</button>
-              <button type="button" onClick={() => addRelative('sibling')}><b>≡</b>同胞</button>
-              <button type="button" onClick={() => addRelative('son')}><b>▣</b>儿子</button>
-              <button type="button" onClick={() => addRelative('daughter')}><b>◉</b>女儿</button>
-              <button type="button" onClick={() => addRelative('unknown_child')}><b>◇</b>不详子代</button>
-              <button type="button" onClick={() => addRelative('pregnancy_loss')}><b>▽</b>妊娠丢失</button>
-              <button type="button" onClick={autoArrange}><b>✦</b>自动排版</button>
+              <button type="button" onClick={() => addRelative('father')} title="为当前选中成员添加父亲，并在上一层就近生成"><b>□</b>父亲</button>
+              <button type="button" onClick={() => addRelative('mother')} title="为当前选中成员添加母亲，并与已有父亲水平对齐"><b>○</b>母亲</button>
+              <button type="button" onClick={() => addRelative('spouse')} title="为当前选中成员添加配偶，并在同一水平层就近生成"><b>∞</b>配偶</button>
+              <button type="button" onClick={() => addRelative('sibling')} title="添加与当前成员共享父母的同胞，不建立同胞配偶线"><b>≡</b>同胞</button>
+              <button type="button" onClick={() => addRelative('son')} title="为当前成员及其配偶添加男性子代"><b>▣</b>儿子</button>
+              <button type="button" onClick={() => addRelative('daughter')} title="为当前成员及其配偶添加女性子代"><b>◉</b>女儿</button>
+              <button type="button" onClick={() => addRelative('unknown_child')} title="添加性别不详的子代（菱形）"><b>◇</b>不详子代</button>
+              <button type="button" onClick={() => addRelative('pregnancy_loss')} title="添加妊娠丢失记录（倒三角）"><b>▽</b>妊娠丢失</button>
+              <button type="button" onClick={autoArrange} title="清除手工位置并按世代重新自动排版"><b>✦</b>自动排版</button>
+              <button type="button" onClick={() => setShowGuide(true)} title="查看每个图例和工具按钮的用途"><b>?</b>工具说明</button>
               <span className={styles.divider} />
               <button type="button" className={styles.deleteTool} disabled={!selected || activeCase.people.length <= 1 || Boolean(selectedUnionKey)} onClick={removeSelected} aria-label="删除所选成员" title="删除当前选中成员（可撤销）"><b>⌫</b>删除所选</button>
             </div>
             <div className={`${styles.toolGroup} ${styles.symbolCorrection}`} aria-label="更正当前成员图例">
               <span>更正图例</span>
               {(['male', 'female', 'unknown', 'pregnancy_loss'] as Sex[]).map((value) => (
-                <button type="button" key={value} className={selected?.sex === value ? styles.activeSymbolTool : ''} disabled={!selected} onClick={() => correctSelectedSymbol(value)} aria-label={`更正为${value === 'male' ? '男性' : value === 'female' ? '女性' : value === 'unknown' ? '性别不详' : '妊娠丢失'}`}>
+                <button type="button" key={value} className={selected?.sex === value ? styles.activeSymbolTool : ''} disabled={!selected} onClick={() => correctSelectedSymbol(value)} aria-label={`更正为${value === 'male' ? '男性' : value === 'female' ? '女性' : value === 'unknown' ? '性别不详' : '妊娠丢失'}`} title={`将当前成员图例更正为${value === 'male' ? '男性方形' : value === 'female' ? '女性圆形' : value === 'unknown' ? '性别不详菱形' : '妊娠丢失倒三角'}`}>
                   <b>{value === 'male' ? '□' : value === 'female' ? '○' : value === 'unknown' ? '◇' : '▽'}</b>
                 </button>
               ))}
             </div>
             <div className={styles.toolGroup}>
-              <button type="button" disabled={!history.length} onClick={undo} aria-label="撤销">↶</button>
-              <button type="button" disabled={!future.length} onClick={redo} aria-label="恢复">↷</button>
+              <button type="button" disabled={!history.length} onClick={undo} aria-label="撤销" title="撤销上一步操作"><b>↶</b>撤销</button>
+              <button type="button" disabled={!future.length} onClick={redo} aria-label="恢复" title="恢复刚撤销的操作"><b>↷</b>恢复</button>
               <span className={styles.divider} />
-              <button type="button" onClick={() => setZoom((value) => Math.max(.55, value - .1))} aria-label="缩小">−</button>
-              <button type="button" className={styles.zoomValue} onClick={() => setZoom(1)}>{Math.round(zoom * 100)}%</button>
-              <button type="button" onClick={() => setZoom((value) => Math.min(2, value + .1))} aria-label="放大">+</button>
+              <button type="button" onClick={() => setZoom((value) => Math.max(.1, value - .1))} aria-label="缩小" title="缩小画布，最低可缩至10%"><b>−</b>缩小</button>
+              <button type="button" className={styles.zoomValue} onClick={() => setZoom(1)} title="点击恢复100%比例">{Math.round(zoom * 100)}%</button>
+              <button type="button" onClick={() => setZoom((value) => Math.min(2, value + .1))} aria-label="放大" title="放大画布，最高可放至200%"><b>＋</b>放大</button>
+              <button type="button" onClick={fitWholePedigree} title="自动缩放至当前画布可以看到完整家系图"><b>▣</b>适应全图</button>
             </div>
           </div>
 
@@ -1351,7 +1443,7 @@ export function PedigreeWorkspace() {
               </svg>
             </div>
           </div>
-          <div className={styles.canvasHint}><span>双指捏合缩放；顶部“删除所选”可移除误加成员</span><span>纵向偏差约5%内强制拉直；同胞之间不会生成配偶线</span></div>
+          <div className={styles.canvasHint}><span>新增成员会在当前关系附近出现，不再跳到画布底部</span><span>最低缩至10%；点“适应全图”可一键查看完整家系</span></div>
         </main>
 
         <aside className={styles.inspector}>
@@ -1388,9 +1480,17 @@ export function PedigreeWorkspace() {
             <div><i className={`${styles.guideShape} ${styles.guideDeceased}`} /><p><b>已故</b><small>斜线贯穿符号</small></p></div>
             <div><i className={styles.guideProband}>←</i><p><b>先证者</b><small>箭头指向个体</small></p></div>
           </div>
+          <div className={styles.guideTools} aria-label="顶部工具按钮说明">
+            <div><b>□ 父亲 / ○ 母亲</b><small>为当前成员增加上一代父母，并自动水平配对。</small></div>
+            <div><b>∞ 配偶</b><small>在当前成员同一层就近增加配偶并建立配偶线。</small></div>
+            <div><b>≡ 同胞</b><small>增加共享同一父母的兄弟姐妹，不建立同胞配偶线。</small></div>
+            <div><b>▣ 儿子 / ◉ 女儿</b><small>为当前成员及其配偶增加下一代子女。</small></div>
+            <div><b>◇ 不详 / ▽ 妊娠丢失</b><small>增加性别不详子代或妊娠丢失记录。</small></div>
+            <div><b>✦ 排版 / ⌫ 删除 / ▣ 全图</b><small>恢复自动排版、删除所选成员，或一键查看完整图谱。</small></div>
+          </div>
           <div className={styles.guideSteps}>
-            <div><b>1. 建立关系</b><p>点选成员可添加父母、配偶或子代；点父母中间连线可快速增加同胞。同胞只共享父母支线，系统禁止同胞之间生成配偶线。</p></div>
-            <div><b>2. 智能调整画布</b><p>拖成员时画布锁定；纵向偏差约5%以内会强制拉直，明显错位的关系线自动使用90°拐角。误加成员可点顶部“删除所选”，并可撤销。</p></div>
+            <div><b>1. 建立关系</b><p>先点选成员，再点“父亲、母亲、配偶、儿子、女儿”等文字按钮；新增成员会在当前关系附近逐层出现。点父母中间连线可快速增加同胞。</p></div>
+            <div><b>2. 调整与查看</b><p>拖成员时画布锁定，纵向偏差约5%以内强制拉直。双指或加减按钮缩放范围为10%–200%；“适应全图”可自动缩放到完整图谱。</p></div>
             <div><b>3. 录入疾病和位点</b><p>选择疾病后按 GenCC 证据强度和支持记录数默认遗传模式；选择已收录快捷位点后，变异类型自动带出，全部字段仍可人工修改。</p></div>
           </div>
           <footer><span>提示：“236位点”等口头简称必须核对，系统统一按标准 HGVS 显示，例如 GJB2 c.235delC。</span><button type="button" onClick={() => setShowGuide(false)}>知道了</button></footer>
