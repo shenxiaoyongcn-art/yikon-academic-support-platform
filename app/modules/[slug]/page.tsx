@@ -5,6 +5,8 @@ import { AnalyticsDashboard } from '@/components/analytics-dashboard';
 import { ResearchRoiPanel } from '@/components/research-roi-panel';
 import { PgdNationalPanel } from '@/components/pgd-national-panel';
 import { PedigreeWorkspace } from '@/components/pedigree-workspace';
+import { ModuleMaintenancePanel } from '@/components/module-maintenance-panel';
+import { BmpLoginControl, UiScaleControl } from '@/components/platform-controls';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -23,7 +25,7 @@ export default async function ModulePage({ params }: Props) {
       <section className="module-page">
         <header className="module-header">
         <span className="module-context">业务工作台 / {platformModule.name}</span>
-        <div className="module-user"><span>学</span>全国学术支持部</div>
+        <div className="module-header-actions"><UiScaleControl /><BmpLoginControl /><div className="module-user"><span>学</span>全国学术支持部</div></div>
         </header>
         <div className="module-container">
         <section className="module-hero">
@@ -33,12 +35,14 @@ export default async function ModulePage({ params }: Props) {
             <h1>{platformModule.name}</h1>
             <p>{platformModule.objective}</p>
           </div>
-          <button className="primary-button">+ 新建记录</button>
+          <a className="primary-button module-maintenance-link" href="#module-maintenance"><span>+</span> 进入数据维护</a>
         </section>
 
         <section className="module-kpis">
           {platformModule.kpis.map((item) => <article key={item.label}><p>{item.label}</p><strong>{item.value}</strong><small>{item.note}</small></article>)}
         </section>
+
+        <ModuleMaintenancePanel moduleSlug={platformModule.slug} />
 
         {platformModule.slug === 'analytics' && <AnalyticsDashboard />}
         {platformModule.slug === 'research' && <ResearchRoiPanel />}

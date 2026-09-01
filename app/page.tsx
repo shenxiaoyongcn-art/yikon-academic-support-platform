@@ -1,5 +1,6 @@
-import { getChatGPTUser } from './chatgpt-auth';
 import { PlatformSidebar } from '@/components/platform-sidebar';
+import { BmpLoginControl, UiScaleControl } from '@/components/platform-controls';
+import { getActor } from '@/lib/security/access';
 
 export const dynamic = 'force-dynamic';
 
@@ -103,8 +104,8 @@ const priorities = [
 ];
 
 export default async function Home() {
-  const user = await getChatGPTUser();
-  const displayName = user?.fullName || '学术支持总监';
+  const actor = await getActor();
+  const displayName = actor?.displayName || '学术支持总监';
 
   return (
     <main className="app-shell">
@@ -117,6 +118,8 @@ export default async function Home() {
             <kbd>⌘ K</kbd>
           </div>
           <div className="top-actions">
+            <UiScaleControl />
+            <BmpLoginControl />
             <button className="icon-button" aria-label="通知">○<span /></button>
             <button className="user-chip">
               <span className="avatar">{displayName.slice(0, 1)}</span>

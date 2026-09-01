@@ -1,6 +1,6 @@
 import { bmpConfig } from './config';
 
-export type BmpModule = 'research' | 'aftersales' | 'events' | 'salesAnalytics' | 'pgdReview' | 'pgdCenters' | 'training';
+export type BmpModule = 'tender' | 'research' | 'aftersales' | 'events' | 'salesAnalytics' | 'pgdReview' | 'pgdCenters' | 'training';
 
 export type BmpPage<T = Record<string, unknown>> = {
   items: T[];
@@ -11,8 +11,11 @@ export type BmpPage<T = Record<string, unknown>> = {
 export class BmpConnector {
   private readonly config = bmpConfig();
 
+  constructor(private readonly userToken?: string) {}
+
   get state() {
-    return this.config.state;
+    if (!this.config.baseUrl) return 'not_configured' as const;
+    return this.userToken || this.config.token ? 'ready' as const : 'missing_credentials' as const;
   }
 
   async probe() {
@@ -43,7 +46,7 @@ export class BmpConnector {
         ...init,
         headers: {
           Accept: 'application/json',
-          ...(requireAuth ? { Authorization: `Bearer ${this.config.token}` } : {}),
+          ...(requireAuth ? { Authorization: `Bearer ${this.userToken || this.config.token}` } : {}),
           ...init.headers,
         },
         signal: controller.signal,

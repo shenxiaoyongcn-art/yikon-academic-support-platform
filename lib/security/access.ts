@@ -1,14 +1,17 @@
 import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { getBmpSessionIdentity } from './bmp-session';
 
 export async function getActor() {
   const user = await getChatGPTUser();
-  if (!user) return null;
+  const bmpIdentity = user ? null : await getBmpSessionIdentity();
+  if (!user && !bmpIdentity) return null;
   const admins = new Set((process.env.PLATFORM_ADMIN_EMAILS || '').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean));
+  const email = user?.email || bmpIdentity!.email;
   return {
-    id: user.userId,
-    email: user.email,
-    displayName: user.displayName,
-    role: admins.has(user.email.toLowerCase()) ? 'admin' as const : 'member' as const,
+    id: user?.userId || bmpIdentity!.userId,
+    email,
+    displayName: user?.displayName || bmpIdentity!.name,
+    role: admins.has(email.toLowerCase()) ? 'admin' as const : 'member' as const,
   };
 }
 

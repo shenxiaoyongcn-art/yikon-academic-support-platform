@@ -20,8 +20,10 @@ export function bmpConfig() {
   return {
     baseUrl,
     token,
+    authPath: process.env.BMP_AUTH_PATH || '/api/v1/auth/login',
     state: !baseUrl ? 'not_configured' as const : token ? 'ready' as const : 'missing_credentials' as const,
     paths: {
+      tender: process.env.BMP_TENDER_PATH || '/api/v1/tender-projects',
       research: process.env.BMP_RESEARCH_PATH || '/api/v1/research-projects',
       aftersales: process.env.BMP_AFTERSALES_PATH || '/api/v1/aftersales-tickets',
       events: process.env.BMP_EVENTS_PATH || '/api/v1/academic-events',
