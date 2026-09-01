@@ -120,6 +120,10 @@ function isoNow() {
   return new Date().toISOString();
 }
 
+function cloneCase(value: PedigreeCase): PedigreeCase {
+  return JSON.parse(JSON.stringify(value)) as PedigreeCase;
+}
+
 function sampleCase(): PedigreeCase {
   const people: Person[] = [
     { id: 'p1', name: '', sex: 'male', phenotype: 'unaffected', deceased: false, proband: false, birthYear: '1952', clinicalId: '', diagnosis: '', genotype: '', notes: '', spouseIds: ['p2'], order: 1 },
@@ -383,9 +387,9 @@ export function PedigreeWorkspace() {
     setCases((currentCases) => {
       const current = currentCases.find((item) => item.id === activeCaseId);
       if (!current) return currentCases;
-      setHistory((items) => [...items.slice(-39), structuredClone(current)]);
+      setHistory((items) => [...items.slice(-39), cloneCase(current)]);
       setFuture([]);
-      const next = { ...updater(structuredClone(current)), updatedAt: isoNow() };
+      const next = { ...updater(cloneCase(current)), updatedAt: isoNow() };
       return currentCases.map((item) => item.id === activeCaseId ? next : item);
     });
     setNotice(message);
@@ -450,7 +454,7 @@ export function PedigreeWorkspace() {
       originX: person.x,
       originY: person.y,
       moved: false,
-      snapshot: structuredClone(activeCase),
+      snapshot: cloneCase(activeCase),
     };
   };
 
@@ -572,19 +576,19 @@ export function PedigreeWorkspace() {
   };
 
   const undo = () => {
-    const previous = history.at(-1);
+    const previous = history[history.length - 1];
     if (!previous || !activeCase) return;
     setHistory((items) => items.slice(0, -1));
-    setFuture((items) => [...items, structuredClone(activeCase)]);
+    setFuture((items) => [...items, cloneCase(activeCase)]);
     setCases((items) => items.map((item) => item.id === activeCaseId ? previous : item));
     setNotice('已撤销上一步');
   };
 
   const redo = () => {
-    const next = future.at(-1);
+    const next = future[future.length - 1];
     if (!next || !activeCase) return;
     setFuture((items) => items.slice(0, -1));
-    setHistory((items) => [...items, structuredClone(activeCase)]);
+    setHistory((items) => [...items, cloneCase(activeCase)]);
     setCases((items) => items.map((item) => item.id === activeCaseId ? next : item));
     setNotice('已恢复操作');
   };
@@ -702,7 +706,7 @@ export function PedigreeWorkspace() {
   if (!activeCase) return null;
 
   return (
-    <section className={styles.pedigreeApp}>
+    <section className={styles.pedigreeApp} data-app-ready="true">
       <header className={styles.appHeader}>
         <div>
           <p>业务工作台 / 遗传咨询 / 家系图工具</p>
@@ -817,7 +821,7 @@ export function PedigreeWorkspace() {
                     const sortedChildren = [...children].sort((a, b) => a.x - b.x);
                     const siblingY = sortedChildren[0].y - 68;
                     const firstX = sortedChildren[0].x;
-                    const lastX = sortedChildren.at(-1)!.x;
+                    const lastX = sortedChildren[sortedChildren.length - 1].x;
                     return (
                       <g key={`parents-${key}`}>
                         <line x1={parentX} y1={parentY} x2={parentX} y2={siblingY} />

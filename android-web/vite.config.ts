@@ -12,6 +12,6 @@ export default defineConfig({
   build: {
     outDir: path.resolve(currentDirectory, '../android-app/app/src/main/assets'),
     emptyOutDir: true,
-    target: 'es2020',
+    target: 'es2017',
   },
 });

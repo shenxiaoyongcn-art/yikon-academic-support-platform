@@ -7,7 +7,13 @@
     <title>亿康遗传家系图</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="min-height:100vh;display:grid;place-content:center;justify-items:center;gap:14px;color:#94116f;font-family:sans-serif">
+        <div style="width:34px;height:34px;border:3px solid #ead7e4;border-top-color:#94116f;border-radius:50%;animation:yikon-spin .8s linear infinite"></div>
+        <strong>遗传家系图正在启动…</strong>
+      </div>
+    </div>
+    <style>@keyframes yikon-spin { to { transform: rotate(360deg); } }</style>
     <script type="module" src="/main.tsx"></script>
   </body>
 </html>
