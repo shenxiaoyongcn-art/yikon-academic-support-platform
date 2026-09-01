@@ -7,6 +7,7 @@ const navigation = [
   { icon: '析', label: '数据分析汇报', slug: 'analytics', href: '/modules/analytics' },
   { icon: '评', label: 'PGD资质评审', slug: 'pgd-review', href: '/modules/pgd-review' },
   { icon: '训', label: '遗传咨询培训', slug: 'training', href: '/modules/training' },
+  { icon: '系', label: '遗传家系图', slug: 'pedigree', href: '/modules/pedigree' },
 ];
 
 export function PlatformSidebar({ activeSlug }: { activeSlug: string }) {

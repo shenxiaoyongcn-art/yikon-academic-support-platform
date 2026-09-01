@@ -1,0 +1,118 @@
+.pedigreeApp { min-height: 100vh; color: #202a3d; background: #f4f5f8; }
+.appHeader { height: 72px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid #e4e7ec; background: #fff; }
+.appHeader p { margin: 0 0 4px; color: #8a526f; font-size: 9px; font-weight: 700; letter-spacing: .05em; }
+.appHeader h1 { margin: 0; color: #182133; font-size: 20px; letter-spacing: -.03em; }
+.headerActions { display: flex; align-items: center; gap: 8px; }
+.headerActions > button, .exportMenu > button { height: 35px; padding: 0 13px; border: 1px solid #dfe2e8; border-radius: 8px; background: #fff; color: #525c6f; font-size: 10px; font-weight: 800; cursor: pointer; }
+.saveState { margin-right: 7px; display: flex; align-items: center; gap: 6px; color: #687386; font-size: 9px; }
+.saveState i { width: 7px; height: 7px; border-radius: 50%; background: #1b9d82; box-shadow: 0 0 0 3px #def5ef; }
+.hiddenInput { display: none; }
+.exportMenu { position: relative; }
+.exportMenu > button { border-color: #8d176e; background: #961173; color: #fff; }
+.exportMenu > div { width: 150px; padding: 6px; position: absolute; right: 0; top: 39px; z-index: 30; display: none; border: 1px solid #e4e2e7; border-radius: 10px; background: #fff; box-shadow: 0 12px 30px #1b24341f; }
+.exportMenu:hover > div, .exportMenu:focus-within > div { display: grid; }
+.exportMenu > div button { padding: 9px 10px; border: 0; border-radius: 7px; background: transparent; color: #4c5668; font-size: 10px; text-align: left; cursor: pointer; }
+.exportMenu > div button:hover { background: #faf0f7; color: #8d176e; }
+
+.caseMeta { min-height: 72px; padding: 12px 24px; display: grid; grid-template-columns: minmax(210px, 1.2fr) minmax(150px, .7fr) minmax(170px, .8fr) minmax(190px, .85fr); align-items: end; gap: 12px; border-bottom: 1px solid #e3e6eb; background: #fbfbfc; }
+.caseMeta label, .inspectorForm label { min-width: 0; }
+.caseMeta label > span, .inspectorForm label > span, .inspectorForm legend { margin-bottom: 5px; display: block; color: #70798a; font-size: 8px; font-weight: 800; }
+.caseMeta input, .caseMeta select { width: 100%; height: 34px; padding: 0 10px; border: 1px solid #dfe2e8; border-radius: 8px; outline: 0; background: #fff; color: #273248; font-size: 10px; }
+.caseMeta input:focus, .caseMeta select:focus, .inspectorForm input:focus, .inspectorForm textarea:focus { border-color: #a20d7b; box-shadow: 0 0 0 3px #a20d7b12; }
+.privacyNote { height: 34px; padding: 0 10px; display: flex; flex-direction: column; justify-content: center; border: 1px solid #dcebe6; border-radius: 8px; background: #f2faf7; }
+.privacyNote b { color: #167862; font-size: 8px; }
+.privacyNote span { margin-top: 2px; color: #70817d; font-size: 7px; }
+
+.mainGrid { height: calc(100vh - 144px); min-height: 630px; display: grid; grid-template-columns: 216px minmax(520px, 1fr) 286px; }
+.caseRail, .inspector { min-width: 0; overflow: hidden; background: #fff; }
+.caseRail { display: flex; flex-direction: column; border-right: 1px solid #e2e5ea; }
+.railHeading, .inspectorHeading { height: 54px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eceef2; }
+.railHeading > div, .inspectorHeading > div { display: flex; align-items: center; gap: 7px; }
+.railHeading span, .inspectorHeading span { color: #263147; font-size: 11px; font-weight: 800; }
+.railHeading b { min-width: 20px; height: 18px; display: grid; place-items: center; border-radius: 9px; background: #f0e9ee; color: #8e2e70; font-size: 8px; }
+.railHeading button { border: 0; background: transparent; color: #971574; font-size: 9px; font-weight: 800; cursor: pointer; }
+.caseSearch { height: 35px; margin: 10px 10px 4px; padding: 0 9px; display: flex; align-items: center; gap: 7px; border: 1px solid #e3e5ea; border-radius: 8px; background: #f8f9fb; color: #9298a6; }
+.caseSearch input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; color: #303a4f; font-size: 9px; }
+.caseList { padding: 5px 8px 10px; overflow-y: auto; display: grid; align-content: start; gap: 4px; }
+.caseList button { min-width: 0; padding: 11px; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid transparent; border-radius: 10px; background: transparent; text-align: left; cursor: pointer; }
+.caseList button:hover { background: #f7f8fa; }
+.caseList button.activeCase { border-color: #ead2e3; background: #fbf0f7; box-shadow: inset 3px 0 #a20d7b; }
+.caseList span { padding: 3px 5px; border-radius: 5px; background: #eef6f3; color: #247966; font-size: 7px; font-weight: 800; }
+.caseList strong { max-width: 100%; margin-top: 6px; overflow: hidden; color: #2f394c; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.caseList small { max-width: 100%; margin-top: 4px; overflow: hidden; color: #9197a4; font-size: 7px; text-overflow: ellipsis; white-space: nowrap; }
+.railFoot { margin: auto 10px 12px; padding: 10px; display: flex; gap: 8px; border: 1px solid #e6e9ed; border-radius: 9px; background: #fafbfc; color: #587568; }
+.railFoot > span { margin-top: 2px; }
+.railFoot p { margin: 0; }
+.railFoot b, .railFoot small { display: block; }
+.railFoot b { color: #4c5c57; font-size: 8px; }
+.railFoot small { margin-top: 3px; color: #8a9591; font-size: 7px; line-height: 1.45; }
+
+.canvasPanel { min-width: 0; display: grid; grid-template-rows: 54px minmax(0, 1fr) 31px; overflow: hidden; background: #f2f3f6; }
+.toolbar { padding: 0 11px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #e0e3e8; background: #fff; }
+.toolGroup { display: flex; align-items: center; gap: 4px; }
+.toolGroup button { height: 32px; min-width: 32px; padding: 0 8px; display: flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid #e0e3e8; border-radius: 7px; background: #fff; color: #566174; font-size: 8px; font-weight: 700; cursor: pointer; }
+.toolGroup button:hover { border-color: #d6b2cb; background: #fdf7fb; color: #8d176e; }
+.toolGroup button:disabled { opacity: .35; cursor: not-allowed; }
+.toolGroup b { color: #7d2a66; font-size: 13px; line-height: 1; }
+.divider { width: 1px; height: 20px; margin: 0 3px; background: #e1e4e9; }
+.toolGroup button.zoomValue { width: 47px; border: 0; color: #737c8c; }
+.canvasViewport { min-height: 0; overflow: auto; background: #eef0f3; }
+.canvasStage { min-width: 100%; min-height: 100%; margin: auto; transform-origin: left top; }
+.pedigreeSvg { display: block; background: #fff; box-shadow: 0 0 0 1px #e0e3e8; }
+.personNode { cursor: pointer; outline: 0; }
+.personNode:focus { filter: drop-shadow(0 0 4px #a20d7b77); }
+.canvasHint { padding: 0 12px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #e1e4e9; background: #fff; color: #8b92a0; font-size: 7px; }
+
+.inspector { border-left: 1px solid #e2e5ea; }
+.inspectorHeading b { color: #a20d7b; font-size: 9px; }
+.inspectorHeading button { border: 0; background: transparent; color: #b13b53; font-size: 8px; cursor: pointer; }
+.inspectorForm { height: calc(100% - 54px); padding: 13px 14px 24px; overflow-y: auto; display: grid; align-content: start; gap: 12px; }
+.inspectorForm input, .inspectorForm textarea { width: 100%; padding: 0 9px; border: 1px solid #dfe2e7; border-radius: 8px; outline: 0; background: #fff; color: #303a4c; font-size: 9px; resize: vertical; }
+.inspectorForm input { height: 34px; }
+.inspectorForm textarea { padding-block: 8px; line-height: 1.5; }
+.inspectorForm input:disabled { background: #f5f6f8; color: #9ba1ad; }
+.inspectorForm fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.segmented { padding: 3px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; border: 1px solid #e0e3e8; border-radius: 9px; background: #f5f6f8; }
+.segmented button { height: 29px; border: 0; border-radius: 6px; background: transparent; color: #737c8c; font-size: 8px; cursor: pointer; }
+.segmented button.selectedSegment { background: #fff; color: #92136f; font-weight: 800; box-shadow: 0 2px 8px #20293812; }
+.statusGrid { grid-template-columns: repeat(2, 1fr); }
+.checkRow { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.checkRow label { height: 34px; padding: 0 8px; display: flex; align-items: center; gap: 5px; border: 1px solid #e2e4e9; border-radius: 8px; color: #5d6778; font-size: 8px; }
+.checkRow input { width: 13px; height: 13px; padding: 0; accent-color: #a20d7b; }
+.twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.relationSummary { padding: 10px; border: 1px solid #e2ece8; border-radius: 9px; background: #f5faf8; }
+.relationSummary span { color: #257965; font-size: 8px; font-weight: 800; }
+.relationSummary p { margin: 5px 0 0; color: #74827e; font-size: 7px; line-height: 1.45; }
+.emptyInspector { height: calc(100% - 54px); display: grid; place-content: center; justify-items: center; color: #a0a6b0; }
+.emptyInspector span { font-size: 28px; }
+.emptyInspector p { font-size: 9px; }
+
+@media (max-width: 1280px) {
+  .mainGrid { grid-template-columns: 180px minmax(450px, 1fr) 260px; }
+  .toolGroup:first-child button { padding: 0 6px; font-size: 0; }
+  .toolGroup:first-child b { font-size: 13px; }
+}
+
+@media (max-width: 980px) {
+  .caseMeta { grid-template-columns: 1fr 1fr; }
+  .mainGrid { height: auto; min-height: 0; grid-template-columns: 165px minmax(0, 1fr); }
+  .caseRail { min-height: 690px; }
+  .canvasPanel { min-height: 690px; }
+  .inspector { min-height: 520px; grid-column: 1 / -1; border-top: 1px solid #e2e5ea; border-left: 0; }
+  .inspectorForm { height: auto; grid-template-columns: repeat(2, 1fr); }
+  .inspectorForm fieldset, .checkRow, .relationSummary { grid-column: auto; }
+}
+
+@media (max-width: 680px) {
+  .appHeader { height: auto; min-height: 72px; padding: 12px 14px; align-items: flex-start; }
+  .saveState { display: none; }
+  .caseMeta { padding: 10px 14px; grid-template-columns: 1fr; }
+  .mainGrid { grid-template-columns: 1fr; }
+  .caseRail { min-height: auto; max-height: 210px; border-right: 0; border-bottom: 1px solid #e2e5ea; }
+  .caseList { grid-template-columns: repeat(2, minmax(150px, 1fr)); overflow-x: auto; }
+  .railFoot { display: none; }
+  .canvasPanel { min-height: 620px; }
+  .toolbar { overflow-x: auto; }
+  .canvasHint span:last-child { display: none; }
+  .inspectorForm { grid-template-columns: 1fr; }
+}

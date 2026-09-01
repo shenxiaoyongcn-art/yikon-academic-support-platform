@@ -4,6 +4,7 @@ import { TenderSearch } from '@/components/tender-search';
 import { AnalyticsDashboard } from '@/components/analytics-dashboard';
 import { ResearchRoiPanel } from '@/components/research-roi-panel';
 import { PgdNationalPanel } from '@/components/pgd-national-panel';
+import { PedigreeWorkspace } from '@/components/pedigree-workspace';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -15,6 +16,8 @@ export default async function ModulePage({ params }: Props) {
   const { slug } = await params;
   const platformModule = getPlatformModule(slug);
   if (!platformModule) notFound();
+
+  if (platformModule.slug === 'pedigree') return <PedigreeWorkspace />;
 
   return (
       <section className="module-page">

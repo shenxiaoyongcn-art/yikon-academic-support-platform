@@ -3,7 +3,7 @@ import { PlatformSidebar } from '@/components/platform-sidebar';
 
 export const dynamic = 'force-dynamic';
 
-const moduleSlugs = ['tender', 'research', 'aftersales', 'events', 'analytics', 'pgd-review', 'training'];
+const moduleSlugs = ['tender', 'research', 'aftersales', 'events', 'analytics', 'pgd-review', 'training', 'pedigree'];
 
 const modules = [
   {
@@ -82,6 +82,17 @@ const modules = [
     metric: '72%',
     metricLabel: '年度学习达成',
     tone: 'indigo',
+  },
+  {
+    code: '系',
+    name: '遗传家系图',
+    source: '本地浏览器',
+    state: '可用',
+    stateTone: 'teal',
+    desc: '标准系谱符号、亲缘关系、表型与基因型一体化绘制。',
+    metric: '3',
+    metricLabel: '导出格式',
+    tone: 'teal',
   },
 ];
 
@@ -163,7 +174,7 @@ export default async function Home() {
 
           <section className="module-section">
             <div className="section-heading">
-              <div><p className="eyebrow">核心能力地图</p><h2>七大学术业务底座</h2></div>
+              <div><p className="eyebrow">核心能力地图</p><h2>八大学术业务底座</h2></div>
               <div className="legend"><span><i className="ok" />可用</span><span><i />待对接</span></div>
             </div>
             <div className="module-grid">
