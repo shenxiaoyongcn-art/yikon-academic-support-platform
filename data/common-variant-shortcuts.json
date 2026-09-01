@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "source": "NCBI ClinVar",
+    "reviewedAt": "2026-09-01",
+    "scope": "遗传性耳聋常见位点快捷录入",
+    "limitation": "仅用于减少录入，不是完整变异库；临床、遗传咨询和 PGT 使用前必须复核参考序列、HGVS、分型及最新 ClinVar 记录。"
+  },
+  "records": [
+    {
+      "diseaseGroup": "遗传性耳聋",
+      "gene": "GJB2",
+      "reference": "NM_004004.6",
+      "hgvs": "c.235delC",
+      "protein": "p.Leu79CysfsTer3",
+      "type": "Deletion",
+      "classification": "致病（ClinGen Hearing Loss 专家组）",
+      "clinvarId": "17014"
+    },
+    {
+      "diseaseGroup": "遗传性耳聋",
+      "gene": "GJB2",
+      "reference": "NM_004004.6",
+      "hgvs": "c.109G>A",
+      "protein": "p.Val37Ile",
+      "type": "single nucleotide variant",
+      "classification": "致病（ClinGen Hearing Loss 专家组）",
+      "clinvarId": "17023"
+    },
+    {
+      "diseaseGroup": "遗传性耳聋",
+      "gene": "GJB2",
+      "reference": "NM_004004.6",
+      "hgvs": "c.299_300del",
+      "protein": "p.His100ArgfsTer14",
+      "type": "Deletion",
+      "classification": "致病（多提交者无冲突）",
+      "clinvarId": "44736"
+    },
+    {
+      "diseaseGroup": "遗传性耳聋",
+      "gene": "SLC26A4",
+      "reference": "NM_000441.2",
+      "hgvs": "c.919-2A>G",
+      "protein": "剪接位点",
+      "type": "single nucleotide variant",
+      "classification": "致病（多提交者无冲突）",
+      "clinvarId": ""
+    },
+    {
+      "diseaseGroup": "遗传性耳聋",
+      "gene": "SLC26A4",
+      "reference": "NM_000441.2",
+      "hgvs": "c.2168A>G",
+      "protein": "p.His723Arg",
+      "type": "single nucleotide variant",
+      "classification": "致病/可能致病（多提交者无冲突）",
+      "clinvarId": "4825"
+    },
+    {
+      "diseaseGroup": "遗传性耳聋",
+      "gene": "MT-RNR1",
+      "reference": "NC_012920.1",
+      "hgvs": "m.1555A>G",
+      "protein": "12S rRNA",
+      "type": "single nucleotide variant",
+      "classification": "致病",
+      "clinvarId": "9628"
+    },
+    {
+      "diseaseGroup": "遗传性耳聋",
+      "gene": "MT-RNR1",
+      "reference": "NC_012920.1",
+      "hgvs": "m.1494C>T",
+      "protein": "12S rRNA",
+      "type": "single nucleotide variant",
+      "classification": "可能致病（含专家组记录）",
+      "clinvarId": ""
+    }
+  ]
+}

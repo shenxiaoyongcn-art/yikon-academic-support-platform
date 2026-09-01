@@ -14,7 +14,7 @@
 .exportMenu > div button { padding: 9px 10px; border: 0; border-radius: 7px; background: transparent; color: #4c5668; font-size: 10px; text-align: left; cursor: pointer; }
 .exportMenu > div button:hover { background: #faf0f7; color: #8d176e; }
 
-.caseMeta { min-height: 72px; padding: 12px 24px; position: relative; z-index: 12; display: grid; grid-template-columns: minmax(150px, .8fr) minmax(235px, 1.45fr) minmax(145px, .75fr) minmax(145px, .75fr) minmax(165px, .9fr) minmax(185px, .95fr); align-items: end; gap: 10px; border-bottom: 1px solid #e3e6eb; background: #fbfbfc; }
+.caseMeta { min-height: 88px; padding: 12px 24px; position: relative; z-index: 12; display: grid; grid-template-columns: minmax(140px, .75fr) minmax(220px, 1.35fr) minmax(140px, .72fr) minmax(130px, .68fr) minmax(190px, 1fr) minmax(155px, .82fr) minmax(185px, .95fr); align-items: end; gap: 10px; border-bottom: 1px solid #e3e6eb; background: #fbfbfc; }
 .caseMeta label, .inspectorForm label { min-width: 0; }
 .caseMeta label > span, .inspectorForm label > span, .inspectorForm legend { margin-bottom: 5px; display: block; color: #70798a; font-size: 8px; font-weight: 800; }
 .caseMeta input, .caseMeta select { width: 100%; height: 34px; padding: 0 10px; border: 1px solid #dfe2e8; border-radius: 8px; outline: 0; background: #fff; color: #273248; font-size: 10px; }
@@ -32,8 +32,11 @@
 .diseaseResults strong { color: #2e384b; font-size: 9px; }
 .diseaseResults small { margin-top: 4px; color: #8b92a0; font-size: 7px; }
 .diseaseResults p { margin: 0; padding: 18px 10px; color: #8b92a0; font-size: 9px; text-align: center; }
+.variantPicker { position: relative; }
+.variantPicker input { padding-right: 24px; }
+.variantEvidence { max-width: 100%; margin-top: 4px; display: block; overflow: hidden; color: #8a6680; font-size: 7px; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
 
-.mainGrid { height: calc(100vh - 144px); min-height: 630px; display: grid; grid-template-columns: 216px minmax(520px, 1fr) 286px; }
+.mainGrid { height: calc(100vh - 160px); min-height: 630px; display: grid; grid-template-columns: 216px minmax(520px, 1fr) 286px; }
 .caseRail, .inspector { min-width: 0; overflow: hidden; background: #fff; }
 .caseRail { display: flex; flex-direction: column; border-right: 1px solid #e2e5ea; }
 .railHeading, .inspectorHeading { height: 54px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eceef2; }
@@ -57,16 +60,28 @@
 .railFoot b { color: #4c5c57; font-size: 8px; }
 .railFoot small { margin-top: 3px; color: #8a9591; font-size: 7px; line-height: 1.45; }
 
-.canvasPanel { min-width: 0; display: grid; grid-template-rows: 54px minmax(0, 1fr) 31px; overflow: hidden; background: #f2f3f6; }
-.toolbar { padding: 0 11px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #e0e3e8; background: #fff; }
-.toolGroup { display: flex; align-items: center; gap: 4px; }
+.canvasPanel { min-width: 0; position: relative; display: grid; grid-template-rows: 54px minmax(0, 1fr) 31px; overflow: hidden; background: #f2f3f6; }
+.toolbar { padding: 0 11px; overflow-x: auto; display: flex; align-items: center; justify-content: flex-start; gap: 10px; border-bottom: 1px solid #e0e3e8; background: #fff; scrollbar-width: thin; }
+.toolGroup { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; }
 .toolGroup button { height: 32px; min-width: 32px; padding: 0 8px; display: flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid #e0e3e8; border-radius: 7px; background: #fff; color: #566174; font-size: 8px; font-weight: 700; cursor: pointer; }
 .toolGroup button:hover { border-color: #d6b2cb; background: #fdf7fb; color: #8d176e; }
 .toolGroup button:disabled { opacity: .35; cursor: not-allowed; }
 .toolGroup b { color: #7d2a66; font-size: 13px; line-height: 1; }
 .divider { width: 1px; height: 20px; margin: 0 3px; background: #e1e4e9; }
 .toolGroup button.zoomValue { width: 47px; border: 0; color: #737c8c; }
-.canvasViewport { min-height: 0; overflow: auto; background: #eef0f3; }
+.symbolCorrection { margin-left: auto; padding-left: 8px; border-left: 1px solid #e1e4e9; }
+.symbolCorrection > span { color: #7b6674; font-size: 7px; font-weight: 800; white-space: nowrap; }
+.symbolCorrection button { min-width: 30px; padding: 0 5px; }
+.symbolCorrection button.activeSymbolTool { border-color: #a20d7b; background: #f8eaf4; box-shadow: inset 0 0 0 1px #a20d7b; }
+.canvasViewport { min-height: 0; overflow: scroll; background: #eef0f3; touch-action: none; overscroll-behavior: contain; scrollbar-gutter: stable both-edges; scrollbar-color: #a88b9f #e3e5e9; scrollbar-width: auto; }
+.canvasViewport::-webkit-scrollbar { width: 11px; height: 11px; }
+.canvasViewport::-webkit-scrollbar-track { background: #e3e5e9; }
+.canvasViewport::-webkit-scrollbar-thumb { border: 2px solid #e3e5e9; border-radius: 8px; background: #a88b9f; }
+.canvasViewport::-webkit-scrollbar-corner { background: #e3e5e9; }
+.deleteArmed { background: #fff1f2; box-shadow: inset 0 0 0 4px #d92d4d; }
+.snapHint, .deleteDropZone { min-width: 230px; padding: 8px 14px; position: absolute; top: 64px; left: 50%; z-index: 25; transform: translateX(-50%); border-radius: 18px; color: #fff; font-size: 9px; font-weight: 800; text-align: center; pointer-events: none; box-shadow: 0 8px 24px #2631472e; }
+.snapHint { background: #16816b; }
+.deleteDropZone { background: #c82948; }
 .canvasStage { min-width: 100%; min-height: 100%; margin: auto; transform-origin: left top; }
 .pedigreeSvg { display: block; background: #fff; box-shadow: 0 0 0 1px #e0e3e8; }
 .personNode { cursor: grab; outline: 0; touch-action: none; user-select: none; }
@@ -87,6 +102,7 @@
 .segmented button { height: 29px; border: 0; border-radius: 6px; background: transparent; color: #737c8c; font-size: 8px; cursor: pointer; }
 .segmented button.selectedSegment { background: #fff; color: #92136f; font-weight: 800; box-shadow: 0 2px 8px #20293812; }
 .statusGrid { grid-template-columns: repeat(2, 1fr); }
+.symbolGrid { grid-template-columns: repeat(2, 1fr); }
 .checkRow { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
 .checkRow label { height: 34px; padding: 0 8px; display: flex; align-items: center; gap: 5px; border: 1px solid #e2e4e9; border-radius: 8px; color: #5d6778; font-size: 8px; }
 .checkRow input { width: 13px; height: 13px; padding: 0; accent-color: #a20d7b; }
@@ -98,8 +114,37 @@
 .emptyInspector span { font-size: 28px; }
 .emptyInspector p { font-size: 9px; }
 
+.guideBackdrop { padding: 20px; position: fixed; inset: 0; z-index: 200; overflow-y: auto; display: grid; place-items: center; background: #18213399; backdrop-filter: blur(5px); }
+.guideDialog { width: min(760px, 96vw); overflow: hidden; border: 1px solid #eadde6; border-radius: 20px; background: #fff; box-shadow: 0 28px 80px #11182755; }
+.guideDialog > header { padding: 20px 22px 16px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid #eee8ec; background: linear-gradient(135deg, #fff 0%, #fbf1f7 100%); }
+.guideDialog > header span { color: #9a3078; font-size: 9px; font-weight: 800; letter-spacing: .06em; }
+.guideDialog > header h2 { margin: 5px 0 0; color: #263147; font-size: 20px; }
+.guideDialog > header button { width: 34px; height: 34px; border: 1px solid #e2d8df; border-radius: 50%; background: #fff; color: #7f6475; font-size: 22px; cursor: pointer; }
+.guideSymbols { padding: 20px 22px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.guideSymbols > div { min-width: 0; padding: 12px; display: flex; align-items: center; gap: 10px; border: 1px solid #e9e9ee; border-radius: 12px; background: #fafbfc; }
+.guideSymbols p { min-width: 0; margin: 0; }
+.guideSymbols b, .guideSymbols small { display: block; }
+.guideSymbols b { color: #354056; font-size: 10px; }
+.guideSymbols small { margin-top: 3px; color: #8b92a0; font-size: 8px; }
+.guideShape { width: 26px; height: 26px; flex: 0 0 auto; position: relative; display: block; border: 2px solid #263147; background: #fff; }
+.guideFemale { border-radius: 50%; }
+.guideUnknown { transform: rotate(45deg) scale(.78); }
+.guideLoss { height: 23px; border: 0; background: #263147; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.guideLoss::after { content: ''; position: absolute; inset: 2px 3px 4px; background: #fff; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.guideAffected { background: #263147; }
+.guideCarrier { background: linear-gradient(90deg, #687386 0 50%, #fff 50%); }
+.guideDeceased::after { content: ''; width: 34px; height: 2px; position: absolute; left: -6px; top: 10px; transform: rotate(-45deg); background: #b4233f; }
+.guideProband { width: 26px; flex: 0 0 auto; color: #a20d7b; font-size: 25px; font-style: normal; font-weight: 800; }
+.guideSteps { padding: 0 22px 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.guideSteps > div { padding: 13px; border-radius: 12px; background: #f7f4f6; }
+.guideSteps b { color: #8f176f; font-size: 10px; }
+.guideSteps p { margin: 7px 0 0; color: #667084; font-size: 9px; line-height: 1.65; }
+.guideDialog > footer { padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-top: 1px solid #eee8ec; background: #fffaf2; }
+.guideDialog > footer span { color: #775f45; font-size: 8px; line-height: 1.55; }
+.guideDialog > footer button { padding: 9px 18px; flex: 0 0 auto; border: 0; border-radius: 8px; background: #951270; color: #fff; font-size: 9px; font-weight: 800; cursor: pointer; }
+
 @media (max-width: 1280px) {
-  .caseMeta { min-height: 122px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .caseMeta { min-height: 122px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .mainGrid { height: calc(100vh - 194px); }
   .mainGrid { grid-template-columns: 180px minmax(450px, 1fr) 260px; }
   .toolGroup:first-child button { padding: 0 6px; font-size: 0; }
@@ -114,6 +159,8 @@
   .inspector { min-height: 520px; grid-column: 1 / -1; border-top: 1px solid #e2e5ea; border-left: 0; }
   .inspectorForm { height: auto; grid-template-columns: repeat(2, 1fr); }
   .inspectorForm fieldset, .checkRow, .relationSummary { grid-column: auto; }
+  .guideSymbols { grid-template-columns: repeat(2, 1fr); }
+  .guideSteps { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 680px) {
@@ -128,4 +175,9 @@
   .toolbar { overflow-x: auto; }
   .canvasHint span:last-child { display: none; }
   .inspectorForm { grid-template-columns: 1fr; }
+  .guideBackdrop { padding: 8px; place-items: start center; }
+  .guideDialog { margin-block: 10px; border-radius: 14px; }
+  .guideSymbols { grid-template-columns: 1fr 1fr; padding: 14px; }
+  .guideSteps { padding: 0 14px 14px; }
+  .guideDialog > footer { padding: 12px 14px; align-items: flex-start; flex-direction: column; }
 }

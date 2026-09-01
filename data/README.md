@@ -12,3 +12,9 @@ new-format CSV export with `scripts/build-monogenic-catalog.mjs`.
 The data are a decision-support index, not a diagnostic database. Every selected
 gene-disease relationship and variant must be reviewed by qualified genetics
 professionals before clinical or PGT use.
+
+`common-variant-shortcuts.json` is a deliberately small offline shortcut list
+for frequently entered hereditary-hearing-loss variants. It is reviewed against
+NCBI ClinVar records and stores the reference sequence, HGVS expression,
+variant type and a short classification label. It is not a replacement for a
+live ClinVar query and must never be described as a complete variant database.

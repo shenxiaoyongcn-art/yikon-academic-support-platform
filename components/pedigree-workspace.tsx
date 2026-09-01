@@ -3,8 +3,9 @@
 import { ChangeEvent, PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './pedigree-workspace.module.css';
 import monogenicCatalog from '../data/monogenic-catalog.json';
+import variantShortcuts from '../data/common-variant-shortcuts.json';
 
-type Sex = 'male' | 'female' | 'unknown';
+type Sex = 'male' | 'female' | 'unknown' | 'pregnancy_loss';
 type Phenotype = 'unaffected' | 'affected' | 'carrier' | 'unknown';
 
 declare global {
@@ -40,6 +41,7 @@ type PedigreeCase = {
   diseaseId: string;
   gene: string;
   inheritance: string;
+  variant: string;
   variantType: string;
   updatedAt: string;
   people: Person[];
@@ -52,23 +54,38 @@ type PositionedPerson = Person & {
   displayId: string;
 };
 
+type SnapIntent =
+  | { type: 'parents'; fatherId?: string; motherId?: string; label: string }
+  | { type: 'spouse'; targetId: string; label: string };
+
 const STORAGE_KEY = 'yikon-pedigree-cases-v1';
-const SVG_NODE_SIZE = 36;
 
 type CatalogRecord = [string, string, string, string, string, string];
 type DiseaseOption = { id: string; name: string; records: CatalogRecord[] };
+type VariantShortcut = {
+  diseaseGroup: string;
+  gene: string;
+  reference: string;
+  hgvs: string;
+  protein: string;
+  type: string;
+  classification: string;
+  clinvarId: string;
+};
 
 const catalog = monogenicCatalog as unknown as {
   metadata: { releaseDate: string; relationshipCount: number; diseaseCount: number; geneCount: number };
   records: CatalogRecord[];
 };
 
+const commonVariants = variantShortcuts.records as VariantShortcut[];
+
 const chineseGeneAliases: Record<string, string> = {
   APC: '家族性腺瘤性息肉病 结直肠癌', ATP7B: '肝豆状核变性 Wilson病', BRCA1: '遗传性乳腺癌 卵巢癌', BRCA2: '遗传性乳腺癌 卵巢癌',
   CFTR: '囊性纤维化', CYP21A2: '先天性肾上腺皮质增生', DMD: '杜氏肌营养不良 贝氏肌营养不良', F8: 'A型血友病 血友病A', F9: 'B型血友病 血友病B',
-  FBN1: '马凡综合征 Marfan', FMR1: '脆性X综合征', GJB2: '遗传性耳聋 耳聋', HBB: '地中海贫血 β地贫 镌状细胞病', HEXA: '泰萨氏病 Tay-Sachs', HTT: '亨廷顿舞蹈病',
+  FBN1: '马凡综合征 Marfan', FMR1: '脆性X综合征', GJB2: '遗传性耳聋 先天性耳聋 非综合征性耳聋 耳聋', HBB: '地中海贫血 β地贫 镌状细胞病', HEXA: '泰萨氏病 Tay-Sachs', HTT: '亨廷顿舞蹈病',
   LDLR: '家族性高胆固醇血症', MECP2: 'Rett综合征 雷特综合征', NF1: '1型神经纤维瘤病', PAH: '苯丙酮尿症', PKD1: '常染色体显性多囊肾', PKD2: '常染色体显性多囊肾',
-  RB1: '视网膜母细胞瘤', RET: '多发性内分泌腺瘤', SLC26A4: '大前庭导水管 Pendred综合征', SMN1: '脊髓性肌萎缩 SMA', TSC1: '结节性硬化', TSC2: '结节性硬化', VHL: 'VHL综合征 希林二氏病',
+  'MT-RNR1': '线粒体遗传性耳聋 氨基糖苷类药物性耳聋 耳聋', RB1: '视网膜母细胞瘤', RET: '多发性内分泌腺瘤', SLC26A4: '遗传性耳聋 大前庭导水管 Pendred综合征', SMN1: '脊髓性肌萎缩 SMA', TSC1: '结节性硬化', TSC2: '结节性硬化', VHL: 'VHL综合征 希林二氏病',
 };
 
 const diseaseOptions: DiseaseOption[] = (() => {
@@ -79,7 +96,15 @@ const diseaseOptions: DiseaseOption[] = (() => {
     current.records.push(record);
     grouped.set(key, current);
   });
-  return Array.from(grouped.values());
+  return [{
+    id: 'LOCAL:HEREDITARY_HEARING_LOSS',
+    name: '遗传性耳聋（常用基因与位点快捷入口）',
+    records: [
+      ['LOCAL:HEREDITARY_HEARING_LOSS', '遗传性耳聋（常用基因与位点快捷入口）', '', 'GJB2', 'Autosomal recessive', 'ClinVar快捷库'],
+      ['LOCAL:HEREDITARY_HEARING_LOSS', '遗传性耳聋（常用基因与位点快捷入口）', '', 'SLC26A4', 'Autosomal recessive', 'ClinVar快捷库'],
+      ['LOCAL:HEREDITARY_HEARING_LOSS', '遗传性耳聋（常用基因与位点快捷入口）', '', 'MT-RNR1', 'Mitochondrial inheritance', 'ClinVar快捷库'],
+    ],
+  }, ...Array.from(grouped.values())];
 })();
 
 const variantTypes = [
@@ -124,6 +149,61 @@ function cloneCase(value: PedigreeCase): PedigreeCase {
   return JSON.parse(JSON.stringify(value)) as PedigreeCase;
 }
 
+function normalizePeople(people: Person[]): Person[] {
+  const normalized = people.map((person) => ({ ...person, spouseIds: Array.from(new Set(person.spouseIds || [])) }));
+  const byId = new Map(normalized.map((person) => [person.id, person]));
+  normalized.forEach((child) => {
+    if (!child.fatherId || !child.motherId) return;
+    const father = byId.get(child.fatherId);
+    const mother = byId.get(child.motherId);
+    if (father && mother) {
+      if (!father.spouseIds.includes(mother.id)) father.spouseIds.push(mother.id);
+      if (!mother.spouseIds.includes(father.id)) mother.spouseIds.push(father.id);
+    }
+  });
+  return normalized;
+}
+
+function removePersonFromCase(current: PedigreeCase, personId: string): PedigreeCase {
+  return {
+    ...current,
+    people: current.people
+      .filter((person) => person.id !== personId)
+      .map((person) => ({
+        ...person,
+        fatherId: person.fatherId === personId ? undefined : person.fatherId,
+        motherId: person.motherId === personId ? undefined : person.motherId,
+        spouseIds: person.spouseIds.filter((id) => id !== personId),
+      })),
+  };
+}
+
+function isAncestor(people: Person[], ancestorId: string, personId: string): boolean {
+  const byId = new Map(people.map((person) => [person.id, person]));
+  const pending = [personId];
+  const visited = new Set<string>();
+  while (pending.length) {
+    const currentId = pending.pop();
+    if (!currentId || visited.has(currentId)) continue;
+    visited.add(currentId);
+    const current = byId.get(currentId);
+    for (const parentId of [current?.fatherId, current?.motherId]) {
+      if (!parentId) continue;
+      if (parentId === ancestorId) return true;
+      pending.push(parentId);
+    }
+  }
+  return false;
+}
+
+function distanceToSegment(pointX: number, pointY: number, startX: number, startY: number, endX: number, endY: number) {
+  const deltaX = endX - startX;
+  const deltaY = endY - startY;
+  if (!deltaX && !deltaY) return Math.hypot(pointX - startX, pointY - startY);
+  const position = Math.max(0, Math.min(1, ((pointX - startX) * deltaX + (pointY - startY) * deltaY) / (deltaX * deltaX + deltaY * deltaY)));
+  return Math.hypot(pointX - (startX + position * deltaX), pointY - (startY + position * deltaY));
+}
+
 function sampleCase(): PedigreeCase {
   const people: Person[] = [
     { id: 'p1', name: '', sex: 'male', phenotype: 'unaffected', deceased: false, proband: false, birthYear: '1952', clinicalId: '', diagnosis: '', genotype: '', notes: '', spouseIds: ['p2'], order: 1 },
@@ -143,6 +223,7 @@ function sampleCase(): PedigreeCase {
     diseaseId: 'MONDO:0010711',
     gene: 'GJB2',
     inheritance: '常染色体隐性',
+    variant: 'c.235delC',
     variantType: 'Deletion',
     updatedAt: isoNow(),
     people,
@@ -158,6 +239,7 @@ function blankCase(): PedigreeCase {
     diseaseId: '',
     gene: '',
     inheritance: '待确定',
+    variant: '',
     variantType: 'other',
     updatedAt: isoNow(),
     people: [{
@@ -303,7 +385,18 @@ export function PedigreeWorkspace() {
   const [storageReady, setStorageReady] = useState(false);
   const [diseaseQuery, setDiseaseQuery] = useState(sampleCase().disease);
   const [diseaseOpen, setDiseaseOpen] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const [snapHint, setSnapHint] = useState('');
+  const [dragDeleteReady, setDragDeleteReady] = useState(false);
   const importRef = useRef<HTMLInputElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const touchPointsRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{
+    distance: number;
+    startZoom: number;
+    contentX: number;
+    contentY: number;
+  } | null>(null);
   const dragRef = useRef<{
     id: string;
     startX: number;
@@ -312,6 +405,8 @@ export function PedigreeWorkspace() {
     originY: number;
     moved: boolean;
     snapshot: PedigreeCase;
+    deleteCandidate: boolean;
+    snapIntent: SnapIntent | null;
   } | null>(null);
 
   useEffect(() => {
@@ -325,7 +420,9 @@ export function PedigreeWorkspace() {
             ...item,
             disease: item.disease || '',
             diseaseId: item.diseaseId || '',
+            variant: item.variant || '',
             variantType: item.variantType || 'other',
+            people: normalizePeople(item.people || []),
           }));
           setCases(migrated);
           setActiveCaseId(migrated[0].id);
@@ -364,7 +461,7 @@ export function PedigreeWorkspace() {
       const geneText = genes.join(' ').toLowerCase();
       if (!queryValue) return aliases ? [{ option, score: 4 }] : [];
       if (!name.includes(queryValue) && !option.id.toLowerCase().includes(queryValue) && !geneText.includes(queryValue) && !aliases.includes(queryValue)) return [];
-      const score = name.startsWith(queryValue) ? 0 : geneText.split(' ').includes(queryValue) ? 1 : aliases.includes(queryValue) ? 2 : 3;
+      const score = option.id.startsWith('LOCAL:') && name.includes(queryValue) ? -1 : name.startsWith(queryValue) ? 0 : geneText.split(' ').includes(queryValue) ? 1 : aliases.includes(queryValue) ? 2 : 3;
       return [{ option, score }];
     });
     return scored.sort((a, b) => a.score - b.score || a.option.name.localeCompare(b.option.name, 'en')).slice(0, 40).map((item) => item.option);
@@ -381,6 +478,9 @@ export function PedigreeWorkspace() {
     return Array.from(unique.values()).sort((a, b) => a[3].localeCompare(b[3], 'en'));
   }, [selectedDisease]);
 
+  const variantOptions = commonVariants.filter((variant) => variant.gene === activeCase?.gene);
+  const selectedVariant = variantOptions.find((variant) => variant.hgvs === activeCase?.variant);
+
   const filteredCases = cases.filter((item) => `${item.name} ${item.disease || ''} ${item.gene}`.toLowerCase().includes(query.toLowerCase()));
 
   const commit = (updater: (value: PedigreeCase) => PedigreeCase, message = '已保存') => {
@@ -395,12 +495,16 @@ export function PedigreeWorkspace() {
     setNotice(message);
   };
 
-  const updatePerson = (patch: Partial<Person>) => {
+  const updatePerson = (patch: Partial<Person>, message = '已保存') => {
     if (!selected) return;
     commit((current) => ({
       ...current,
       people: current.people.map((person) => person.id === selected.id ? { ...person, ...patch } : person),
-    }));
+    }), message);
+  };
+
+  const correctSelectedSymbol = (sex: Sex) => {
+    updatePerson({ sex, ...(sex === 'pregnancy_loss' ? { phenotype: 'unknown', deceased: false } : {}) }, '成员图例已直接更正');
   };
 
   const chooseDisease = (option: DiseaseOption) => {
@@ -415,12 +519,18 @@ export function PedigreeWorkspace() {
       diseaseId: option.id,
       gene: preferred?.[3] || '',
       inheritance: translateInheritance(preferred?.[4] || ''),
+      variant: '',
     }), '已关联疾病、基因与遗传模式');
   };
 
   const chooseGene = (value: string) => {
     const [gene, inheritance] = value.split('|');
-    commit((current) => ({ ...current, gene, inheritance: translateInheritance(inheritance) }), '目标基因已更新');
+    commit((current) => ({ ...current, gene, inheritance: translateInheritance(inheritance), variant: '' }), '目标基因已更新，可选择常见位点');
+  };
+
+  const chooseVariant = (value: string) => {
+    const known = commonVariants.find((variant) => variant.gene === activeCase.gene && variant.hgvs === value.trim());
+    commit((current) => ({ ...current, variant: value, variantType: known?.type || current.variantType }), known ? '已带入标准位点与变异类型' : '已保存手工位点');
   };
 
   const useManualDisease = () => {
@@ -455,7 +565,11 @@ export function PedigreeWorkspace() {
       originY: person.y,
       moved: false,
       snapshot: cloneCase(activeCase),
+      deleteCandidate: false,
+      snapIntent: null,
     };
+    setSnapHint('');
+    setDragDeleteReady(false);
   };
 
   const moveDrag = (event: ReactPointerEvent<SVGGElement>) => {
@@ -466,24 +580,219 @@ export function PedigreeWorkspace() {
     const deltaX = point.x - drag.startX;
     const deltaY = point.y - drag.startY;
     if (Math.abs(deltaX) + Math.abs(deltaY) > 3) drag.moved = true;
-    const nextX = Math.max(45, Math.min(layout.width - 45, drag.originX + deltaX));
-    const nextY = Math.max(45, Math.min(layout.height - 90, drag.originY + deltaY));
+    const viewport = viewportRef.current;
+    const viewportRect = viewport?.getBoundingClientRect();
+    const outside = Boolean(viewportRect && drag.moved && (
+      event.clientX < viewportRect.left - 18 || event.clientX > viewportRect.right + 18 ||
+      event.clientY < viewportRect.top - 18 || event.clientY > viewportRect.bottom + 18
+    ));
+    drag.deleteCandidate = outside && activeCase.people.length > 1;
+    setDragDeleteReady(drag.deleteCandidate);
+
+    let nextX = Math.max(45, Math.min(layout.width - 45, drag.originX + deltaX));
+    let nextY = Math.max(45, Math.min(layout.height - 90, drag.originY + deltaY));
+    drag.snapIntent = null;
+    let hint = drag.deleteCandidate ? '' : '自由调整位置';
+
+    if (!outside) {
+      let bestParents: { distance: number; fatherId?: string; motherId?: string; x: number; y: number; label: string } | null = null;
+
+      for (const [, pair] of unionPairs) {
+        const [first, second] = pair;
+        if (first.id === drag.id || second.id === drag.id) continue;
+        if (isAncestor(activeCase.people, drag.id, first.id) || isAncestor(activeCase.people, drag.id, second.id)) continue;
+        const distance = distanceToSegment(point.x, point.y, first.x, first.y, second.x, second.y);
+        if (distance > 34 || (bestParents && distance >= bestParents.distance)) continue;
+        const male = pair.find((person) => person.sex === 'male');
+        const female = pair.find((person) => person.sex === 'female');
+        bestParents = {
+          distance,
+          fatherId: male?.id || first.id,
+          motherId: female?.id || (male?.id === first.id ? second.id : first.id),
+          x: Math.max(45, Math.min(layout.width - 45, point.x)),
+          y: Math.max(first.y, second.y) + 170,
+          label: `松手接入 ${first.displayId}－${second.displayId} 的子代线`,
+        };
+      }
+
+      for (const [key, children] of parentGroups) {
+        const [fatherId, motherId] = key.split('|');
+        const father = positionedById.get(fatherId);
+        const mother = positionedById.get(motherId);
+        const parents = [father, mother].filter(Boolean) as PositionedPerson[];
+        const otherChildren = children.filter((child) => child.id !== drag.id).sort((a, b) => a.x - b.x);
+        if (!parents.length || !otherChildren.length) continue;
+        if (parents.some((parent) => isAncestor(activeCase.people, drag.id, parent.id))) continue;
+        const parentX = parents.reduce((sum, parent) => sum + parent.x, 0) / parents.length;
+        const parentY = parents.reduce((sum, parent) => sum + parent.y, 0) / parents.length;
+        const siblingY = otherChildren[0].y - 68;
+        const startX = Math.min(parentX, otherChildren[0].x);
+        const endX = Math.max(parentX, otherChildren[otherChildren.length - 1].x);
+        const horizontalDistance = distanceToSegment(point.x, point.y, startX, siblingY, endX, siblingY);
+        const verticalDistance = distanceToSegment(point.x, point.y, parentX, parentY, parentX, siblingY);
+        const distance = Math.min(horizontalDistance, verticalDistance);
+        if (distance > 30 || (bestParents && distance >= bestParents.distance)) continue;
+        bestParents = {
+          distance,
+          fatherId: fatherId || undefined,
+          motherId: motherId || undefined,
+          x: Math.max(45, Math.min(layout.width - 45, point.x)),
+          y: otherChildren.reduce((sum, child) => sum + child.y, 0) / otherChildren.length,
+          label: '松手接入该父母支线并与同胞自动对齐',
+        };
+      }
+
+      if (bestParents) {
+        nextX = bestParents.x;
+        nextY = Math.max(45, Math.min(layout.height - 90, bestParents.y));
+        drag.snapIntent = { type: 'parents', fatherId: bestParents.fatherId, motherId: bestParents.motherId, label: bestParents.label };
+        hint = bestParents.label;
+      } else {
+        const currentPerson = positionedById.get(drag.id);
+        const spouseTarget = layout.people
+          .filter((person) => person.id !== drag.id && person.sex !== 'pregnancy_loss')
+          .filter((person) => !isAncestor(activeCase.people, drag.id, person.id) && !isAncestor(activeCase.people, person.id, drag.id))
+          .map((person) => ({ person, distance: Math.hypot(point.x - person.x, point.y - person.y) }))
+          .filter(({ person, distance }) => distance < 125 && Math.abs(point.y - person.y) < 52)
+          .sort((a, b) => a.distance - b.distance)[0];
+
+        if (spouseTarget && currentPerson?.sex !== 'pregnancy_loss') {
+          const target = spouseTarget.person;
+          nextY = target.y;
+          nextX = Math.max(45, Math.min(layout.width - 45, target.x + (point.x >= target.x ? 105 : -105)));
+          drag.snapIntent = { type: 'spouse', targetId: target.id, label: `松手与 ${target.displayId} 建立配偶线` };
+          hint = drag.snapIntent.label;
+        } else {
+          for (const person of layout.people) {
+            if (person.id === drag.id) continue;
+            if (Math.abs(nextX - person.x) <= 12) {
+              nextX = person.x;
+              hint = `已与 ${person.displayId} 纵向对齐`;
+              break;
+            }
+          }
+          for (const person of layout.people) {
+            if (person.id === drag.id) continue;
+            if (Math.abs(nextY - person.y) <= 12) {
+              nextY = person.y;
+              hint = `已与 ${person.displayId} 横向对齐`;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    setSnapHint(drag.moved ? hint : '');
     setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? {
       ...item,
       people: item.people.map((person) => person.id === drag.id ? { ...person, manualX: nextX, manualY: nextY } : person),
     } : item));
   };
 
-  const endDrag = (event: ReactPointerEvent<SVGGElement>) => {
+  const endDrag = (event: ReactPointerEvent<SVGGElement>, cancelled = false) => {
     const drag = dragRef.current;
     if (!drag) return;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     dragRef.current = null;
+    setSnapHint('');
+    setDragDeleteReady(false);
+    if (cancelled) {
+      if (drag.moved) setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? drag.snapshot : item));
+      return;
+    }
     if (!drag.moved) return;
     setHistory((items) => [...items.slice(-39), drag.snapshot]);
     setFuture([]);
-    setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? { ...item, updatedAt: isoNow() } : item));
-    setNotice('成员位置已调整');
+    if (drag.deleteCandidate) {
+      const fallback = drag.snapshot.people.find((person) => person.id !== drag.id)?.id || '';
+      setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? { ...removePersonFromCase(item, drag.id), updatedAt: isoNow() } : item));
+      setSelectedId(fallback);
+      setNotice('成员已拖出画布删除，可撤销恢复');
+      return;
+    }
+    setCases((currentCases) => currentCases.map((item) => {
+      if (item.id !== activeCaseId) return item;
+      let people = item.people;
+      if (drag.snapIntent?.type === 'parents') {
+        people = people.map((person) => person.id === drag.id ? {
+          ...person,
+          fatherId: drag.snapIntent?.type === 'parents' ? drag.snapIntent.fatherId : person.fatherId,
+          motherId: drag.snapIntent?.type === 'parents' ? drag.snapIntent.motherId : person.motherId,
+        } : person);
+        people = normalizePeople(people);
+      } else if (drag.snapIntent?.type === 'spouse') {
+        const targetId = drag.snapIntent.targetId;
+        people = people.map((person) => {
+          if (person.id === drag.id && !person.spouseIds.includes(targetId)) return { ...person, spouseIds: [...person.spouseIds, targetId] };
+          if (person.id === targetId && !person.spouseIds.includes(drag.id)) return { ...person, spouseIds: [...person.spouseIds, drag.id] };
+          return person;
+        });
+      }
+      return { ...item, people, updatedAt: isoNow() };
+    }));
+    setNotice(drag.snapIntent?.label ? drag.snapIntent.label.replace('松手', '已') : '成员位置已调整，画布保持固定');
+  };
+
+  const canvasPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'touch') return;
+    touchPointsRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    if (touchPointsRef.current.size >= 2) {
+      event.preventDefault();
+      const pendingDrag = dragRef.current;
+      if (pendingDrag?.moved) {
+        setCases((currentCases) => currentCases.map((item) => item.id === activeCaseId ? pendingDrag.snapshot : item));
+      }
+      dragRef.current = null;
+      setSnapHint('');
+      setDragDeleteReady(false);
+      const [first, second] = Array.from(touchPointsRef.current.values());
+      const rect = viewport.getBoundingClientRect();
+      const centerX = (first.x + second.x) / 2 - rect.left;
+      const centerY = (first.y + second.y) / 2 - rect.top;
+      pinchRef.current = {
+        distance: Math.hypot(first.x - second.x, first.y - second.y) || 1,
+        startZoom: zoom,
+        contentX: (viewport.scrollLeft + centerX) / zoom,
+        contentY: (viewport.scrollTop + centerY) / zoom,
+      };
+      return;
+    }
+
+  };
+
+  const canvasPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'touch' || !touchPointsRef.current.has(event.pointerId)) return;
+    touchPointsRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    if (pinchRef.current && touchPointsRef.current.size >= 2) {
+      event.preventDefault();
+      const [first, second] = Array.from(touchPointsRef.current.values());
+      const distance = Math.hypot(first.x - second.x, first.y - second.y) || 1;
+      const nextZoom = Math.max(.55, Math.min(2, pinchRef.current.startZoom * distance / pinchRef.current.distance));
+      const pinch = pinchRef.current;
+      const rect = viewport.getBoundingClientRect();
+      const currentCenterX = (first.x + second.x) / 2 - rect.left;
+      const currentCenterY = (first.y + second.y) / 2 - rect.top;
+      setZoom(nextZoom);
+      window.requestAnimationFrame(() => {
+        viewport.scrollLeft = pinch.contentX * nextZoom - currentCenterX;
+        viewport.scrollTop = pinch.contentY * nextZoom - currentCenterY;
+      });
+      return;
+    }
+
+  };
+
+  const canvasPointerEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+    touchPointsRef.current.delete(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (touchPointsRef.current.size < 2) pinchRef.current = null;
   };
 
   const autoArrange = () => {
@@ -493,7 +802,7 @@ export function PedigreeWorkspace() {
     }), '已恢复自动排版');
   };
 
-  const addRelative = (kind: 'father' | 'mother' | 'spouse' | 'son' | 'daughter' | 'sibling') => {
+  const addRelative = (kind: 'father' | 'mother' | 'spouse' | 'son' | 'daughter' | 'unknown_child' | 'pregnancy_loss' | 'sibling') => {
     if (!selected) {
       setNotice('请先选中一位成员');
       return;
@@ -506,7 +815,7 @@ export function PedigreeWorkspace() {
     const newPerson: Person = {
       id,
       name: '',
-      sex: kind === 'father' || kind === 'son' ? 'male' : kind === 'mother' || kind === 'daughter' ? 'female' : 'unknown',
+      sex: kind === 'father' || kind === 'son' ? 'male' : kind === 'mother' || kind === 'daughter' ? 'female' : kind === 'pregnancy_loss' ? 'pregnancy_loss' : 'unknown',
       phenotype: 'unknown',
       deceased: false,
       proband: false,
@@ -546,7 +855,7 @@ export function PedigreeWorkspace() {
         newPerson.fatherId = target.fatherId;
         newPerson.motherId = target.motherId;
       }
-      if (kind === 'son' || kind === 'daughter') {
+      if (kind === 'son' || kind === 'daughter' || kind === 'unknown_child' || kind === 'pregnancy_loss') {
         const spouse = current.people.find((person) => target.spouseIds.includes(person.id));
         if (target.sex === 'female') newPerson.motherId = target.id;
         else newPerson.fatherId = target.id;
@@ -561,17 +870,7 @@ export function PedigreeWorkspace() {
   const removeSelected = () => {
     if (!selected || activeCase.people.length === 1) return setNotice('家系至少需保留一位成员');
     const fallback = activeCase.people.find((person) => person.id !== selected.id)?.id || '';
-    commit((current) => ({
-      ...current,
-      people: current.people
-        .filter((person) => person.id !== selected.id)
-        .map((person) => ({
-          ...person,
-          fatherId: person.fatherId === selected.id ? undefined : person.fatherId,
-          motherId: person.motherId === selected.id ? undefined : person.motherId,
-          spouseIds: person.spouseIds.filter((id) => id !== selected.id),
-        })),
-    }), '成员已删除');
+    commit((current) => removePersonFromCase(current, selected.id), '成员已删除');
     setSelectedId(fallback);
   };
 
@@ -676,7 +975,9 @@ export function PedigreeWorkspace() {
           id: makeId('case'),
           disease: parsed.disease || '',
           diseaseId: parsed.diseaseId || '',
+          variant: parsed.variant || '',
           variantType: parsed.variantType || 'other',
+          people: normalizePeople(parsed.people),
           updatedAt: isoNow(),
         };
         setCases((items) => [next, ...items]);
@@ -692,7 +993,7 @@ export function PedigreeWorkspace() {
     reader.readAsText(file);
   };
 
-  const parentGroups = useMemo(() => {
+  const parentGroups = (() => {
     const groups = new Map<string, PositionedPerson[]>();
     layout.people.forEach((person) => {
       if (!person.fatherId && !person.motherId) return;
@@ -701,7 +1002,24 @@ export function PedigreeWorkspace() {
       groups.get(key)!.push(person);
     });
     return Array.from(groups.entries());
-  }, [layout.people]);
+  })();
+
+  const unionPairs = (() => {
+    const pairs = new Map<string, [PositionedPerson, PositionedPerson]>();
+    const addPair = (firstId?: string, secondId?: string) => {
+      if (!firstId || !secondId || firstId === secondId) return;
+      const first = positionedById.get(firstId);
+      const second = positionedById.get(secondId);
+      if (!first || !second) return;
+      const key = [firstId, secondId].sort().join('|');
+      if (!pairs.has(key)) pairs.set(key, [first, second]);
+    };
+    layout.people.forEach((person) => {
+      person.spouseIds.forEach((spouseId) => addPair(person.id, spouseId));
+      addPair(person.fatherId, person.motherId);
+    });
+    return Array.from(pairs.entries());
+  })();
 
   if (!activeCase) return null;
 
@@ -714,6 +1032,7 @@ export function PedigreeWorkspace() {
         </div>
         <div className={styles.headerActions}>
           <span className={styles.saveState}><i />{notice}</span>
+          <button type="button" onClick={() => setShowGuide(true)}>图例 / 用法</button>
           <button type="button" onClick={() => importRef.current?.click()}>导入</button>
           <input ref={importRef} className={styles.hiddenInput} type="file" accept="application/json,.json" onChange={importJson} />
           <div className={styles.exportMenu}>
@@ -742,8 +1061,12 @@ export function PedigreeWorkspace() {
           {geneOptions.map((record) => <option value={`${record[3]}|${record[4]}`} key={`${record[3]}-${record[4]}`}>{record[3]} · {translateInheritance(record[4])} · {record[5]}</option>)}
         </select></label>
         <label><span>遗传模式</span><select value={activeCase.inheritance} onChange={(event) => commit((item) => ({ ...item, inheritance: event.target.value }))}><option>待确定</option><option>常染色体显性</option><option>常染色体隐性</option><option>X连锁显性</option><option>X连锁隐性</option><option>Y连锁</option><option>线粒体遗传</option><option>多因素/未知</option></select></label>
+        <label className={styles.variantPicker}><span>目标变异位点</span><input list={`variant-options-${activeCase.id}`} value={activeCase.variant || ''} placeholder={variantOptions.length ? `可选 ${variantOptions.length} 个常见位点` : '输入标准 HGVS 位点'} onChange={(event) => chooseVariant(event.target.value)} />
+          <datalist id={`variant-options-${activeCase.id}`}>{variantOptions.map((variant) => <option value={variant.hgvs} key={`${variant.gene}-${variant.hgvs}`}>{variant.reference} · {variant.protein} · {variant.classification}</option>)}</datalist>
+          <small className={styles.variantEvidence}>{selectedVariant ? `${selectedVariant.reference} · ${selectedVariant.protein} · ${selectedVariant.classification}` : variantOptions.length ? '可输入 109、235 等关键词筛选；最终按 HGVS 复核' : '暂无快捷位点，可手工输入'}</small>
+        </label>
         <label><span>变异类型</span><select value={activeCase.variantType || 'other'} onChange={(event) => commit((item) => ({ ...item, variantType: event.target.value }))}>{variantTypes.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-        <div className={styles.privacyNote}><b>本地模式 · GenCC CC0</b><span>{catalog.metadata.relationshipCount.toLocaleString()} 条疾病-基因关系；临床/PGT使用前必须复核</span></div>
+        <div className={styles.privacyNote}><b>本地模式 · GenCC + ClinVar快捷位点</b><span>疾病关系 {catalog.metadata.relationshipCount.toLocaleString()} 条；位点仅辅助录入，临床/PGT使用前必须复核</span></div>
       </div>
 
       <div className={styles.mainGrid}>
@@ -771,19 +1094,31 @@ export function PedigreeWorkspace() {
               <button type="button" onClick={() => addRelative('sibling')}><b>≡</b>同胞</button>
               <button type="button" onClick={() => addRelative('son')}><b>▣</b>儿子</button>
               <button type="button" onClick={() => addRelative('daughter')}><b>◉</b>女儿</button>
+              <button type="button" onClick={() => addRelative('unknown_child')}><b>◇</b>不详子代</button>
+              <button type="button" onClick={() => addRelative('pregnancy_loss')}><b>▽</b>妊娠丢失</button>
               <button type="button" onClick={autoArrange}><b>✦</b>自动排版</button>
+            </div>
+            <div className={`${styles.toolGroup} ${styles.symbolCorrection}`} aria-label="更正当前成员图例">
+              <span>更正图例</span>
+              {(['male', 'female', 'unknown', 'pregnancy_loss'] as Sex[]).map((value) => (
+                <button type="button" key={value} className={selected?.sex === value ? styles.activeSymbolTool : ''} disabled={!selected} onClick={() => correctSelectedSymbol(value)} aria-label={`更正为${value === 'male' ? '男性' : value === 'female' ? '女性' : value === 'unknown' ? '性别不详' : '妊娠丢失'}`}>
+                  <b>{value === 'male' ? '□' : value === 'female' ? '○' : value === 'unknown' ? '◇' : '▽'}</b>
+                </button>
+              ))}
             </div>
             <div className={styles.toolGroup}>
               <button type="button" disabled={!history.length} onClick={undo} aria-label="撤销">↶</button>
               <button type="button" disabled={!future.length} onClick={redo} aria-label="恢复">↷</button>
               <span className={styles.divider} />
-              <button type="button" onClick={() => setZoom((value) => Math.max(.65, value - .1))} aria-label="缩小">−</button>
+              <button type="button" onClick={() => setZoom((value) => Math.max(.55, value - .1))} aria-label="缩小">−</button>
               <button type="button" className={styles.zoomValue} onClick={() => setZoom(1)}>{Math.round(zoom * 100)}%</button>
-              <button type="button" onClick={() => setZoom((value) => Math.min(1.5, value + .1))} aria-label="放大">+</button>
+              <button type="button" onClick={() => setZoom((value) => Math.min(2, value + .1))} aria-label="放大">+</button>
             </div>
           </div>
 
-          <div className={styles.canvasViewport}>
+          {snapHint && !dragDeleteReady && <div className={styles.snapHint}>{snapHint}</div>}
+          {dragDeleteReady && <div className={styles.deleteDropZone}>已拖出画布边框，松手删除（可撤销）</div>}
+          <div ref={viewportRef} className={`${styles.canvasViewport} ${dragDeleteReady ? styles.deleteArmed : ''}`} onPointerDown={canvasPointerDown} onPointerMove={canvasPointerMove} onPointerUp={canvasPointerEnd} onPointerCancel={canvasPointerEnd}>
             <div className={styles.canvasStage} style={{ width: layout.width * zoom, height: layout.height * zoom }}>
               <svg id="pedigree-svg" className={styles.pedigreeSvg} viewBox={`0 0 ${layout.width} ${layout.height}`} style={{ width: layout.width * zoom, height: layout.height * zoom }} role="img" aria-label={`${activeCase.name}家系图`}>
                 <defs>
@@ -793,6 +1128,7 @@ export function PedigreeWorkspace() {
                       {person.sex === 'male' && <rect x={person.x - 18} y={person.y - 18} width="36" height="36" />}
                       {person.sex === 'female' && <circle cx={person.x} cy={person.y} r="18" />}
                       {person.sex === 'unknown' && <path d={`M ${person.x} ${person.y - 22} L ${person.x + 22} ${person.y} L ${person.x} ${person.y + 22} L ${person.x - 22} ${person.y} Z`} />}
+                      {person.sex === 'pregnancy_loss' && <path d={`M ${person.x - 20} ${person.y - 16} L ${person.x + 20} ${person.y - 16} L ${person.x} ${person.y + 20} Z`} />}
                     </clipPath>
                   ))}
                 </defs>
@@ -800,15 +1136,10 @@ export function PedigreeWorkspace() {
                 <rect width="100%" height="100%" fill="url(#pedigree-grid)" />
 
                 <g aria-label="亲缘关系" fill="none" stroke="#344054" strokeWidth="2">
-                  {layout.people.flatMap((person) => person.spouseIds
-                    .filter((spouseId) => person.id < spouseId)
-                    .map((spouseId) => {
-                      const spouse = positionedById.get(spouseId);
-                      if (!spouse) return null;
-                      const left = person.x < spouse.x ? person : spouse;
-                      const right = person.x < spouse.x ? spouse : person;
-                      return <line key={`spouse-${person.id}-${spouseId}`} x1={left.x + SVG_NODE_SIZE / 2} y1={left.y} x2={right.x - SVG_NODE_SIZE / 2} y2={right.y} />;
-                    }))}
+                  {unionPairs.map(([key, pair]) => {
+                    const [first, second] = pair;
+                    return <line key={`union-${key}`} x1={first.x} y1={first.y} x2={second.x} y2={second.y} />;
+                  })}
 
                   {parentGroups.map(([key, children]) => {
                     const [fatherId, motherId] = key.split('|');
@@ -817,7 +1148,7 @@ export function PedigreeWorkspace() {
                     const availableParents = [father, mother].filter(Boolean) as PositionedPerson[];
                     if (!availableParents.length) return null;
                     const parentX = availableParents.reduce((sum, person) => sum + person.x, 0) / availableParents.length;
-                    const parentY = Math.max(...availableParents.map((person) => person.y));
+                    const parentY = availableParents.reduce((sum, person) => sum + person.y, 0) / availableParents.length;
                     const sortedChildren = [...children].sort((a, b) => a.x - b.x);
                     const siblingY = sortedChildren[0].y - 68;
                     const firstX = sortedChildren[0].x;
@@ -839,14 +1170,15 @@ export function PedigreeWorkspace() {
                     const stroke = isSelected ? '#a20d7b' : '#243047';
                     const strokeWidth = isSelected ? 3.5 : 2.2;
                     return (
-                      <g key={person.id} className={styles.personNode} role="button" tabIndex={0} aria-label={`${person.displayId} ${person.sex}`} onClick={() => setSelectedId(person.id)} onPointerDown={(event) => beginDrag(event, person)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setSelectedId(person.id); }}>
+                      <g key={person.id} className={styles.personNode} role="button" tabIndex={0} aria-label={`${person.displayId} ${person.sex}`} onClick={() => setSelectedId(person.id)} onPointerDown={(event) => beginDrag(event, person)} onPointerMove={moveDrag} onPointerUp={(event) => endDrag(event)} onPointerCancel={(event) => endDrag(event, true)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setSelectedId(person.id); }}>
                         {isSelected && <circle cx={person.x} cy={person.y} r="29" fill="#f8eaf4" stroke="none" />}
                         {person.sex === 'male' && <rect x={person.x - 18} y={person.y - 18} width="36" height="36" rx="1" fill={baseFill} stroke={stroke} strokeWidth={strokeWidth} />}
                         {person.sex === 'female' && <circle cx={person.x} cy={person.y} r="18" fill={baseFill} stroke={stroke} strokeWidth={strokeWidth} />}
                         {person.sex === 'unknown' && <path d={`M ${person.x} ${person.y - 22} L ${person.x + 22} ${person.y} L ${person.x} ${person.y + 22} L ${person.x - 22} ${person.y} Z`} fill={baseFill} stroke={stroke} strokeWidth={strokeWidth} />}
+                        {person.sex === 'pregnancy_loss' && <path d={`M ${person.x - 20} ${person.y - 16} L ${person.x + 20} ${person.y - 16} L ${person.x} ${person.y + 20} Z`} fill={baseFill} stroke={stroke} strokeWidth={strokeWidth} />}
                         {person.phenotype === 'carrier' && <rect x={person.x - 23} y={person.y - 24} width="23" height="48" fill="#687386" clipPath={`url(#clip-${person.id})`} />}
-                        {person.phenotype === 'unknown' && <text x={person.x} y={person.y + 6} textAnchor="middle" fontSize="18" fontWeight="700" fill="#687386">?</text>}
-                        {person.deceased && <line x1={person.x - 25} y1={person.y + 25} x2={person.x + 25} y2={person.y - 25} stroke="#b4233f" strokeWidth="2.4" />}
+                        {person.phenotype === 'unknown' && person.sex !== 'pregnancy_loss' && <text x={person.x} y={person.y + 6} textAnchor="middle" fontSize="18" fontWeight="700" fill="#687386">?</text>}
+                        {person.deceased && person.sex !== 'pregnancy_loss' && <line x1={person.x - 25} y1={person.y + 25} x2={person.x + 25} y2={person.y - 25} stroke="#b4233f" strokeWidth="2.4" />}
                         {person.proband && <g fill="#a20d7b" stroke="#a20d7b"><path d={`M ${person.x - 49} ${person.y + 21} L ${person.x - 26} ${person.y + 5}`} strokeWidth="2.2" /><path d={`M ${person.x - 28} ${person.y + 4} l 2 8 l 6 -6 Z`} /></g>}
                         <text x={person.x} y={person.y + 46} textAnchor="middle" fontSize="13" fontWeight="700" fill="#253047">{person.displayId}{person.proband ? '  ←' : ''}</text>
                         <text x={person.x} y={person.y + 63} textAnchor="middle" fontSize="10" fill="#697386">{person.clinicalId || person.birthYear || '未录入'}</text>
@@ -861,12 +1193,14 @@ export function PedigreeWorkspace() {
                   <circle cx="91" cy="-3" r="10" fill="#fff" stroke="#243047" strokeWidth="2" /><text x="109" y="2">女性</text>
                   <rect x="169" y="-13" width="20" height="20" fill="#243047" /><text x="197" y="2">患病</text>
                   <rect x="254" y="-13" width="20" height="20" fill="#fff" stroke="#243047" strokeWidth="2" /><rect x="254" y="-13" width="10" height="20" fill="#687386" /><text x="282" y="2">携带者</text>
-                  <text x="356" y="2" fontWeight="700" fill="#a20d7b">← 先证者</text>
+                  <path d="M 356 -13 L 366 -3 L 356 7 L 346 -3 Z" fill="#fff" stroke="#243047" strokeWidth="2" /><text x="374" y="2">性别不详</text>
+                  <path d="M 448 -12 L 466 -12 L 457 6 Z" fill="#fff" stroke="#243047" strokeWidth="2" /><text x="474" y="2">妊娠丢失</text>
+                  <text x="548" y="2" fontWeight="700" fill="#a20d7b">← 先证者</text>
                 </g>
               </svg>
             </div>
           </div>
-          <div className={styles.canvasHint}><span>拖动任意成员调整位置；先选中成员再添加关系</span><span>位置不满意可一键恢复自动排版</span></div>
+          <div className={styles.canvasHint}><span>双指捏合只缩放；侧边滚动条查看画布；拖成员时画布保持固定</span><span>靠近关系线自动粘接，拖出边框删除</span></div>
         </main>
 
         <aside className={styles.inspector}>
@@ -875,21 +1209,42 @@ export function PedigreeWorkspace() {
             <div className={styles.inspectorForm}>
               <label><span>病例编号</span><input value={selected.clinicalId} placeholder="建议使用去标识化编号" onChange={(event) => updatePerson({ clinicalId: event.target.value })} /></label>
               <label><span>姓名 / 备注名</span><input value={selected.name} placeholder="可留空" onChange={(event) => updatePerson({ name: event.target.value })} /></label>
-              <fieldset><legend>性别</legend><div className={styles.segmented}>{(['male', 'female', 'unknown'] as Sex[]).map((value) => <button type="button" className={selected.sex === value ? styles.selectedSegment : ''} key={value} onClick={() => updatePerson({ sex: value })}>{value === 'male' ? '□ 男' : value === 'female' ? '○ 女' : '◇ 未知'}</button>)}</div></fieldset>
+              <fieldset><legend>个体符号（无需删除，点一下直接更正）</legend><div className={`${styles.segmented} ${styles.symbolGrid}`}>{(['male', 'female', 'unknown', 'pregnancy_loss'] as Sex[]).map((value) => <button type="button" className={selected.sex === value ? styles.selectedSegment : ''} key={value} onClick={() => correctSelectedSymbol(value)}>{value === 'male' ? '□ 男' : value === 'female' ? '○ 女' : value === 'unknown' ? '◇ 性别不详' : '▽ 妊娠丢失'}</button>)}</div></fieldset>
               <fieldset><legend>表型 / 携带状态</legend><div className={`${styles.segmented} ${styles.statusGrid}`}>{(['unaffected', 'affected', 'carrier', 'unknown'] as Phenotype[]).map((value) => <button type="button" className={selected.phenotype === value ? styles.selectedSegment : ''} key={value} onClick={() => updatePerson({ phenotype: value })}>{value === 'unaffected' ? '未患病' : value === 'affected' ? '患病' : value === 'carrier' ? '携带者' : '不明'}</button>)}</div></fieldset>
               <div className={styles.checkRow}><label><input type="checkbox" checked={selected.proband} onChange={(event) => {
                 const checked = event.target.checked;
                 commit((current) => ({ ...current, people: current.people.map((person) => ({ ...person, proband: person.id === selected.id ? checked : checked ? false : person.proband })) }));
-              }} />设为先证者</label><label><input type="checkbox" checked={selected.deceased} onChange={(event) => updatePerson({ deceased: event.target.checked })} />已故</label></div>
+              }} />设为先证者</label><label><input type="checkbox" checked={selected.deceased} disabled={selected.sex === 'pregnancy_loss'} onChange={(event) => updatePerson({ deceased: event.target.checked })} />已故</label></div>
               <div className={styles.twoColumns}><label><span>出生年</span><input inputMode="numeric" value={selected.birthYear} placeholder="YYYY" onChange={(event) => updatePerson({ birthYear: event.target.value })} /></label><label><span>年龄</span><input value={selected.birthYear && /^\d{4}$/.test(selected.birthYear) ? String(new Date().getFullYear() - Number(selected.birthYear)) : ''} disabled placeholder="自动" /></label></div>
               <label><span>临床诊断 / 表型</span><textarea rows={2} value={selected.diagnosis} placeholder="发病年龄、主要表型等" onChange={(event) => updatePerson({ diagnosis: event.target.value })} /></label>
               <label><span>基因型</span><input value={selected.genotype} placeholder="例：c.235delC/-" onChange={(event) => updatePerson({ genotype: event.target.value })} /></label>
               <label><span>遗传咨询备注</span><textarea rows={3} value={selected.notes} placeholder="检测情况、样本可获得性、关键沟通点…" onChange={(event) => updatePerson({ notes: event.target.value })} /></label>
-              <div className={styles.relationSummary}><span>关系摘要</span><p>{selected.fatherId ? '已录入父亲' : '父亲未录入'} · {selected.motherId ? '已录入母亲' : '母亲未录入'} · {selected.spouseIds.length} 位配偶</p></div>
+              <div className={styles.relationSummary}><span>关系摘要</span><p>{selected.fatherId ? '已录入父亲' : '父亲未录入'} · {selected.motherId ? '已录入母亲' : '母亲未录入'} · {selected.spouseIds.length} 位配偶。关系不对时，将成员拖到正确配偶线或父母支线附近松手即可重接。</p></div>
             </div>
           ) : <div className={styles.emptyInspector}><span>◇</span><p>点选图中成员后编辑资料</p></div>}
         </aside>
       </div>
+      {showGuide && <div className={styles.guideBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowGuide(false); }}>
+        <section className={styles.guideDialog} role="dialog" aria-modal="true" aria-labelledby="pedigree-guide-title">
+          <header><div><span>家系图符号与操作</span><h2 id="pedigree-guide-title">先认符号，再建关系</h2></div><button type="button" onClick={() => setShowGuide(false)} aria-label="关闭说明">×</button></header>
+          <div className={styles.guideSymbols}>
+            <div><i className={`${styles.guideShape} ${styles.guideMale}`} /><p><b>男性</b><small>方形 □</small></p></div>
+            <div><i className={`${styles.guideShape} ${styles.guideFemale}`} /><p><b>女性</b><small>圆形 ○</small></p></div>
+            <div><i className={`${styles.guideShape} ${styles.guideUnknown}`} /><p><b>性别不详</b><small>菱形 ◇</small></p></div>
+            <div><i className={`${styles.guideShape} ${styles.guideLoss}`} /><p><b>妊娠丢失</b><small>倒三角 ▽</small></p></div>
+            <div><i className={`${styles.guideShape} ${styles.guideAffected}`} /><p><b>患病个体</b><small>符号全填充</small></p></div>
+            <div><i className={`${styles.guideShape} ${styles.guideCarrier}`} /><p><b>携带者</b><small>符号半填充</small></p></div>
+            <div><i className={`${styles.guideShape} ${styles.guideDeceased}`} /><p><b>已故</b><small>斜线贯穿符号</small></p></div>
+            <div><i className={styles.guideProband}>←</i><p><b>先证者</b><small>箭头指向个体</small></p></div>
+          </div>
+          <div className={styles.guideSteps}>
+            <div><b>1. 建立关系</b><p>先点选一个成员，再添加父亲、母亲、配偶或子代。共同父母会自动形成配偶线并连接子代。</p></div>
+            <div><b>2. 智能调整画布</b><p>单指只拖成员，画布不会跟随移动；靠近关系线会自动吸附并重接。双指捏合缩放，超出区域用侧边滚动条查看；拖出边框可删除。</p></div>
+            <div><b>3. 录入疾病和位点</b><p>可输入中文病名、英文病名、基因或 MONDO 编号；选定基因后再从常见位点中选择，变异类型会自动带出。</p></div>
+          </div>
+          <footer><span>提示：“236位点”等口头简称必须核对，系统统一按标准 HGVS 显示，例如 GJB2 c.235delC。</span><button type="button" onClick={() => setShowGuide(false)}>知道了</button></footer>
+        </section>
+      </div>}
     </section>
   );
 }
