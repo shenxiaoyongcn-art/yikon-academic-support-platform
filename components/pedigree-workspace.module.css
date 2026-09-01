@@ -73,9 +73,12 @@
 .toolGroup button.deleteTool b { color: #b4233f; }
 .toolGroup button.deleteTool:hover { border-color: #d44a63; background: #fff1f3; color: #9f1530; }
 .symbolCorrection { margin-left: auto; padding-left: 8px; border-left: 1px solid #e1e4e9; }
-.symbolCorrection > span { color: #7b6674; font-size: 7px; font-weight: 800; white-space: nowrap; }
+.symbolCorrection > span, .phenotypeCorrection > span { color: #7b6674; font-size: 7px; font-weight: 800; white-space: nowrap; }
 .symbolCorrection button { min-width: 30px; padding: 0 5px; }
 .symbolCorrection button.activeSymbolTool { border-color: #a20d7b; background: #f8eaf4; box-shadow: inset 0 0 0 1px #a20d7b; }
+.phenotypeCorrection { padding-left: 8px; border-left: 1px solid #e1e4e9; }
+.phenotypeCorrection button { min-width: 47px; padding: 0 7px; }
+.phenotypeCorrection button.activePhenotypeTool { border-color: #257965; background: #edf8f4; color: #176b59; box-shadow: inset 0 0 0 1px #257965; }
 .canvasViewport { min-height: 0; overflow: scroll; background: #eef0f3; touch-action: none; overscroll-behavior: none; scrollbar-gutter: stable both-edges; scrollbar-color: #a88b9f #e3e5e9; scrollbar-width: auto; }
 .canvasViewport::-webkit-scrollbar { width: 11px; height: 11px; }
 .canvasViewport::-webkit-scrollbar-track { background: #e3e5e9; }
@@ -121,6 +124,9 @@
 .checkRow label { height: 34px; padding: 0 8px; display: flex; align-items: center; gap: 5px; border: 1px solid #e2e4e9; border-radius: 8px; color: #5d6778; font-size: 8px; }
 .checkRow input { width: 13px; height: 13px; padding: 0; accent-color: #a20d7b; }
 .twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.geneticsNote { padding: 10px; border: 1px solid #ead9e4; border-radius: 9px; background: #fcf5f9; }
+.geneticsNote span { color: #8f176f; font-size: 8px; font-weight: 800; }
+.geneticsNote p { margin: 5px 0 0; color: #766875; font-size: 7px; line-height: 1.55; }
 .relationSummary { padding: 10px; border: 1px solid #e2ece8; border-radius: 9px; background: #f5faf8; }
 .relationSummary span { color: #257965; font-size: 8px; font-weight: 800; }
 .relationSummary p { margin: 5px 0 0; color: #74827e; font-size: 7px; line-height: 1.45; }
@@ -174,7 +180,7 @@
   .caseRail, .canvasPanel { height: clamp(500px, 62vh, 580px); min-height: 0; }
   .inspector { min-height: 460px; grid-column: 1 / -1; border-top: 1px solid #e2e5ea; border-left: 0; }
   .inspectorForm { height: auto; grid-template-columns: repeat(2, 1fr); }
-  .inspectorForm fieldset, .checkRow, .relationSummary { grid-column: auto; }
+  .inspectorForm fieldset, .checkRow, .geneticsNote, .relationSummary { grid-column: auto; }
   .guideSymbols { grid-template-columns: repeat(2, 1fr); }
   .guideTools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .guideSteps { grid-template-columns: 1fr; }

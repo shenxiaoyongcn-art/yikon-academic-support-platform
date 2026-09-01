@@ -10,7 +10,7 @@ YIKON_ANDROID_SDK="$1"
 YIKON_JDK_HOME="$2"
 YIKON_NODE="$3"
 YIKON_PROJECT_ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
-YIKON_OUTPUT_APK="${4:-$YIKON_PROJECT_ROOT/outputs/YikonPedigree-v1.3.0.apk}"
+YIKON_OUTPUT_APK="${4:-$YIKON_PROJECT_ROOT/outputs/YikonPedigree-v1.4.0.apk}"
 YIKON_BUILD_TOOLS="$YIKON_ANDROID_SDK/build-tools/36.0.0"
 YIKON_ANDROID_JAR="$YIKON_ANDROID_SDK/platforms/android-36/android.jar"
 YIKON_BUILD_DIR=$(mktemp -d /private/tmp/yikon-apk-build.XXXXXX)
@@ -38,8 +38,8 @@ mkdir -p "$YIKON_BUILD_DIR/generated" "$YIKON_BUILD_DIR/classes" "$YIKON_BUILD_D
   --manifest "$YIKON_PROJECT_ROOT/android-app/app/src/main/AndroidManifest.xml" \
   --min-sdk-version 26 \
   --target-sdk-version 36 \
-  --version-code 6 \
-  --version-name 1.3.0 \
+  --version-code 7 \
+  --version-name 1.4.0 \
   --auto-add-overlay \
   --java "$YIKON_BUILD_DIR/generated" \
   -A "$YIKON_PROJECT_ROOT/android-app/app/src/main/assets" \

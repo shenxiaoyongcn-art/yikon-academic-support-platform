@@ -138,6 +138,14 @@ function translateInheritance(value: string) {
   return value || '待确定';
 }
 
+function phenotypeLabel(value: Phenotype, sex?: Sex) {
+  if (sex === 'pregnancy_loss') return '妊娠丢失';
+  if (value === 'unaffected') return '未患病';
+  if (value === 'affected') return '患病';
+  if (value === 'carrier') return '携带者';
+  return '状态不明';
+}
+
 function chooseDefaultCatalogRecord(records: CatalogRecord[]) {
   const evidenceWeight: Record<string, number> = { Definitive: 8, Strong: 5, Moderate: 3, Limited: 1, 'ClinVar快捷库': 2 };
   const modes = new Map<string, { score: number; strongest: number; count: number }>();
@@ -815,7 +823,7 @@ export function PedigreeWorkspace() {
         if (spouseTarget && currentPerson?.sex !== 'pregnancy_loss') {
           const target = spouseTarget.person;
           nextY = target.y;
-          nextX = Math.max(45, Math.min(layout.width - 45, target.x + (point.x >= target.x ? 105 : -105)));
+          nextX = Math.max(45, Math.min(layout.width - 45, target.x + (point.x >= target.x ? 170 : -170)));
           drag.snapIntent = { type: 'spouse', targetId: target.id, label: `松手与 ${target.displayId} 建立配偶线` };
           hint = drag.snapIntent.label;
           nextGuide = { y: target.y };
@@ -972,12 +980,15 @@ export function PedigreeWorkspace() {
         nextX = otherParent.x + (kind === 'father' ? -115 : 115);
         nextY = otherParent.y;
       } else {
+        const partnerPosition = layout.people.find((person) => selected.spouseIds.includes(person.id));
+        const familyDirection = partnerPosition ? (targetPosition.x <= partnerPosition.x ? -1 : 1) : 0;
+        const familyCenterX = targetPosition.x + familyDirection * 70;
         shiftExistingY = targetPosition.y < 205 ? 145 : 0;
-        nextX = targetPosition.x + (kind === 'father' ? -58 : 58);
+        nextX = familyCenterX + (kind === 'father' ? -58 : 58);
         nextY = Math.max(55, targetPosition.y + shiftExistingY - 145);
       }
     } else if (kind === 'spouse') {
-      const distance = 115 * (Math.floor(selected.spouseIds.length / 2) + 1);
+      const distance = 170 * (Math.floor(selected.spouseIds.length / 2) + 1);
       const direction = selected.spouseIds.length % 2 ? -1 : targetPosition.x < layout.width / 2 ? 1 : -1;
       nextX = targetPosition.x + direction * distance;
       nextY = targetPosition.y;
@@ -1075,7 +1086,7 @@ export function PedigreeWorkspace() {
         else if (spouse) newPerson.fatherId = spouse.id;
       }
       return { ...current, people: [...people, newPerson] };
-    }, addToSelectedUnion ? '同胞已在父母线下方就近生成，可继续拖动微调' : '新成员已在当前成员附近生成');
+    }, addToSelectedUnion ? '同胞已在父母线下方就近生成，可继续拖动微调' : kind === 'father' || kind === 'mother' ? '父母已在该成员一侧独立展开，不与配偶父母混接' : '新成员已在当前成员附近生成');
     setSelectedId(kind === 'father' || kind === 'mother' ? selected.id : id);
     if (!addToSelectedUnion) setSelectedUnionKey(null);
     revealCanvasPoint(nextX, nextY);
@@ -1241,6 +1252,10 @@ export function PedigreeWorkspace() {
 
   if (!activeCase) return null;
 
+  const variantTypeLabel = variantTypes.find(([value]) => value === activeCase.variantType)?.[1] || '其他/待确定';
+  const pedigreeSummary = `疾病：${activeCase.disease || '待选择'} · 基因：${activeCase.gene || '待选择'} · 位点：${activeCase.variant || '待录入'}（${variantTypeLabel}）`;
+  const shortPedigreeSummary = pedigreeSummary.length > 82 ? `${pedigreeSummary.slice(0, 80)}…` : pedigreeSummary;
+
   return (
     <section className={styles.pedigreeApp} data-app-ready="true">
       <header className={styles.appHeader}>
@@ -1327,6 +1342,14 @@ export function PedigreeWorkspace() {
                 </button>
               ))}
             </div>
+            <div className={`${styles.toolGroup} ${styles.phenotypeCorrection}`} aria-label="标注当前成员患病状态">
+              <span>个体状态</span>
+              {(['unaffected', 'affected', 'carrier', 'unknown'] as Phenotype[]).map((value) => (
+                <button type="button" key={value} className={selected?.phenotype === value ? styles.activePhenotypeTool : ''} disabled={!selected || selected.sex === 'pregnancy_loss'} onClick={() => updatePerson({ phenotype: value }, `已在图中标注：${phenotypeLabel(value)}`)} title={`将当前成员标注为${phenotypeLabel(value)}`}>
+                  {phenotypeLabel(value)}
+                </button>
+              ))}
+            </div>
             <div className={styles.toolGroup}>
               <button type="button" disabled={!history.length} onClick={undo} aria-label="撤销" title="撤销上一步操作"><b>↶</b>撤销</button>
               <button type="button" disabled={!future.length} onClick={redo} aria-label="恢复" title="恢复刚撤销的操作"><b>↷</b>恢复</button>
@@ -1363,6 +1386,11 @@ export function PedigreeWorkspace() {
                 </defs>
                 <rect width="100%" height="100%" fill="#fff" />
                 <rect width="100%" height="100%" fill="url(#pedigree-grid)" />
+                <g aria-label="病例遗传信息" transform="translate(24 14)" pointerEvents="none">
+                  <rect width={Math.min(layout.width - 48, 840)} height="45" rx="10" fill="#fbf1f7" stroke="#e7cddd" />
+                  <text x="13" y="17" fontSize="11" fontWeight="800" fill="#8f176f">遗传模式：{activeCase.inheritance || '待确定'}</text>
+                  <text x="13" y="34" fontSize="9" fill="#6f5b69">{shortPedigreeSummary}</text>
+                </g>
                 {alignmentGuide?.x !== undefined && <line x1={alignmentGuide.x} y1="18" x2={alignmentGuide.x} y2={layout.height - 86} className={styles.alignmentGuide} />}
                 {alignmentGuide?.y !== undefined && <line x1="18" y1={alignmentGuide.y} x2={layout.width - 18} y2={alignmentGuide.y} className={styles.alignmentGuide} />}
 
@@ -1412,8 +1440,10 @@ export function PedigreeWorkspace() {
                     const baseFill = person.phenotype === 'affected' ? '#243047' : '#ffffff';
                     const stroke = isSelected ? '#a20d7b' : '#243047';
                     const strokeWidth = isSelected ? 3.5 : 2.2;
+                    const statusLabel = phenotypeLabel(person.phenotype, person.sex);
+                    const statusColor = person.phenotype === 'affected' ? '#b4233f' : person.phenotype === 'carrier' ? '#8f176f' : person.phenotype === 'unaffected' ? '#257965' : '#687386';
                     return (
-                      <g key={person.id} className={styles.personNode} role="button" tabIndex={0} aria-label={`${person.displayId} ${person.sex}`} onClick={() => { setSelectedId(person.id); setSelectedUnionKey(null); }} onPointerDown={(event) => beginDrag(event, person)} onPointerMove={moveDrag} onPointerUp={(event) => endDrag(event)} onPointerCancel={(event) => endDrag(event, true)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { setSelectedId(person.id); setSelectedUnionKey(null); } }}>
+                      <g key={person.id} className={styles.personNode} role="button" tabIndex={0} aria-label={`${person.displayId} ${person.sex} ${statusLabel}`} onClick={() => { setSelectedId(person.id); setSelectedUnionKey(null); }} onPointerDown={(event) => beginDrag(event, person)} onPointerMove={moveDrag} onPointerUp={(event) => endDrag(event)} onPointerCancel={(event) => endDrag(event, true)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { setSelectedId(person.id); setSelectedUnionKey(null); } }}>
                         {isSelected && <circle cx={person.x} cy={person.y} r="29" fill="#f8eaf4" stroke="none" />}
                         {person.sex === 'male' && <rect x={person.x - 18} y={person.y - 18} width="36" height="36" rx="1" fill={baseFill} stroke={stroke} strokeWidth={strokeWidth} />}
                         {person.sex === 'female' && <circle cx={person.x} cy={person.y} r="18" fill={baseFill} stroke={stroke} strokeWidth={strokeWidth} />}
@@ -1423,7 +1453,7 @@ export function PedigreeWorkspace() {
                         {person.phenotype === 'unknown' && person.sex !== 'pregnancy_loss' && <text x={person.x} y={person.y + 6} textAnchor="middle" fontSize="18" fontWeight="700" fill="#687386">?</text>}
                         {person.deceased && person.sex !== 'pregnancy_loss' && <line x1={person.x - 25} y1={person.y + 25} x2={person.x + 25} y2={person.y - 25} stroke="#b4233f" strokeWidth="2.4" />}
                         {person.proband && <g fill="#a20d7b" stroke="#a20d7b"><path d={`M ${person.x - 49} ${person.y + 21} L ${person.x - 26} ${person.y + 5}`} strokeWidth="2.2" /><path d={`M ${person.x - 28} ${person.y + 4} l 2 8 l 6 -6 Z`} /></g>}
-                        <text x={person.x} y={person.y + 46} textAnchor="middle" fontSize="13" fontWeight="700" fill="#253047">{person.displayId}{person.proband ? '  ←' : ''}</text>
+                        <text x={person.x} y={person.y + 46} textAnchor="middle" fontSize="12" fontWeight="800" fill={statusColor}>{person.displayId} · {statusLabel}{person.proband ? '  ←' : ''}</text>
                         <text x={person.x} y={person.y + 63} textAnchor="middle" fontSize="10" fill="#697386">{person.clinicalId || person.birthYear || '未录入'}</text>
                         {person.genotype && <text x={person.x} y={person.y + 78} textAnchor="middle" fontSize="9" fill="#8a526f">{person.genotype.length > 22 ? `${person.genotype.slice(0, 20)}…` : person.genotype}</text>}
                       </g>
@@ -1453,7 +1483,8 @@ export function PedigreeWorkspace() {
               <label><span>病例编号</span><input value={selected.clinicalId} placeholder="建议使用去标识化编号" onChange={(event) => updatePerson({ clinicalId: event.target.value })} /></label>
               <label><span>姓名 / 备注名</span><input value={selected.name} placeholder="可留空" onChange={(event) => updatePerson({ name: event.target.value })} /></label>
               <fieldset><legend>个体符号（无需删除，点一下直接更正）</legend><div className={`${styles.segmented} ${styles.symbolGrid}`}>{(['male', 'female', 'unknown', 'pregnancy_loss'] as Sex[]).map((value) => <button type="button" className={selected.sex === value ? styles.selectedSegment : ''} key={value} onClick={() => correctSelectedSymbol(value)}>{value === 'male' ? '□ 男' : value === 'female' ? '○ 女' : value === 'unknown' ? '◇ 性别不详' : '▽ 妊娠丢失'}</button>)}</div></fieldset>
-              <fieldset><legend>表型 / 携带状态</legend><div className={`${styles.segmented} ${styles.statusGrid}`}>{(['unaffected', 'affected', 'carrier', 'unknown'] as Phenotype[]).map((value) => <button type="button" className={selected.phenotype === value ? styles.selectedSegment : ''} key={value} onClick={() => updatePerson({ phenotype: value })}>{value === 'unaffected' ? '未患病' : value === 'affected' ? '患病' : value === 'carrier' ? '携带者' : '不明'}</button>)}</div></fieldset>
+              <fieldset><legend>表型 / 携带状态（直接显示在图中）</legend><div className={`${styles.segmented} ${styles.statusGrid}`}>{(['unaffected', 'affected', 'carrier', 'unknown'] as Phenotype[]).map((value) => <button type="button" className={selected.phenotype === value ? styles.selectedSegment : ''} key={value} onClick={() => updatePerson({ phenotype: value }, `已在图中标注：${phenotypeLabel(value)}`)}>{phenotypeLabel(value)}</button>)}</div></fieldset>
+              <div className={styles.geneticsNote}><span>遗传模式 ≠ 个体状态</span><p>上方“显性/隐性”属于本病例的疾病－基因遗传模式；这里的“患病、未患病、携带者”属于每位成员，需结合临床表型、合子状态和家系验证人工确认，不能只凭位点名称自动判定。</p></div>
               <div className={styles.checkRow}><label><input type="checkbox" checked={selected.proband} onChange={(event) => {
                 const checked = event.target.checked;
                 commit((current) => ({ ...current, people: current.people.map((person) => ({ ...person, proband: person.id === selected.id ? checked : checked ? false : person.proband })) }));
@@ -1481,7 +1512,7 @@ export function PedigreeWorkspace() {
             <div><i className={styles.guideProband}>←</i><p><b>先证者</b><small>箭头指向个体</small></p></div>
           </div>
           <div className={styles.guideTools} aria-label="顶部工具按钮说明">
-            <div><b>□ 父亲 / ○ 母亲</b><small>为当前成员增加上一代父母，并自动水平配对。</small></div>
+            <div><b>□ 父亲 / ○ 母亲</b><small>为当前成员增加上一代父母；夫妻双方父母会分别向左右独立展开，不自动混接。</small></div>
             <div><b>∞ 配偶</b><small>在当前成员同一层就近增加配偶并建立配偶线。</small></div>
             <div><b>≡ 同胞</b><small>增加共享同一父母的兄弟姐妹，不建立同胞配偶线。</small></div>
             <div><b>▣ 儿子 / ◉ 女儿</b><small>为当前成员及其配偶增加下一代子女。</small></div>
@@ -1491,7 +1522,7 @@ export function PedigreeWorkspace() {
           <div className={styles.guideSteps}>
             <div><b>1. 建立关系</b><p>先点选成员，再点“父亲、母亲、配偶、儿子、女儿”等文字按钮；新增成员会在当前关系附近逐层出现。点父母中间连线可快速增加同胞。</p></div>
             <div><b>2. 调整与查看</b><p>拖成员时画布锁定，纵向偏差约5%以内强制拉直。双指或加减按钮缩放范围为10%–200%；“适应全图”可自动缩放到完整图谱。</p></div>
-            <div><b>3. 录入疾病和位点</b><p>选择疾病后按 GenCC 证据强度和支持记录数默认遗传模式；选择已收录快捷位点后，变异类型自动带出，全部字段仍可人工修改。</p></div>
+            <div><b>3. 遗传模式与个体状态</b><p>选择疾病后按 GenCC 证据默认显性/隐性遗传模式，并把基因、位点显示在图内。再点选每位成员，用顶部“个体状态”标注患病、未患病、携带者或不明。</p></div>
           </div>
           <footer><span>提示：“236位点”等口头简称必须核对，系统统一按标准 HGVS 显示，例如 GJB2 c.235delC。</span><button type="button" onClick={() => setShowGuide(false)}>知道了</button></footer>
         </section>
