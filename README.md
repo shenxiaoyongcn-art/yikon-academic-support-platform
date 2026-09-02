@@ -10,6 +10,22 @@
 
 复制 `.env.example` 中的键到托管环境，密码和 Token 不得提交到仓库。
 
+## 遗传家系图网页版
+
+遗传家系图提供独立的静态网页构建，不依赖服务器和数据库。疾病目录、常用位点快捷数据与绘图功能随网页一起打包，病例数据只保存在使用者当前浏览器中。
+
+```bash
+pnpm install --frozen-lockfile
+pnpm dev:pedigree-web
+pnpm build:pedigree-web
+```
+
+生产文件输出到 `web-dist/`，可直接部署到 GitHub Pages、Cloudflare Pages、对象存储静态网站或普通 Nginx/Apache 目录。由于采用相对资源路径，也可部署在域名子目录。
+
+仓库中的 `Deploy pedigree web to GitHub Pages` 工作流会在家系图相关代码更新后自动构建并发布；首次使用时需在 GitHub 仓库的 **Settings → Pages → Build and deployment** 中将 Source 设为 **GitHub Actions**。
+
+> 本工具用于家系资料整理和遗传咨询辅助。疾病、遗传模式和变异快捷数据必须结合正式检测报告、标准 HGVS、临床表型及最新数据库进行专业复核。
+
 ## 主要服务端接口
 
 - `GET /api/integrations/health`：查看 Synology/BMP 连通与配置状态。

@@ -5,13 +5,13 @@ import { defineConfig } from 'vite';
 
 const currentDirectory = fileURLToPath(new URL('.', import.meta.url));
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   root: currentDirectory,
   base: './',
   plugins: [react()],
   build: {
-    outDir: path.resolve(currentDirectory, '../android-app/app/src/main/assets'),
+    outDir: path.resolve(currentDirectory, mode === 'web' ? '../web-dist' : '../android-app/app/src/main/assets'),
     emptyOutDir: true,
     target: 'es2017',
   },
-});
+}));

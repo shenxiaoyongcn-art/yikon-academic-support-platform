@@ -8,7 +8,10 @@
   },
   "scripts": {
     "dev": "vinext dev",
+    "dev:pedigree-web": "vite --config android-web/vite.config.ts --mode web",
     "build": "vinext build",
+    "build:pedigree-web": "vite build --config android-web/vite.config.ts --mode web",
+    "preview:pedigree-web": "vite preview --config android-web/vite.config.ts --mode web",
     "start": "vinext start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
