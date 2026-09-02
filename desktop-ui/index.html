@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yikon 学术支持平台</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="desktop-header">
+      <div class="brand">
+        <span class="brand-mark">Y</span>
+        <span><strong>Yikon 学术支持平台</strong><small>业务平台与本地数据工作台</small></span>
+      </div>
+      <nav aria-label="客户端功能">
+        <button class="nav-button active" data-view="platform">业务平台</button>
+        <button class="nav-button" data-view="analytics">本地数据分析</button>
+      </nav>
+      <div class="connection"><i></i><span>在线平台已连接</span></div>
+    </header>
+
+    <main>
+      <section id="platform-view" class="view active" aria-label="在线业务平台">
+        <iframe
+          title="Yikon 学术支持管理平台"
+          src="https://yikon-academic-support.calm-chick-8425.chatgpt.site"
+          allow="clipboard-read; clipboard-write"
+        ></iframe>
+      </section>
+
+      <section id="analytics-view" class="view analytics-view" aria-label="本地数据分析">
+        <aside class="dataset-sidebar">
+          <div class="sidebar-title">
+            <div><small>LOCAL DATA</small><h1>本地数据集</h1></div>
+            <button id="import-button" class="primary-button">＋ 导入Excel/CSV</button>
+          </div>
+          <p class="privacy-note">文件只保存在本机数据库，不自动上传云端。适合导入BMP导出表、医检所运营表及科研成本表。</p>
+          <div id="dataset-list" class="dataset-list"></div>
+        </aside>
+
+        <div class="analytics-main">
+          <div id="empty-state" class="empty-state">
+            <div class="empty-icon">数</div>
+            <h2>先导入一份业务数据</h2>
+            <p>支持 .xlsx、.xls 和 .csv。导入后可检索明细，并按医院、产品、人员等字段快速汇总。</p>
+            <button class="primary-button import-shortcut">选择文件</button>
+          </div>
+
+          <div id="dataset-workspace" class="dataset-workspace hidden">
+            <div class="workspace-heading">
+              <div><small>当前数据集</small><h2 id="dataset-name">—</h2><p id="dataset-meta">—</p></div>
+              <div class="heading-actions"><button id="export-button">导出当前查询</button><button id="delete-button" class="danger">删除数据集</button></div>
+            </div>
+
+            <div class="search-panel">
+              <label class="search-field"><span>搜索全部字段</span><input id="search-input" placeholder="输入医院、产品、人员、项目等关键词" /></label>
+              <button id="search-button" class="primary-button">查询</button>
+            </div>
+
+            <div class="summary-cards">
+              <article><small>数据总行数</small><strong id="total-rows">0</strong></article>
+              <article><small>字段数量</small><strong id="column-count">0</strong></article>
+              <article><small>当前返回</small><strong id="returned-rows">0</strong></article>
+              <article><small>存储方式</small><strong>仅本机</strong></article>
+            </div>
+
+            <section class="aggregate-panel">
+              <div class="panel-heading"><div><small>SECONDARY ANALYSIS</small><h3>快速维度分析</h3></div><p>例如：医院×销量求和、产品×记录数、人员×预算均值</p></div>
+              <div class="aggregate-form">
+                <label><span>分组字段</span><select id="dimension-select"></select></label>
+                <label><span>指标字段</span><select id="metric-select"></select></label>
+                <label><span>计算方式</span><select id="operation-select"><option value="count">记录数</option><option value="sum">求和</option><option value="avg">平均值</option></select></label>
+                <button id="aggregate-button" class="primary-button">生成汇总</button>
+              </div>
+              <div id="aggregate-results" class="aggregate-results"></div>
+            </section>
+
+            <section class="table-panel">
+              <div class="panel-heading"><div><small>DETAILS</small><h3>明细查询</h3></div><p>单次最多展示500行，避免大文件卡顿。</p></div>
+              <div class="table-scroll"><table><thead id="table-head"></thead><tbody id="table-body"></tbody></table></div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

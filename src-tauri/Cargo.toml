@@ -1,0 +1,23 @@
+[package]
+name = "yikon-academic-support"
+version = "0.2.0"
+description = "Yikon学术支持管理平台桌面客户端"
+authors = ["Yikon"]
+edition = "2021"
+
+[lib]
+name = "yikon_academic_support_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+csv = "1"
+calamine = "0.26"
+chrono = { version = "0.4", features = ["serde"] }
