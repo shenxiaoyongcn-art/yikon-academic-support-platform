@@ -11,7 +11,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        {children}
+        <footer className="site-record-footer" aria-label="网站备案信息">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
+            浙ICP备2024061819号-2
+          </a>
+        </footer>
+      </body>
     </html>
   );
 }
