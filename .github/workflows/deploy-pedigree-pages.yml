@@ -1,6 +1,7 @@
 name: Deploy pedigree web to GitHub Pages
 
 on:
+  # Keep a manual trigger available for first-time Pages enablement and recovery.
   workflow_dispatch:
   push:
     branches: [main]
