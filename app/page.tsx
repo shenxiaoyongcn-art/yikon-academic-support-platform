@@ -1,101 +1,13 @@
 import { PlatformSidebar } from '@/components/platform-sidebar';
 import { BmpLoginControl, UiScaleControl } from '@/components/platform-controls';
+import { AiPlatformOverview } from '@/components/ai-platform-overview';
+import { homeModules, platformModules } from '@/lib/platform/catalog';
 import { getActor } from '@/lib/security/access';
 
 export const dynamic = 'force-dynamic';
 
-const moduleSlugs = ['tender', 'research', 'aftersales', 'events', 'analytics', 'pgd-review', 'training', 'pedigree'];
-
-const modules = [
-  {
-    code: '标',
-    name: '招标中心',
-    source: 'Synology 云盘',
-    state: 'API已确认',
-    stateTone: 'teal',
-    desc: '参数抽取、证据定位、资质有效期与技术应答一体化。',
-    metric: '4,826',
-    metricLabel: '已索引材料',
-    tone: 'magenta',
-  },
-  {
-    code: '研',
-    name: '科研项目',
-    source: 'BMP / CRM',
-    state: '数据底座已就绪',
-    stateTone: 'teal',
-    desc: '从需求评估、立项审批到里程碑、验收和成果转化。',
-    metric: '157',
-    metricLabel: '执行中 / 待执行',
-    tone: 'violet',
-  },
-  {
-    code: '售',
-    name: '售后闭环',
-    source: 'BMP / CRM',
-    state: '接口待对接',
-    stateTone: 'blue',
-    desc: '统一受理、多部门协同、SLA预警、根因归类与闭环复盘。',
-    metric: '93.6%',
-    metricLabel: 'SLA达成率',
-    tone: 'blue',
-  },
-  {
-    code: '会',
-    name: '推广会议',
-    source: 'BMP / 销售数据',
-    state: '规则待确认',
-    stateTone: 'amber',
-    desc: '会前目标、现场达成、会后商机与销量转化统一复盘。',
-    metric: '26',
-    metricLabel: '本季度已落地',
-    tone: 'orange',
-  },
-  {
-    code: '析',
-    name: '数据分析与汇报',
-    source: 'BMP / 医检所',
-    state: '接口待对接',
-    stateTone: 'blue',
-    desc: '薄弱产品、医院运营质量、人员贡献及季度汇报一体化分析。',
-    metric: 'PPT',
-    metricLabel: '季度汇报可生成',
-    tone: 'magenta',
-  },
-  {
-    code: '评',
-    name: 'PGD资质评审',
-    source: 'BMP / Synology资料库',
-    state: '资料工作台已设计',
-    stateTone: 'teal',
-    desc: '覆盖申报、筹建、试运行评审、正式运营及诊疗路径建设。',
-    metric: '5',
-    metricLabel: '全生命周期阶段',
-    tone: 'teal',
-  },
-  {
-    code: '训',
-    name: '遗传咨询培训',
-    source: 'BMP / 课程库',
-    state: '课程待迁移',
-    stateTone: 'blue',
-    desc: '课程、考试、能力地图、个案实训与客户人才体系搭建。',
-    metric: '72%',
-    metricLabel: '年度学习达成',
-    tone: 'indigo',
-  },
-  {
-    code: '系',
-    name: '遗传家系图',
-    source: '本地浏览器',
-    state: '可用',
-    stateTone: 'teal',
-    desc: '标准系谱符号、亲缘关系、表型与基因型一体化绘制。',
-    metric: '3',
-    metricLabel: '导出格式',
-    tone: 'teal',
-  },
-];
+const moduleSlugs = platformModules.map((module) => module.slug);
+const modules = homeModules;
 
 const priorities = [
   ['P0', '科研立项增加“项目评估”前置门禁', '产品 / 研发 / 学术', '今天'],
@@ -174,6 +86,8 @@ export default async function Home() {
               <p className="insight"><span>↗</span><b>核心判断</b>学术动作必须关联客户、商机与销量，否则只是记录工作量。</p>
             </article>
           </section>
+
+          <AiPlatformOverview />
 
           <section className="module-section">
             <div className="section-heading">

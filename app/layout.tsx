@@ -3,7 +3,9 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: '学术支持管理平台 | Yikon',
-  description: '招标、科研、售后、会议、数据分析汇报、PGD资质评审和遗传咨询培训的一体化管理中台。',
+  description: '招标、科研、售后、会议、数据分析汇报、PGT资质评审和遗传咨询培训的一体化AI增强管理平台。',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: { capable: true, title: 'Yikon学术', statusBarStyle: 'default' },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

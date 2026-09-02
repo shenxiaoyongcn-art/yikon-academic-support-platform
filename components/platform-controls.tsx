@@ -72,6 +72,7 @@ export function BmpLoginControl() {
             <div className="bmp-dialog-mark">B</div>
             <p className="eyebrow">亿康 BMP 统一身份</p>
             <h2 id="bmp-login-title">{identity ? 'BMP 账号已连接' : '登录 BMP 账号'}</h2>
+            <div className="bmp-ai-capabilities" aria-label="平台能力"><span>AI辅助研判</span><span>知识库</span><span>数据分析</span><span>全流程管理</span></div>
             {identity ? (
               <div className="bmp-account-card">
                 <span>已登录</span>

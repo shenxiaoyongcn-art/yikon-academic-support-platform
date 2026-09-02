@@ -27,6 +27,7 @@ export function ModuleMaintenancePanel({ moduleSlug }: { moduleSlug: Maintenance
   const fileInput = useRef<HTMLInputElement>(null);
   const [records, setRecords] = useState<WorkItemRecord[]>([]);
   const [formOpen, setFormOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<'save' | 'sync' | 'import' | 'export' | 'template' | ''>('');
   const [message, setMessage] = useState('');
@@ -266,12 +267,14 @@ export function ModuleMaintenancePanel({ moduleSlug }: { moduleSlug: Maintenance
           <label className="wide"><span>{config.titleLabel} *</span><input name="title" required maxLength={200} placeholder={config.titlePlaceholder} /></label>
           <label><span>{config.customerLabel}</span><input name="customerName" maxLength={200} /></label>
           <label><span>省份/区域</span><input name="region" maxLength={80} /></label>
-          <label><span>优先级</span><select name="priority" defaultValue="P2"><option>P0</option><option>P1</option><option>P2</option><option>P3</option></select></label>
           <label><span>当前阶段</span><select name="stage" defaultValue={config.stages[0]}>{config.stages.map((stage) => <option key={stage}>{stage}</option>)}</select></label>
-          <label><span>当前状态</span><input name="status" defaultValue={config.defaultStatus} maxLength={80} /></label>
-          <label><span>计划完成日期</span><input name="dueDate" type="date" /></label>
-          <label><span>负责人</span><input name="ownerName" maxLength={80} placeholder="默认当前提交人" /></label>
-          {config.fields.map((field) => (
+          {advancedOpen && <>
+            <label><span>优先级</span><select name="priority" defaultValue="P2"><option>P0</option><option>P1</option><option>P2</option><option>P3</option></select></label>
+            <label><span>当前状态</span><input name="status" defaultValue={config.defaultStatus} maxLength={80} /></label>
+            <label><span>计划完成日期</span><input name="dueDate" type="date" /></label>
+            <label><span>负责人</span><input name="ownerName" maxLength={80} placeholder="默认当前提交人" /></label>
+          </>}
+          {config.fields.filter((field) => advancedOpen || !field.advanced).map((field) => (
             <label key={field.key} className={field.type === 'textarea' ? 'wide' : ''}>
               <span>{field.label}{field.required ? ' *' : ''}</span>
               {field.type === 'textarea'
@@ -281,7 +284,7 @@ export function ModuleMaintenancePanel({ moduleSlug }: { moduleSlug: Maintenance
                   : <input name={field.key} required={field.required} type={field.type} placeholder={field.placeholder} min={field.type === 'number' ? 0 : undefined} />}
             </label>
           ))}
-          <div className="record-form-actions"><button type="button" onClick={() => setFormOpen(false)}>取消</button><button type="submit" className="primary" disabled={busy === 'save'}>{busy === 'save' ? '保存中…' : `提交${config.recordName}`}</button></div>
+          <div className="record-form-actions"><button type="button" className="advanced-toggle" onClick={() => setAdvancedOpen((value) => !value)}>{advancedOpen ? '收起低频字段' : '更多字段'}</button><button type="button" onClick={() => setFormOpen(false)}>取消</button><button type="submit" className="primary" disabled={busy === 'save'}>{busy === 'save' ? '保存中…' : `提交${config.recordName}`}</button></div>
         </form>
       )}
 
