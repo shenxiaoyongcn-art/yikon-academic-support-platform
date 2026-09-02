@@ -168,6 +168,30 @@ export const qualificationProjects = sqliteTable('qualification_projects', {
   versionLabel: text('version_label'),
 }, (table) => [index('idx_qualification_stage').on(table.reviewStage, table.plannedReviewAt)]);
 
+export const pgdReviewExperts = sqliteTable('pgd_review_experts', {
+  id: text('id').primaryKey(),
+  externalId: text('external_id'),
+  name: text('name').notNull(),
+  organization: text('organization'),
+  department: text('department'),
+  professionalTitle: text('professional_title'),
+  province: text('province'),
+  city: text('city'),
+  specialties: text('specialties').notNull().default(''),
+  reviewStages: text('review_stages').notNull().default(''),
+  sessionCount: integer('session_count').notNull().default(0),
+  lastReviewAt: integer('last_review_at', { mode: 'timestamp_ms' }),
+  reviewHistoryJson: text('review_history_json').notNull().default('[]'),
+  importedById: text('imported_by_id').references(() => users.id),
+  source: text('source').notNull().default('excel'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+}, (table) => [
+  uniqueIndex('uq_pgd_experts_external').on(table.externalId),
+  index('idx_pgd_experts_name_org').on(table.name, table.organization),
+  index('idx_pgd_experts_province').on(table.province),
+]);
+
 export const trainingEnrollments = sqliteTable('training_enrollments', {
   id: text('id').primaryKey(),
   workItemId: text('work_item_id').notNull().references(() => workItems.id),

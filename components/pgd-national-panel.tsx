@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import qualificationDirectory from '@/lib/platform/pgd-qualified-centers.json';
 import { PgdCenterMaintenance } from '@/components/pgd-center-maintenance';
+import { PgtReviewLibrary } from '@/components/pgt-review-library';
 
 type QualificationStatus = '申报中的单位' | '筹建中单位' | '试运行评审' | '正式运行';
 
@@ -150,6 +151,8 @@ export function PgdNationalPanel() {
 
   return (
     <>
+      <PgtReviewLibrary />
+
       <section className="analysis-card pgd-directory-card">
         <div className="card-heading analysis-heading">
           <div>

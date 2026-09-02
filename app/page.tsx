@@ -65,8 +65,8 @@ const modules = [
   {
     code: '评',
     name: 'PGD资质评审',
-    source: 'BMP / 文档库',
-    state: '模板已设计',
+    source: 'BMP / Synology资料库',
+    state: '资料工作台已设计',
     stateTone: 'teal',
     desc: '覆盖申报、筹建、试运行评审、正式运营及诊疗路径建设。',
     metric: '5',
