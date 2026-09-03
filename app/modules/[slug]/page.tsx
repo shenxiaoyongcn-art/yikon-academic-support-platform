@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import { getPlatformModule, platformModules } from '@/lib/platform/catalog';
 import { TenderSearch } from '@/components/tender-search';
 import { AnalyticsDashboard } from '@/components/analytics-dashboard';
-import { ResearchRoiPanel } from '@/components/research-roi-panel';
 import { PgdNationalPanel } from '@/components/pgd-national-panel';
 import { PedigreeWorkspace } from '@/components/pedigree-workspace';
 import { ModuleMaintenancePanel } from '@/components/module-maintenance-panel';
@@ -10,6 +9,7 @@ import { AiAnalysisPanel } from '@/components/ai-analysis-panel';
 import { BmpLoginControl, UiScaleControl } from '@/components/platform-controls';
 import { PwaInstaller } from '@/components/pwa-installer';
 import { ModuleKnowledgeLibrary } from '@/components/module-knowledge-library';
+import { ResearchWorkspace } from '@/components/research/research-workspace';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -23,6 +23,7 @@ export default async function ModulePage({ params }: Props) {
   if (!platformModule) notFound();
 
   if (platformModule.slug === 'pedigree') return <PedigreeWorkspace />;
+  if (platformModule.slug === 'research') return <ResearchWorkspace />;
 
   return (
       <section className="module-page">
@@ -50,7 +51,6 @@ export default async function ModulePage({ params }: Props) {
         <AiAnalysisPanel moduleSlug={platformModule.slug} moduleName={platformModule.name} />
 
         {platformModule.slug === 'analytics' && <AnalyticsDashboard />}
-        {platformModule.slug === 'research' && <ResearchRoiPanel />}
         {platformModule.slug === 'pgd-review' && <PgdNationalPanel />}
         {platformModule.slug === 'events' && <ModuleKnowledgeLibrary moduleSlug="events" />}
         {platformModule.slug === 'training' && <ModuleKnowledgeLibrary moduleSlug="training" />}

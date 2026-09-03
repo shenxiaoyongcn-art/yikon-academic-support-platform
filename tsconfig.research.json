@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": ["lib/research/**/*.ts", "components/research/**/*.tsx", "app/api/research/**/*.ts", "lib/security/**/*.ts", "app/api/bmp/session/route.ts", "db/**/*.ts", "types/raw-import.d.ts"],
+  "exclude": ["node_modules", ".next", "dist"]
+}

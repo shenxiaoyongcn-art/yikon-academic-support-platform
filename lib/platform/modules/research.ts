@@ -2,8 +2,8 @@ import type { ModuleDefinition } from './types';
 
 export const researchModule: ModuleDefinition = {
   home: {
-    code: '研', name: '科研项目', source: 'BMP / CRM', state: '数据底座已就绪', stateTone: 'teal',
-    desc: '从需求评估、立项审批到里程碑、验收和成果转化。', metric: '157', metricLabel: '执行中 / 待执行', tone: 'violet',
+    code: '研', name: '科研项目', source: '独立科研工作区 / BMP待对接', state: '流程可演练', stateTone: 'teal',
+    desc: '需求评估、预算审批、合同资源、节点交付与验收核销全流程。', metric: 'A / B / C', metricLabel: '三类分路 · 一条业务链', tone: 'violet',
   },
   platform: {
     slug: 'research', short: '研', name: '科研项目管理', source: 'BMP / CRM', owner: '学术PMO',

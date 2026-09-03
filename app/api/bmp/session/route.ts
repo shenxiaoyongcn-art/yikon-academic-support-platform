@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { env } from 'cloudflare:workers';
 import { bmpConfig } from '@/lib/integrations/config';
-import { BMP_IDENTITY_COOKIE, BMP_SESSION_COOKIE, encodeBmpIdentity, getBmpSessionIdentity, getBmpSessionToken } from '@/lib/security/bmp-session';
+import { BMP_IDENTITY_COOKIE, BMP_SESSION_COOKIE, bmpTokenHash, encodeBmpIdentity, getBmpSessionIdentity, getBmpSessionToken } from '@/lib/security/bmp-session';
 
 type LoginPayload = { name?: unknown; email?: unknown; password?: unknown };
 type BmpLoginResponse = Record<string, unknown> & { data?: Record<string, unknown>; user?: Record<string, unknown> };
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
     const bmpName = pickString(user, ['displayName', 'fullName', 'name']) || name;
     const bmpUserId = pickString(user, ['id', 'userId', 'externalId']) || `bmp:${bmpEmail.toLowerCase()}`;
     const expiresIn = boundedExpiry(result.expiresIn ?? result.expires_in ?? result.data?.expiresIn ?? result.data?.expires_in);
+    await env.DB.prepare('INSERT INTO platform_sessions (token_hash, identity_json, expires_at) VALUES (?, ?, ?) ON CONFLICT(token_hash) DO UPDATE SET identity_json = excluded.identity_json, expires_at = excluded.expires_at').bind(await bmpTokenHash(token), JSON.stringify({ userId: bmpUserId, name: bmpName, email: bmpEmail }), Date.now() + expiresIn * 1000).run();
     const response = NextResponse.json({ authenticated: true, identity: { userId: bmpUserId, name: bmpName, email: bmpEmail } });
     const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax' as const, path: '/', maxAge: expiresIn };
     response.cookies.set(BMP_SESSION_COOKIE, token, cookieOptions);
@@ -64,6 +66,8 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   if (!sameOrigin(request)) return NextResponse.json({ error: '退出请求来源无效。' }, { status: 403 });
+  const token = await getBmpSessionToken();
+  if (token) await env.DB.prepare('DELETE FROM platform_sessions WHERE token_hash = ?').bind(await bmpTokenHash(token)).run();
   const response = NextResponse.json({ authenticated: false });
   response.cookies.set(BMP_SESSION_COOKIE, '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 0 });
   response.cookies.set(BMP_IDENTITY_COOKIE, '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 0 });
@@ -94,4 +98,3 @@ function sameOrigin(request: NextRequest) {
 
 function validEmail(value: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); }
 function clean(value: unknown, maxLength: number) { return typeof value === 'string' ? value.trim().slice(0, maxLength) : ''; }
-

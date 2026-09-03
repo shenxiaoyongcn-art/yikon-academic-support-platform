@@ -16,6 +16,8 @@
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "test:research": "node --experimental-strip-types --test lib/research/workflow.test.ts lib/research/persistence.test.ts",
+    "typecheck:research": "tsc -p tsconfig.research.json --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply site-creator-d1 --local --config wrangler.jsonc"
   },

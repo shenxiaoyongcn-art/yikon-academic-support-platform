@@ -1,4 +1,38 @@
-import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { check, index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
+
+// Isolated research aggregate: does not overwrite legacy BMP/work_items records.
+export const researchCasesV2 = sqliteTable('research_cases_v2', {
+  id: text('id').primaryKey(), requestNo: text('request_no').notNull(), projectNo: text('project_no'),
+  route: text('route').notNull(), stage: text('stage').notNull(), revision: integer('revision').notNull(),
+  creatorEmail: text('creator_email').notNull(), team: text('team').notNull(), region: text('region').notNull(),
+  dataJson: text('data_json').notNull(), createdAt: integer('created_at').notNull(), updatedAt: integer('updated_at').notNull(),
+}, t => [uniqueIndex('uq_research_v2_request').on(t.requestNo), uniqueIndex('uq_research_v2_project').on(t.projectNo), index('idx_research_v2_stage').on(t.stage, t.updatedAt)]);
+
+export const researchHistoryV2 = sqliteTable('research_history_v2', {
+  id: text('id').primaryKey(), caseId: text('case_id').notNull().references(() => researchCasesV2.id), revision: integer('revision').notNull(),
+  action: text('action').notNull(), actor: text('actor').notNull(), fromStage: text('from_stage').notNull(), toStage: text('to_stage').notNull(),
+  note: text('note').notNull(), snapshotJson: text('snapshot_json').notNull(), createdAt: integer('created_at').notNull(),
+}, t => [uniqueIndex('uq_research_history_revision').on(t.caseId, t.revision)]);
+
+export const researchBudgetPackages = sqliteTable('research_budget_packages', {
+  id: text('id').primaryKey(), customerId: text('customer_id').notNull(), hospital: text('hospital').notNull(), period: text('period').notNull(), region: text('region').notNull(),
+  totalCents: integer('total_cents').notNull(), usedCents: integer('used_cents').notNull().default(0), lockedCents: integer('locked_cents').notNull().default(0),
+  revision: integer('revision').notNull().default(1), evidence: text('evidence').notNull(), updatedAt: integer('updated_at').notNull(),
+}, t => [uniqueIndex('uq_research_budget_hospital_period').on(t.customerId, t.period), check('research_budget_nonnegative', sql`${t.totalCents} >= 0 AND ${t.usedCents} >= 0 AND ${t.lockedCents} >= 0 AND ${t.totalCents} >= ${t.usedCents} + ${t.lockedCents}`)]);
+
+export const researchBudgetAudit = sqliteTable('research_budget_audit', {
+  id: text('id').primaryKey(), budgetId: text('budget_id').notNull().references(() => researchBudgetPackages.id), caseId: text('case_id'), actor: text('actor').notNull(),
+  totalDelta: integer('total_delta').notNull().default(0), usedDelta: integer('used_delta').notNull().default(0), lockedDelta: integer('locked_delta').notNull().default(0),
+  evidence: text('evidence').notNull(), createdAt: integer('created_at').notNull(),
+});
+export const researchCustomers = sqliteTable('research_customers', { id: text('id').primaryKey(), name: text('name').notNull(), region: text('region').notNull(), source: text('source').notNull(), updatedAt: integer('updated_at').notNull() });
+export const researchCounters = sqliteTable('research_counters', { key: text('key').primaryKey(), value: integer('value').notNull() });
+export const researchOutbox = sqliteTable('research_outbox', {
+  id: text('id').primaryKey(), caseId: text('case_id').notNull().references(() => researchCasesV2.id), revision: integer('revision').notNull(), event: text('event').notNull(),
+  status: text('status').notNull().default('pending_contract'), createdAt: integer('created_at').notNull(),
+}, t => [uniqueIndex('uq_research_outbox_version').on(t.caseId, t.revision)]);
+export const platformSessions = sqliteTable('platform_sessions', { tokenHash: text('token_hash').primaryKey(), identityJson: text('identity_json').notNull(), expiresAt: integer('expires_at').notNull() });
 
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
