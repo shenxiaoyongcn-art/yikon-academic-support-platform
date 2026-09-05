@@ -2,7 +2,7 @@ import { env } from 'cloudflare:workers';
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeModule } from '@/lib/ai/work-item-analysis';
 import { enhanceWithConfiguredModel } from '@/lib/ai/model-enhancer';
-import type { AnalysisContext, MedicalLabAggregate, ProductAggregate, ResearchAggregate, WorkItemRow } from '@/lib/ai/types';
+import type { AnalysisContext, MedicalLabAggregate, ProductAggregate, WorkItemRow } from '@/lib/ai/types';
 import { getMaintenanceConfig } from '@/lib/platform/module-maintenance';
 import { getPlatformModule } from '@/lib/platform/catalog';
 import { AccessDeniedError, requireActor } from '@/lib/security/access';
@@ -19,8 +19,9 @@ export async function POST(request: NextRequest) {
     const config = getMaintenanceConfig(slug);
     if (!platformModule || !config) return NextResponse.json({ error: '该模块暂不支持在线AI分析。' }, { status: 400 });
 
-    const workResult = await env.DB.prepare(`SELECT id, title, customer_name AS customerName, region, priority, status, stage, due_at AS dueAt, payload_json AS payloadJson, updated_at AS updatedAt FROM work_items WHERE module = ? ORDER BY updated_at DESC LIMIT 500`)
-      .bind(config.dbModule)
+    const workScope = rowScope(actor, true);
+    const workResult = await env.DB.prepare(`SELECT id, title, customer_name AS customerName, region, priority, status, stage, due_at AS dueAt, payload_json AS payloadJson, updated_at AS updatedAt FROM work_items WHERE module = ?${workScope.sql} ORDER BY updated_at DESC LIMIT 500`)
+      .bind(config.dbModule, ...workScope.values)
       .all();
     const context: AnalysisContext = {
       workItems: workResult.results.map(toWorkItem),
@@ -30,17 +31,15 @@ export async function POST(request: NextRequest) {
     };
 
     if (slug === 'analytics') {
+      const salesVerified = process.env.BMP_SALES_FACTS_VERIFIED === 'true';
+      const labVerified = process.env.MEDICAL_LAB_METRICS_VERIFIED === 'true';
+      const factsScope = rowScope(actor, false);
       const [products, medicalLab] = await Promise.all([
-        env.DB.prepare(`SELECT product_name AS productName, COUNT(DISTINCT hospital_id) AS hospitalCount, SUM(sales_quantity) AS salesQuantity, SUM(COALESCE(target_quantity, 0)) AS targetQuantity FROM sales_facts GROUP BY product_code, product_name ORDER BY targetQuantity DESC LIMIT 100`).all(),
-        env.DB.prepare(`SELECT hospital_name AS hospitalName, period, sample_count AS sampleCount, amplification_success_bp AS amplificationSuccessBp, positive_bp AS positiveBp, negative_bp AS negativeBp, mosaic_bp AS mosaicBp FROM medical_lab_metrics ORDER BY period DESC, hospital_name LIMIT 200`).all(),
+        salesVerified ? env.DB.prepare(`SELECT product_name AS productName, COUNT(DISTINCT hospital_id) AS hospitalCount, SUM(sales_quantity) AS salesQuantity, SUM(COALESCE(target_quantity, 0)) AS targetQuantity FROM sales_facts WHERE source_system = 'bmp' AND verification_status = 'verified' AND external_id IS NOT NULL AND source_version IS NOT NULL AND source_updated_at IS NOT NULL AND synced_at IS NOT NULL${factsScope.sql} GROUP BY product_code, product_name ORDER BY targetQuantity DESC LIMIT 100`).bind(...factsScope.values).all() : Promise.resolve({ results: [] }),
+        labVerified ? env.DB.prepare(`SELECT hospital_name AS hospitalName, period, sample_count AS sampleCount, amplification_success_bp AS amplificationSuccessBp, positive_bp AS positiveBp, negative_bp AS negativeBp, mosaic_bp AS mosaicBp FROM medical_lab_metrics WHERE source_system = 'medical_lab' AND verification_status = 'verified' AND external_id IS NOT NULL AND source_version IS NOT NULL AND source_updated_at IS NOT NULL AND synced_at IS NOT NULL${factsScope.sql} ORDER BY period DESC, hospital_name LIMIT 200`).bind(...factsScope.values).all() : Promise.resolve({ results: [] }),
       ]);
       context.products = products.results.map(toProduct);
       context.medicalLab = medicalLab.results.map(toMedicalLab);
-    }
-
-    if (slug === 'research') {
-      const research = await env.DB.prepare(`SELECT hospital_name AS hospitalName, COUNT(*) AS projectCount, SUM(labor_hours) AS laborHours, SUM(sample_cost_cents + external_cost_cents + other_cost_cents) AS totalCostCents, SUM(COALESCE(attributable_revenue_cents, 0)) AS attributableRevenueCents, SUM(paper_count) AS paperCount, SUM(patent_count) AS patentCount FROM research_economics GROUP BY hospital_id, hospital_name ORDER BY totalCostCents DESC LIMIT 100`).all();
-      context.research = research.results.map(toResearch);
     }
 
     const rulesResult = analyzeModule(platformModule, context, focus);
@@ -76,6 +75,12 @@ function toMedicalLab(row: Record<string, unknown>): MedicalLabAggregate {
   return { hospitalName: string(row.hospitalName), period: string(row.period), sampleCount: number(row.sampleCount), amplificationSuccessBp: nullableNumber(row.amplificationSuccessBp), positiveBp: nullableNumber(row.positiveBp), negativeBp: nullableNumber(row.negativeBp), mosaicBp: nullableNumber(row.mosaicBp) };
 }
 
-function toResearch(row: Record<string, unknown>): ResearchAggregate {
-  return { hospitalName: string(row.hospitalName), projectCount: number(row.projectCount), laborHours: number(row.laborHours), totalCostCents: number(row.totalCostCents), attributableRevenueCents: number(row.attributableRevenueCents), paperCount: number(row.paperCount), patentCount: number(row.patentCount) };
+function rowScope(actor: Awaited<ReturnType<typeof requireActor>>, includeOwner: boolean) {
+  if (actor.role === 'admin' || actor.dataRegions.includes('*')) return { sql: '', values: [] as string[] };
+  if (includeOwner) {
+    if (!actor.dataRegions.length) return { sql: ' AND owner_id = ?', values: [actor.id] };
+    return { sql: ` AND (owner_id = ? OR region IN (${actor.dataRegions.map(() => '?').join(',')}))`, values: [actor.id, ...actor.dataRegions] };
+  }
+  if (!actor.dataRegions.length) return { sql: ' AND 1 = 0', values: [] as string[] };
+  return { sql: ` AND region IN (${actor.dataRegions.map(() => '?').join(',')})`, values: actor.dataRegions };
 }

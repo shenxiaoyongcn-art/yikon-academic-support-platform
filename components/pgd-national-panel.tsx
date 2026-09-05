@@ -75,7 +75,7 @@ function statusClass(status: QualificationStatus) {
 
 export function PgdNationalPanel() {
   const [centers, setCenters] = useState<CenterRow[]>([]);
-  const [syncState, setSyncState] = useState('正在读取运营数据…');
+  const [syncState, setSyncState] = useState('正在读取运营维护数据…');
   const [query, setQuery] = useState('');
   const [province, setProvince] = useState('全部省份');
   const [status, setStatus] = useState<'全部阶段' | QualificationStatus>('全部阶段');
@@ -89,9 +89,11 @@ export function PgdNationalPanel() {
       const latest = new Map<string, CenterRow>();
       for (const item of body.items || []) if (!latest.has(item.hospitalId)) latest.set(item.hospitalId, item);
       setCenters([...latest.values()]);
-      setSyncState(latest.size ? `实时数据 · ${latest.size} 家中心` : '运营数据待维护');
+      setSyncState(latest.size
+        ? `运营维护数据 · 平台人工录入 ${latest.size} 家中心 · 截止时间见各行更新日期 · BMP/医检所核验待接`
+        : '运营维护数据待人工录入 · BMP/医检所接口待确认');
     } catch {
-      setSyncState('运营接口待授权');
+      setSyncState('运营维护数据读取失败 · BMP/医检所接口待确认');
     }
   }, []);
 
@@ -235,12 +237,12 @@ export function PgdNationalPanel() {
 
       <section className="analysis-card pgd-national-card">
         <div className="card-heading analysis-heading">
-          <div><p className="eyebrow">PGD中心运营数据</p><h2>周期数与转化率维护端口</h2><p className="heading-note">{syncState}；已预留 BMP / 医检所同步和运营手工维护入口。</p></div>
+          <div><p className="eyebrow">PGD中心运营维护数据</p><h2>周期数与转化率维护端口</h2><p className="heading-note">{syncState}。当前仅展示平台人工维护内容，不代表已与 BMP 或医检所接通。</p></div>
           <PgdCenterMaintenance onSaved={loadCenters} />
         </div>
-        <div className="pgd-national-kpis"><article><p>已维护中心</p><strong>{centers.length}</strong></article><article><p>正式运营</p><strong>{centers.filter((item) => item.stage === '正式运营').length}</strong></article><article><p>总周期数</p><strong>{centers.length ? operationalTotals.totalCycles.toLocaleString('zh-CN') : '待同步'}</strong></article><article><p>PGD周期转化率</p><strong>{operationalTotals.conversion}</strong></article></div>
-        <div className="data-table-wrap analysis-table"><table><thead><tr><th>省份</th><th>中心名单</th><th>当前阶段</th><th>总周期数</th><th>PGD周期数</th><th>转化率</th><th>数据更新时间</th></tr></thead><tbody>{operationalRows.map((item) => <tr key={item.id}><td>{item.province}</td><td>{item.hospital}</td><td>{item.stage}</td><td>{item.totalCycles}</td><td>{item.pgdCycles}</td><td>{item.conversion}</td><td><span className="table-status">{item.updatedAt}</span></td></tr>)}{!operationalRows.length && <tr><td colSpan={7} className="empty-table-cell">尚未维护周期运营数据，可通过右上角入口录入，或等待 BMP / 医检所接口同步。</td></tr>}</tbody></table></div>
-        <p className="api-note">运营维护字段：中心主数据、阶段、总周期数、PGD周期数、转化率、数据责任人与更新时间。</p>
+        <div className="pgd-national-kpis"><article><p>人工已维护中心</p><strong>{centers.length}</strong></article><article><p>人工标记正式运营</p><strong>{centers.filter((item) => item.stage === '正式运营').length}</strong></article><article><p>总周期数</p><strong>{centers.length ? operationalTotals.totalCycles.toLocaleString('zh-CN') : '待人工维护'}</strong></article><article><p>PGD周期转化率</p><strong>{operationalTotals.conversion}</strong></article></div>
+        <div className="data-table-wrap analysis-table"><table><thead><tr><th>省份</th><th>中心名单</th><th>当前阶段</th><th>总周期数</th><th>PGD周期数</th><th>转化率</th><th>人工维护更新时间</th></tr></thead><tbody>{operationalRows.map((item) => <tr key={item.id}><td>{item.province}</td><td>{item.hospital}</td><td>{item.stage}</td><td>{item.totalCycles}</td><td>{item.pgdCycles}</td><td>{item.conversion}</td><td><span className="table-status">{item.updatedAt}</span></td></tr>)}{!operationalRows.length && <tr><td colSpan={7} className="empty-table-cell">尚无人工维护的周期运营数据；BMP / 医检所接口与核验口径待确认。</td></tr>}</tbody></table></div>
+        <p className="api-note"><strong>数据口径：</strong>当前来源为平台人工维护；数据截止时间以各行更新日期为准；BMP / 医检所数据核验状态为待接。维护字段包括中心主数据、阶段、总周期数、PGD周期数、转化率、数据责任人与更新时间。</p>
       </section>
     </>
   );

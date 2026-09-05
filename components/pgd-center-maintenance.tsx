@@ -39,9 +39,10 @@ export function PgdCenterMaintenance({ onSaved }: { onSaved?: () => void }) {
 
   return (
     <div className="maintenance-shell">
-      <div className="maintenance-actions"><button type="button" disabled title="待运营提供标准名单模板">批量导入待配置</button><button type="button" className="primary" onClick={() => setOpen((value) => !value)}>{open ? '收起维护入口' : '运营数据维护'}</button></div>
+      <div className="maintenance-actions"><button type="button" disabled title="待运营提供标准名单模板">批量导入待配置</button><button type="button" className="primary" onClick={() => setOpen((value) => !value)}>{open ? '收起维护入口' : '人工运营数据维护'}</button></div>
       {open && (
         <form className="maintenance-form" onSubmit={submit}>
+          <p>本入口为运营人员手工录入，暂不代表 BMP / 医检所已接通或已核验。</p>
           <input name="hospitalId" required placeholder="中心唯一编号" />
           <input name="hospitalName" required placeholder="中心/医院名称" />
           <input name="province" required placeholder="省份" />

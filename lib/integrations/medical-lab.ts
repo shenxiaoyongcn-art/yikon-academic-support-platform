@@ -15,8 +15,9 @@ export class MedicalLabConnector {
 
   async probe() {
     if (!this.config.baseUrl) return { reachable: false, configured: false, reason: 'base_url_missing' };
+    if (!this.config.healthPath) return { reachable: false, configured: false, reason: 'health_contract_missing' };
     try {
-      const response = await this.request('/health', { method: 'GET' }, false);
+      const response = await this.request(this.config.healthPath, { method: 'GET' }, false);
       return { reachable: response.ok, configured: this.state === 'ready' };
     } catch {
       return { reachable: false, configured: this.state === 'ready' };
@@ -25,6 +26,7 @@ export class MedicalLabConnector {
 
   async list<T = Record<string, unknown>>(cursor?: string, updatedAfter?: string): Promise<MedicalLabPage<T>> {
     if (this.state !== 'ready') throw new Error('Medical laboratory integration is not configured.');
+    if (!this.config.metricsPath) throw new Error('Medical laboratory metrics endpoint is not configured.');
     const query = new URLSearchParams({ limit: '200' });
     if (cursor) query.set('cursor', cursor);
     if (updatedAfter) query.set('updated_after', updatedAfter);

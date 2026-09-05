@@ -7,7 +7,7 @@ export async function researchActor(): Promise<Actor> {
   let bindings: Record<string, { roles?: Role[]; regions?: string[]; team?: string }>;
   try { bindings = JSON.parse(process.env.RESEARCH_ROLE_BINDINGS || '{}'); } catch { throw new WorkflowError('科研角色配置有误，请联系IT。', 503); }
   const email = identity.email.toLowerCase(), entry = bindings[email];
-  if (!entry || !Array.isArray(entry.roles) || !entry.roles.length) throw new WorkflowError('账号尚未分配科研模块权限。可先使用流程演练，正式账号由IT映射。', 403);
+  if (!entry || !Array.isArray(entry.roles) || !entry.roles.length) throw new WorkflowError('账号尚未分配科研模块权限。可先使用流程设计预览，部门账号由IT映射。', 403);
   return { id: identity.id, email, name: identity.displayName || email, roles: entry.roles.filter((r): r is Role => r in roleNames), regions: Array.isArray(entry.regions) ? entry.regions : [], team: entry.team || '' };
 }
 export function researchPolicy(): Policy {

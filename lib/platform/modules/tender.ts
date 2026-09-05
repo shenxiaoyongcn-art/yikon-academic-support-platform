@@ -2,8 +2,8 @@ import type { ModuleDefinition } from './types';
 
 export const tenderModule: ModuleDefinition = {
   home: {
-    code: '标', name: '招标中心', source: 'Synology 云盘', state: 'API已确认', stateTone: 'teal',
-    desc: '参数抽取、证据定位、资质有效期与技术应答一体化。', metric: '4,826', metricLabel: '已索引材料', tone: 'magenta',
+    code: '标', name: '招标中心', source: 'Synology 云盘路径 / 平台索引', state: '接口待核验', stateTone: 'amber',
+    desc: '参数抽取、证据定位、资质有效期与技术应答一体化。', metric: '待盘点', metricLabel: '有效材料索引', tone: 'magenta',
   },
   platform: {
     slug: 'tender', short: '标', name: '招标中心', source: 'Synology 云盘 + 平台证据索引', owner: '招标PMO',
@@ -11,17 +11,13 @@ export const tenderModule: ModuleDefinition = {
     flow: ['招标需求登记', '参数拆解', '云盘证据检索', '差异化应答', '技术复核', '结果复盘归档'],
     gates: ['注册证/资质必须在有效期', '参数不得超出证据边界', '对外应答必须留存版本和复核人'],
     kpis: [
-      { label: '待应答', value: '12', note: '3项距截止小于48小时' },
-      { label: '证据覆盖率', value: '86.4%', note: '按必须响应项统计' },
-      { label: '资质预警', value: '7', note: '90天内到期' },
-      { label: '本季中标率', value: '71.2%', note: '+8.3%同比' },
+      { label: '待应答', value: '待导入', note: '以部门真实招标台账为准' },
+      { label: '证据覆盖率', value: '待统计', note: '按必须响应项统计' },
+      { label: '资质预警', value: '待盘点', note: '需读取证照有效期' },
+      { label: '本季中标率', value: '待核验', note: '按提交与结果台账计算' },
     ],
     columns: ['项目', '客户', '截止时间', '证据覆盖', '负责人', '状态'],
-    rows: [
-      ['PGT-A试剂招标', '某省妇幼保健院', '09-03 17:00', '92%', '李文慧', '技术复核'],
-      ['胚胎植入前遗传检测服务', '某大学附属医院', '09-06 12:00', '78%', '王宁', '证据补齐'],
-      ['高通量测序平台采购', '某市人民医院', '09-12 17:00', '64%', '陈晨', '参数拆解'],
-    ],
+    rows: [['待导入', '真实招标台账', '—', '待统计', '招标PMO', '数据盘点']],
   },
   maintenance: {
     slug: 'tender', dbModule: 'tender', bmpModule: 'tender', recordName: '招标需求', titleLabel: '招标项目名称',

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { PlatformSidebar } from '@/components/platform-sidebar';
 import { BmpLoginControl, UiScaleControl } from '@/components/platform-controls';
 import { AiPlatformOverview } from '@/components/ai-platform-overview';
@@ -10,9 +11,9 @@ const moduleSlugs = platformModules.map((module) => module.slug);
 const modules = homeModules;
 
 const priorities = [
-  ['P0', '科研立项增加“项目评估”前置门禁', '产品 / 研发 / 学术', '今天'],
-  ['P0', '招标资料库权限映射与文件索引', 'IT / 学术', '09-03'],
-  ['P1', '售后SLA分级及超时升级规则确认', '学术 / 产品', '09-05'],
+  ['P0', '核验BMP现存流程、对象ID与接口字典', 'IT / BMP负责人 / 学术', '待会签', '/modules/research'],
+  ['P0', '科研历史数据只读迁移与新流程映射', 'IT / 学术PMO', '待联调', '/modules/research'],
+  ['P1', '会议与KOL真实Excel专用导入预览', '学术运营 / IT', '待开发', '/modules/events'],
 ];
 
 export default async function Home() {
@@ -44,18 +45,18 @@ export default async function Home() {
         <div className="content-wrap">
           <section className="welcome-row">
             <div>
-              <p className="eyebrow">管理总览 <span>/</span> 2026年9月1日</p>
+              <p className="eyebrow">管理总览 <span>/</span> 2026年9月5日</p>
               <h1>把事务支持，变成可量化的客户价值。</h1>
-              <p>今日聚焦：项目门禁、超时闭环、内网资料库连通。</p>
+              <p>当前重点：先确认系统边界和真实接口，再形成统一、可追溯的经营数据。</p>
             </div>
-            <button className="primary-button"><span>+</span> 新建学术任务</button>
+            <Link className="primary-button" href="/modules/research"><span>+</span> 新建科研需求</Link>
           </section>
 
           <section className="kpi-grid" aria-label="核心指标">
-            <article><p>本月价值任务</p><strong>43</strong><small><em>+12.5%</em> 环比</small></article>
-            <article><p>执行中科研项目</p><strong>157</strong><small>512 条台账待主子项目清洗</small></article>
-            <article><p>待闭环问题</p><strong>18</strong><small><em className="warn">7 项</em> 距SLA小于24小时</small></article>
-            <article><p>客户价值转化</p><strong>68.4%</strong><small><em>+6.2%</em> 近三个月</small></article>
+            <article><p>本月价值任务</p><strong>待统计</strong><small>以平台真实台账为准</small></article>
+            <article><p>执行中科研项目</p><strong>待迁移</strong><small>BMP历史项目须保留源ID并去重</small></article>
+            <article><p>待闭环问题</p><strong>待导入</strong><small>SLA口径与真实工单尚待确认</small></article>
+            <article><p>客户价值转化</p><strong>待计算</strong><small>BMP销量、会议与项目映射后生成</small></article>
           </section>
 
           <section className="focus-grid">
@@ -65,11 +66,11 @@ export default async function Home() {
                 <a href="#tasks">查看全部 ↗</a>
               </div>
               <div className="priority-list" id="tasks">
-                {priorities.map(([level, title, owner, due]) => (
+                {priorities.map(([level, title, owner, due, href]) => (
                   <div className="priority-item" key={title}>
                     <span className={`level ${level === 'P0' ? 'critical' : ''}`}>{level}</span>
                     <div><strong>{title}</strong><small>{owner}</small></div>
-                    <time>{due}</time><button aria-label={`打开${title}`}>→</button>
+                    <time>{due}</time><Link href={href} aria-label={`打开${title}`}>→</Link>
                   </div>
                 ))}
               </div>
@@ -78,12 +79,12 @@ export default async function Home() {
             <article className="focus-card value-card">
               <div className="card-heading compact"><div><p className="eyebrow">客户深度绑定</p><h2>价值转化漏斗</h2></div><span className="period">本季度 ⌄</span></div>
               <div className="funnel">
-                <div><span style={{ width: '100%' }} /><strong>126</strong><small>学术需求</small></div>
-                <div><span style={{ width: '76%' }} /><strong>96</strong><small>有效立项</small></div>
-                <div><span style={{ width: '52%' }} /><strong>66</strong><small>深度合作</small></div>
-                <div><span style={{ width: '32%' }} /><strong>41</strong><small>业绩转化</small></div>
+                <div><span style={{ width: '100%' }} /><strong>—</strong><small>学术需求</small></div>
+                <div><span style={{ width: '76%' }} /><strong>—</strong><small>有效立项</small></div>
+                <div><span style={{ width: '52%' }} /><strong>—</strong><small>深度合作</small></div>
+                <div><span style={{ width: '32%' }} /><strong>—</strong><small>业绩转化</small></div>
               </div>
-              <p className="insight"><span>↗</span><b>核心判断</b>学术动作必须关联客户、商机与销量，否则只是记录工作量。</p>
+              <p className="insight"><span>↗</span><b>统计原则</b>未关联客户ID、项目ID和BMP销量事实前，不生成转化率结论。</p>
             </article>
           </section>
 

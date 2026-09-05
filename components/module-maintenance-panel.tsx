@@ -7,6 +7,7 @@ import { getMaintenanceConfig, type MaintenanceModuleSlug } from '@/lib/platform
 type WorkItemRecord = {
   id: string;
   externalId?: string | null;
+  customerId?: string | null;
   title: string;
   customerName?: string | null;
   region?: string | null;
@@ -15,6 +16,7 @@ type WorkItemRecord = {
   stage: string;
   dueAt?: number | null;
   source: string;
+  verificationStatus?: string;
   ownerName?: string;
   fields: Record<string, unknown>;
   updatedAt: number;
@@ -24,6 +26,8 @@ type ApiError = { error?: string };
 
 export function ModuleMaintenancePanel({ moduleSlug }: { moduleSlug: MaintenanceModuleSlug }) {
   const config = getMaintenanceConfig(moduleSlug)!;
+  const bmpSyncVerified = config.bmpSyncStatus === 'verified';
+  const directExcelImport = config.excelImportMode !== 'preview_required';
   const fileInput = useRef<HTMLInputElement>(null);
   const [records, setRecords] = useState<WorkItemRecord[]>([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -93,9 +97,13 @@ export function ModuleMaintenancePanel({ moduleSlug }: { moduleSlug: Maintenance
   }
 
   async function syncBmp() {
+    if (!bmpSyncVerified) {
+      setError('该模块的 BMP 接口、字段和权限尚未通过 IT 验收，当前不能同步。');
+      return;
+    }
     setBusy('sync');
     setError('');
-    setMessage('正在从 BMP 拉取并写入平台…');
+    setMessage('正在读取已验收的 BMP 接口…');
     let cursor: string | undefined;
     let total = 0;
     let pages = 0;
@@ -112,7 +120,7 @@ export function ModuleMaintenancePanel({ moduleSlug }: { moduleSlug: Maintenance
         cursor = result.nextCursor || undefined;
         pages += 1;
       } while (cursor && pages < 20);
-      setMessage(`BMP 同步完成，本次写入 ${total} 条记录${cursor ? '；剩余数据请再次同步' : ''}。`);
+      setMessage(`已从验收接口读取并写入 ${total} 条记录${cursor ? '；剩余数据请再次同步' : ''}。请按源系统ID抽样核验。`);
       await loadRecords();
     } catch (caught) {
       setMessage('');
@@ -123,6 +131,11 @@ export function ModuleMaintenancePanel({ moduleSlug }: { moduleSlug: Maintenance
   }
 
   async function importExcel(file: File) {
+    if (!directExcelImport) {
+      setError('该模块需使用专用的 Excel 预览—校验—确认导入流程，通用直写已停用。');
+      if (fileInput.current) fileInput.current.value = '';
+      return;
+    }
     setBusy('import');
     setError('');
     setMessage('正在读取 Excel 并校验字段…');
@@ -246,7 +259,7 @@ export function ModuleMaintenancePanel({ moduleSlug }: { moduleSlug: Maintenance
         <div>
           <p className="eyebrow">统一数据入口</p>
           <h2>{config.recordName}维护</h2>
-          <p>人工新建、BMP 拉取、Excel 批量导入和台账导出统一在这里完成。</p>
+          <p>人工新建、Excel 导入和台账导出在这里完成；BMP 仅在接口契约通过 IT 验收后开放同步。</p>
         </div>
         <span>{loading ? '读取中' : `${records.length} 条平台记录`}</span>
       </div>
@@ -255,8 +268,8 @@ export function ModuleMaintenancePanel({ moduleSlug }: { moduleSlug: Maintenance
         <button type="button" className="primary" onClick={() => setFormOpen((value) => !value)} disabled={Boolean(busy)}>
           <b>＋</b>{formOpen ? '收起录入' : `新建${config.recordName}`}
         </button>
-        <button type="button" onClick={() => void syncBmp()} disabled={Boolean(busy)}><b>↻</b>{busy === 'sync' ? 'BMP 同步中' : '从 BMP 拉取'}</button>
-        <button type="button" onClick={() => fileInput.current?.click()} disabled={Boolean(busy)}><b>↑</b>{busy === 'import' ? 'Excel 导入中' : 'Excel 批量导入'}</button>
+        <button type="button" onClick={() => void syncBmp()} disabled={Boolean(busy) || !bmpSyncVerified} title={bmpSyncVerified ? '从已验收的BMP模块接口读取' : 'BMP模块接口待IT确认'}><b>↻</b>{busy === 'sync' ? 'BMP 同步中' : bmpSyncVerified ? '从 BMP 拉取' : 'BMP接口待确认'}</button>
+        <button type="button" onClick={() => fileInput.current?.click()} disabled={Boolean(busy) || !directExcelImport} title={directExcelImport ? '导入标准模板' : '需先完成专用预览导入器'}><b>↑</b>{busy === 'import' ? 'Excel 导入中' : directExcelImport ? 'Excel 批量导入' : '专用导入待完成'}</button>
         <button type="button" onClick={() => void exportExcel(false)} disabled={Boolean(busy)}><b>↓</b>{busy === 'export' ? '正在导出' : '导出当前台账'}</button>
         <button type="button" className="subtle" onClick={() => void exportExcel(true)} disabled={Boolean(busy)}>{busy === 'template' ? '生成中' : '下载导入模板'}</button>
         <input ref={fileInput} className="hidden-file-input" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importExcel(file); }} />
@@ -297,15 +310,15 @@ export function ModuleMaintenancePanel({ moduleSlug }: { moduleSlug: Maintenance
             {!loading && records.map((record) => (
               <tr key={record.id}>
                 <td><strong>{record.title}</strong><small>{record.priority} · {record.status}</small></td>
-                <td>{record.customerName || '—'}</td>
+                <td>{record.customerName || '—'}<small>{record.customerId ? `BMP ID：${record.customerId}` : record.customerName ? 'BMP ID待映射' : ''}</small></td>
                 <td>{record.region || '—'}</td>
                 <td><span className="record-stage">{record.stage}</span></td>
                 <td>{record.ownerName || '—'}</td>
-                <td><span className={`record-source ${record.source}`}>{sourceLabel(record.source)}</span></td>
+                <td><span className={`record-source ${record.source}`}>{sourceLabel(record.source, record.verificationStatus)}</span></td>
                 <td>{formatDate(record.updatedAt)}</td>
               </tr>
             ))}
-            {!loading && !records.length && <tr><td colSpan={7} className="record-empty">暂无平台记录。可人工新建、从 BMP 拉取，或下载 Excel 模板后批量导入。</td></tr>}
+            {!loading && !records.length && <tr><td colSpan={7} className="record-empty">暂无平台记录。可先人工新建或使用适用的 Excel 导入；BMP 数据须待模块接口通过 IT 验收后同步。</td></tr>}
             {loading && <tr><td colSpan={7} className="record-empty">正在读取平台记录…</td></tr>}
           </tbody>
         </table>
@@ -393,15 +406,19 @@ function formatDate(value?: number | null) {
 
 function today() { return formatDate(Date.now()); }
 
-function sourceLabel(source: string) {
-  if (source === 'bmp') return 'BMP';
-  if (source === 'excel') return 'Excel导入';
-  return '人工新建';
+function sourceLabel(source: string, verificationStatus?: string) {
+  const verified = verificationStatus === 'verified';
+  if (source === 'bmp') return verified ? 'BMP·已核验' : 'BMP·待核验';
+  if (source === 'excel') return verified ? 'Excel·已确认' : 'Excel·未核验';
+  if (source === 'manual') return '人工草稿·未核验';
+  if (source === 'demo') return '演示数据';
+  return '来源待核验';
 }
 
 function apiMessage(status: number, serverMessage?: string) {
   if (status === 401) return '请先登录平台后再维护数据。';
   if (status === 403) return '当前账号无 BMP 同步权限；人工新建和 Excel 导入仍可使用。';
+  if (status === 501) return '该模块 BMP 接口尚未通过 IT 验收，当前不能同步。';
   return serverMessage || '操作失败，请稍后重试。';
 }
 

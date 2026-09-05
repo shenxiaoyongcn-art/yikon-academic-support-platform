@@ -20,6 +20,8 @@ type WorkItemInput = {
 
 type StoredPayload = Record<string, unknown> & {
   _source?: string;
+  _sourceVerified?: boolean;
+  _verificationStatus?: string;
   ownerName?: string;
 };
 
@@ -29,13 +31,15 @@ export async function GET(request: NextRequest, { params }: Props) {
   try {
     await requireActor();
     const { module } = await params;
+    if (module === 'research') return NextResponse.json({ error: '科研模块已迁移至独立项目聚合与 /api/research；旧通用工作项入口只读停用，禁止形成第二套科研台账。' }, { status: 410 });
     const config = getMaintenanceConfig(module);
     if (!config) return NextResponse.json({ error: '不支持该业务模块。' }, { status: 404 });
 
     const requestedLimit = Number(request.nextUrl.searchParams.get('limit') || 100);
     const limit = Number.isFinite(requestedLimit) ? Math.min(500, Math.max(1, Math.round(requestedLimit))) : 100;
-    const result = await env.DB.prepare(`SELECT id, external_id AS externalId, title, customer_name AS customerName, region, priority, status, stage, due_at AS dueAt, payload_json AS payloadJson, created_at AS createdAt, updated_at AS updatedAt FROM work_items WHERE module = ? ORDER BY updated_at DESC LIMIT ?`)
-      .bind(config.dbModule, limit)
+    const scope = dataScope(actor);
+    const result = await env.DB.prepare(`SELECT id, external_id AS externalId, title, customer_id AS customerId, customer_name AS customerName, region, priority, status, stage, due_at AS dueAt, payload_json AS payloadJson, created_at AS createdAt, updated_at AS updatedAt FROM work_items WHERE module = ?${scope.sql} ORDER BY updated_at DESC LIMIT ?`)
+      .bind(config.dbModule, ...scope.values, limit)
       .all();
 
     const items = result.results.map((row) => {
@@ -44,13 +48,15 @@ export async function GET(request: NextRequest, { params }: Props) {
         id: row.id,
         externalId: row.externalId,
         title: row.title,
+        customerId: row.customerId,
         customerName: row.customerName,
         region: row.region,
         priority: row.priority,
         status: row.status,
         stage: row.stage,
         dueAt: row.dueAt,
-        source: payload._source || (row.externalId ? 'bmp' : 'manual'),
+        source: explicitSource(payload._source),
+        verificationStatus: payload._verificationStatus || (payload._source === 'bmp' && payload._sourceVerified === true ? 'verified' : 'unverified'),
         ownerName: payload.ownerName || '',
         fields: Object.fromEntries(config.fields.map((field) => [field.key, payload[field.key] ?? ''])),
         createdAt: row.createdAt,
@@ -70,11 +76,15 @@ export async function POST(request: NextRequest, { params }: Props) {
   try {
     const actor = await requireActor();
     const { module } = await params;
+    if (module === 'research') return NextResponse.json({ error: '科研模块已迁移至独立项目聚合与 /api/research；旧通用工作项入口已停用，禁止写入第二套科研台账。' }, { status: 410 });
     const config = getMaintenanceConfig(module);
     if (!config) return NextResponse.json({ error: '不支持该业务模块。' }, { status: 404 });
 
     const body = await request.json() as { source?: unknown; record?: WorkItemInput; records?: WorkItemInput[] };
     const source = body.source === 'excel' ? 'excel' : 'manual';
+    if (source === 'excel' && config.excelImportMode === 'preview_required') {
+      return NextResponse.json({ error: '该模块必须使用专用的预览—校验—确认导入流程，禁止通用Excel直接写入。' }, { status: 409 });
+    }
     const incoming = Array.isArray(body.records) ? body.records : body.record ? [body.record] : [];
     if (!incoming.length) return NextResponse.json({ error: '没有可保存的记录。' }, { status: 400 });
     if (incoming.length > 500) return NextResponse.json({ error: '单次最多导入 500 条记录，请拆分后重试。' }, { status: 400 });
@@ -99,7 +109,16 @@ export async function POST(request: NextRequest, { params }: Props) {
       const status = cleanText(input.status, 80) || config.defaultStatus;
       const dueAt = parseDate(input.dueDate);
       const ownerName = cleanText(input.ownerName, 80) || actorName;
-      const payload: StoredPayload = { _source: source, ownerName, createdBy: actorName };
+      const region = cleanText(input.region, 80);
+      if (region && actor.role !== 'admin' && !actor.dataRegions.includes('*') && !actor.dataRegions.includes(region)) return NextResponse.json({ error: `第 ${index + 1} 条记录不在当前账号的数据区域范围内。` }, { status: 403 });
+      const payload: StoredPayload = {
+        _source: source,
+        _verificationStatus: 'unverified',
+        _customerMappingStatus: cleanText(input.customerName, 200) ? 'pending' : 'not_applicable',
+        _externalReferenceStatus: 'unverified',
+        ownerName,
+        createdBy: actorName,
+      };
       for (const field of config.fields) {
         const value = cleanText(input[field.key], field.type === 'textarea' ? 2000 : 300);
         if (field.required && !value) return NextResponse.json({ error: `第 ${index + 1} 条记录缺少“${field.label}”。` }, { status: 400 });
@@ -114,7 +133,7 @@ export async function POST(request: NextRequest, { params }: Props) {
             config.dbModule,
             title,
             cleanText(input.customerName, 200) || null,
-            cleanText(input.region, 80) || null,
+            region || null,
             priority,
             status,
             stage,
@@ -162,6 +181,16 @@ function parsePayload(value: unknown): StoredPayload {
   } catch {
     return {};
   }
+}
+
+function explicitSource(value: unknown) {
+  return typeof value === 'string' && ['bmp', 'excel', 'manual', 'demo'].includes(value) ? value : 'unknown';
+}
+
+function dataScope(actor: Awaited<ReturnType<typeof requireActor>>) {
+  if (actor.role === 'admin' || actor.dataRegions.includes('*')) return { sql: '', values: [] as string[] };
+  if (!actor.dataRegions.length) return { sql: ' AND owner_id = ?', values: [actor.id] };
+  return { sql: ` AND (owner_id = ? OR region IN (${actor.dataRegions.map(() => '?').join(',')}))`, values: [actor.id, ...actor.dataRegions] };
 }
 
 async function runBatches(statements: Array<ReturnType<typeof env.DB.prepare>>) {

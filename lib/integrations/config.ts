@@ -20,17 +20,21 @@ export function bmpConfig() {
   return {
     baseUrl,
     token,
-    authPath: process.env.BMP_AUTH_PATH || '/api/v1/auth/login',
-    state: !baseUrl ? 'not_configured' as const : token ? 'ready' as const : 'missing_credentials' as const,
+    authPath: process.env.BMP_AUTH_PATH?.trim() || '',
+    authContractVerified: process.env.BMP_AUTH_CONTRACT_VERIFIED === 'true',
+    authContractVersion: process.env.BMP_AUTH_CONTRACT_VERSION?.trim() || '',
+    apiContractVersion: process.env.BMP_API_CONTRACT_VERSION?.trim() || '',
+    healthPath: process.env.BMP_HEALTH_PATH?.trim() || '',
+    state: !baseUrl ? 'not_configured' as const : token && process.env.BMP_API_CONTRACT_VERSION?.trim() ? 'ready' as const : 'missing_credentials' as const,
     paths: {
-      tender: process.env.BMP_TENDER_PATH || '/api/v1/tender-projects',
-      research: process.env.BMP_RESEARCH_PATH || '/api/v1/research-projects',
-      aftersales: process.env.BMP_AFTERSALES_PATH || '/api/v1/aftersales-tickets',
-      events: process.env.BMP_EVENTS_PATH || '/api/v1/academic-events',
-      salesAnalytics: process.env.BMP_SALES_ANALYTICS_PATH || '/api/v1/sales-analytics',
-      pgdReview: process.env.BMP_PGD_REVIEW_PATH || '/api/v1/pgd-reviews',
-      pgdCenters: process.env.BMP_PGD_CENTERS_PATH || '/api/v1/pgd-centers',
-      training: process.env.BMP_TRAINING_PATH || '/api/v1/genetic-counseling-training',
+      tender: process.env.BMP_TENDER_PATH?.trim() || '',
+      research: process.env.BMP_RESEARCH_PATH?.trim() || '',
+      aftersales: process.env.BMP_AFTERSALES_PATH?.trim() || '',
+      events: process.env.BMP_EVENTS_PATH?.trim() || '',
+      salesAnalytics: process.env.BMP_SALES_ANALYTICS_PATH?.trim() || '',
+      pgdReview: process.env.BMP_PGD_REVIEW_PATH?.trim() || '',
+      pgdCenters: process.env.BMP_PGD_CENTERS_PATH?.trim() || '',
+      training: process.env.BMP_TRAINING_PATH?.trim() || '',
     },
   };
 }
@@ -41,7 +45,8 @@ export function medicalLabConfig() {
   return {
     baseUrl,
     token,
-    metricsPath: process.env.MEDICAL_LAB_METRICS_PATH || '/api/v1/hospital-operation-metrics',
+    metricsPath: process.env.MEDICAL_LAB_METRICS_PATH?.trim() || '',
+    healthPath: process.env.MEDICAL_LAB_HEALTH_PATH?.trim() || '',
     state: !baseUrl ? 'not_configured' as const : token ? 'ready' as const : 'missing_credentials' as const,
   };
 }

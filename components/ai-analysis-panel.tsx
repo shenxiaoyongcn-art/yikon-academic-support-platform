@@ -6,7 +6,7 @@ import type { ModuleSlug } from '@/lib/platform/catalog';
 
 const capabilities = [
   { code: '析', title: '数据二次分析', note: '清洗、汇总、异常与薄弱点识别' },
-  { code: '知', title: '知识库检索', note: '连接云盘证据、SOP与历史案例' },
+  { code: '知', title: '知识库检索', note: '支持接入云盘索引、SOP与历史案例' },
   { code: '流', title: '全流程检查', note: '节点、时限、门禁和闭环缺口' },
   { code: '策', title: '决策支持', note: '把问题转成责任动作和复核节点' },
 ];
@@ -49,7 +49,7 @@ export function AiAnalysisPanel({ moduleSlug, moduleName }: { moduleSlug: Module
 
       <div className="ai-run-bar">
         <label><span>本次重点（选填）</span><input value={focus} onChange={(event) => setFocus(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void runAnalysis(); }} maxLength={160} placeholder="例如：找出销量薄弱医院、逾期项目或评审材料缺口" /></label>
-        <button type="button" onClick={() => void runAnalysis()} disabled={loading}>{loading ? '正在读取真实数据…' : '生成当前模块研判'}</button>
+        <button type="button" onClick={() => void runAnalysis()} disabled={loading}>{loading ? '正在读取当前台账…' : '生成当前模块研判'}</button>
       </div>
 
       {error && <p className="ai-panel-error">{error}</p>}

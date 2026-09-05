@@ -1,0 +1,1 @@
+ALTER TABLE `research_budget_audit` ADD `platform_planned_delta` integer DEFAULT 0 NOT NULL;

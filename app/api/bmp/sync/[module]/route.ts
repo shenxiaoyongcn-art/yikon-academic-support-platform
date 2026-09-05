@@ -3,12 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { BmpConnector, type BmpModule } from '@/lib/integrations/bmp';
 import { getMaintenanceConfigByDbModule, type WorkItemModule } from '@/lib/platform/module-maintenance';
 import { AccessDeniedError, requireActor } from '@/lib/security/access';
-import { getBmpSessionToken } from '@/lib/security/bmp-session';
+import { getBmpSessionIdentity, getBmpSessionToken } from '@/lib/security/bmp-session';
 
 const allowedModules = new Set<BmpModule>(['tender', 'research', 'aftersales', 'events', 'salesAnalytics', 'pgdReview', 'pgdCenters', 'training']);
 const workItemModules: Partial<Record<BmpModule, WorkItemModule>> = {
   tender: 'tender',
-  research: 'research',
   aftersales: 'aftersales',
   events: 'events',
   salesAnalytics: 'analytics',
@@ -16,25 +15,45 @@ const workItemModules: Partial<Record<BmpModule, WorkItemModule>> = {
   training: 'training',
 };
 type Props = { params: Promise<{ module: string }> };
+type CanonicalBmpItem = {
+  externalId: string;
+  title: string;
+  customerId?: string | null;
+  customerName?: string | null;
+  region?: string | null;
+  priority?: 'P0' | 'P1' | 'P2' | 'P3';
+  status: string;
+  stage: string;
+  ownerExternalId?: string | null;
+  ownerName?: string | null;
+  dueAt?: string | number | null;
+  sourceUpdatedAt: string | number;
+  sourceVersion: string;
+  fields?: Record<string, string | number | boolean | null>;
+};
 
 export async function POST(request: NextRequest, { params }: Props) {
   try {
     const actor = await requireActor();
-    const userToken = await getBmpSessionToken();
-    if (!userToken && actor.role !== 'admin') {
-      return NextResponse.json({ error: '请先使用 BMP 邮箱账号登录，再拉取 BMP 数据。' }, { status: 403 });
-    }
     const { module } = await params;
     if (!allowedModules.has(module as BmpModule)) return NextResponse.json({ error: '不支持该 BMP 模块。' }, { status: 404 });
     const bmpModule = module as BmpModule;
     const dbModule = workItemModules[bmpModule];
     if (!dbModule) return NextResponse.json({ error: '该 BMP 数据使用独立业务表，不能写入通用台账。' }, { status: 400 });
+    const config = getMaintenanceConfigByDbModule(dbModule);
+    if (!config) return NextResponse.json({ error: '模块字段配置缺失。' }, { status: 500 });
+    if (config.bmpSyncStatus !== 'verified') {
+      return NextResponse.json({ error: '该模块 BMP 接口、字段映射和权限尚未通过 IT 验收。' }, { status: 501 });
+    }
+    const [userToken, bmpIdentity] = await Promise.all([getBmpSessionToken(), getBmpSessionIdentity()]);
+    if (!userToken || !bmpIdentity) {
+      return NextResponse.json({ error: '请先使用 BMP 邮箱账号完成身份验证，再读取已验收接口。' }, { status: 403 });
+    }
+    if (bmpIdentity.email.toLowerCase() !== actor.email.toLowerCase()) return NextResponse.json({ error: '平台身份与BMP身份尚未完成同一员工映射，不能发起同步。' }, { status: 403 });
 
     const body = await request.json().catch(() => ({})) as { cursor?: string; updatedAfter?: string };
     const startedAt = Date.now();
-    const page = await new BmpConnector(userToken || undefined).list<Record<string, unknown>>(bmpModule, body.cursor, body.updatedAfter);
-    const config = getMaintenanceConfigByDbModule(dbModule);
-    if (!config) return NextResponse.json({ error: '模块字段配置缺失。' }, { status: 500 });
+    const page = await new BmpConnector(userToken).list<CanonicalBmpItem>(bmpModule, body.cursor, body.updatedAfter);
 
     const statements = [
       env.DB.prepare(`INSERT INTO users (id, email, display_name, role, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, 1, ?, ?) ON CONFLICT(id) DO UPDATE SET email = excluded.email, display_name = excluded.display_name, role = excluded.role, enabled = 1, updated_at = excluded.updated_at`)
@@ -42,37 +61,38 @@ export async function POST(request: NextRequest, { params }: Props) {
     ];
 
     for (const item of page.items) {
-      const externalId = await bmpExternalId(bmpModule, item);
-      const title = pickText(item, titleKeys[bmpModule] || titleKeys.default) || `${config.recordName}-${externalId.slice(-8)}`;
-      const customerName = pickText(item, ['customerName', 'hospitalName', 'institutionName', 'centerName', 'accountName']);
-      const region = pickText(item, ['region', 'province', 'area', 'territory']);
-      const priorityValue = pickText(item, ['priority', 'severity']);
-      const priority = ['P0', 'P1', 'P2', 'P3'].includes(priorityValue) ? priorityValue : 'P2';
-      const status = pickText(item, ['status', 'state', 'workflowStatus']) || config.defaultStatus;
-      const stage = pickText(item, ['stage', 'currentStage', 'reviewStage', 'milestone']) || config.stages[0];
-      const dueAt = pickDate(item, ['dueAt', 'dueDate', 'deadline', 'plannedAt', 'eventDate', 'plannedReviewAt']);
-      const sourceUpdatedAt = pickDate(item, ['updatedAt', 'sourceUpdatedAt', 'modifiedAt', 'lastModifiedAt']) || startedAt;
-      const ownerName = pickText(item, ['ownerName', 'owner', 'assigneeName', 'managerName']) || actor.displayName || actor.email;
-      const payload: Record<string, unknown> = { _source: 'bmp', ownerName, bmpModule };
+      const normalized = canonicalItem(item);
+      const externalId = `${bmpModule}:${normalized.externalId}`.slice(0, 160);
+      const dueAt = timestamp(normalized.dueAt, true);
+      const sourceUpdatedAt = timestamp(normalized.sourceUpdatedAt, false)!;
+      const payload: Record<string, unknown> = {
+        _source: 'bmp',
+        _sourceVerified: true,
+        _verificationMethod: 'accepted-module-contract',
+        _sourceVersion: normalized.sourceVersion,
+        _sourceUpdatedAt: sourceUpdatedAt,
+        ownerExternalId: normalized.ownerExternalId || '',
+        ownerName: normalized.ownerName || '',
+        bmpModule,
+      };
       for (const field of config.fields) {
-        const value = item[field.key];
+        const value = normalized.fields?.[field.key];
         if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') payload[field.key] = value;
       }
       const now = Date.now();
       statements.push(
-        env.DB.prepare(`INSERT INTO work_items (id, external_id, module, title, customer_id, customer_name, region, priority, status, stage, owner_id, due_at, source_updated_at, payload_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(module, external_id) DO UPDATE SET title = excluded.title, customer_id = excluded.customer_id, customer_name = excluded.customer_name, region = excluded.region, priority = excluded.priority, status = excluded.status, stage = excluded.stage, owner_id = excluded.owner_id, due_at = excluded.due_at, source_updated_at = excluded.source_updated_at, payload_json = excluded.payload_json, updated_at = excluded.updated_at`)
+        env.DB.prepare(`INSERT INTO work_items (id, external_id, module, title, customer_id, customer_name, region, priority, status, stage, owner_id, due_at, source_updated_at, payload_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?) ON CONFLICT(module, external_id) DO UPDATE SET title = excluded.title, customer_id = excluded.customer_id, customer_name = excluded.customer_name, region = excluded.region, priority = excluded.priority, status = excluded.status, stage = excluded.stage, due_at = excluded.due_at, source_updated_at = excluded.source_updated_at, payload_json = excluded.payload_json, updated_at = excluded.updated_at WHERE work_items.source_updated_at IS NULL OR excluded.source_updated_at >= work_items.source_updated_at`)
           .bind(
             crypto.randomUUID(),
             externalId,
             dbModule,
-            title.slice(0, 200),
-            pickText(item, ['customerId', 'hospitalId', 'institutionId']) || null,
-            customerName || null,
-            region || null,
-            priority,
-            status.slice(0, 80),
-            stage.slice(0, 80),
-            actor.id,
+            normalized.title.slice(0, 200),
+            normalized.customerId || null,
+            normalized.customerName || null,
+            normalized.region || null,
+            normalized.priority || 'P2',
+            normalized.status.slice(0, 80),
+            normalized.stage.slice(0, 80),
             dueAt,
             sourceUpdatedAt,
             JSON.stringify(payload),
@@ -107,45 +127,21 @@ export async function POST(request: NextRequest, { params }: Props) {
   }
 }
 
-const titleKeys: Record<string, string[]> = {
-  tender: ['tenderName', 'projectName', 'title', 'name'],
-  research: ['projectName', 'researchName', 'title', 'name'],
-  aftersales: ['issueTitle', 'ticketTitle', 'title', 'subject'],
-  events: ['eventName', 'meetingName', 'lectureName', 'title'],
-  salesAnalytics: ['analysisName', 'reportName', 'productName', 'title'],
-  pgdReview: ['projectName', 'hospitalName', 'institutionName', 'title'],
-  training: ['requestName', 'trainingName', 'courseName', 'title'],
-  default: ['title', 'name'],
-};
-
-function pickText(item: Record<string, unknown>, keys: string[]) {
-  for (const key of keys) {
-    const value = item[key];
-    if (typeof value === 'string' && value.trim()) return value.trim();
-    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+function canonicalItem(item: CanonicalBmpItem) {
+  if (!item || typeof item !== 'object') throw new Error('BMP item is not an object.');
+  for (const [key, value] of Object.entries({ externalId: item.externalId, title: item.title, status: item.status, stage: item.stage, sourceVersion: item.sourceVersion })) {
+    if (typeof value !== 'string' || !value.trim()) throw new Error(`BMP canonical field ${key} is missing.`);
   }
-  return '';
+  if (item.externalId.length > 120 || item.title.length > 200 || item.status.length > 80 || item.stage.length > 80 || item.sourceVersion.length > 120) throw new Error('BMP canonical field is too long.');
+  timestamp(item.sourceUpdatedAt, false);
+  return item;
 }
 
-function pickDate(item: Record<string, unknown>, keys: string[]) {
-  for (const key of keys) {
-    const value = item[key];
-    if (typeof value === 'number' && Number.isFinite(value)) return value < 10_000_000_000 ? value * 1000 : value;
-    if (typeof value === 'string' && value.trim()) {
-      const timestamp = Date.parse(value);
-      if (Number.isFinite(timestamp)) return timestamp;
-    }
-  }
-  return null;
-}
-
-async function bmpExternalId(module: BmpModule, item: Record<string, unknown>) {
-  const sourceId = pickText(item, ['externalId', 'id', 'code', 'projectId', 'ticketId', 'eventId', 'hospitalId']);
-  if (sourceId) return `${module}:${sourceId}`.slice(0, 160);
-  const serialized = JSON.stringify(item, Object.keys(item).sort());
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(serialized));
-  const hash = Array.from(new Uint8Array(digest)).slice(0, 12).map((byte) => byte.toString(16).padStart(2, '0')).join('');
-  return `${module}:hash:${hash}`;
+function timestamp(value: string | number | null | undefined, optional: boolean) {
+  if ((value === null || value === undefined || value === '') && optional) return null;
+  const parsed = typeof value === 'number' ? (value < 10_000_000_000 ? value * 1000 : value) : Date.parse(String(value));
+  if (!Number.isFinite(parsed) || parsed <= 0) throw new Error('BMP canonical timestamp is invalid.');
+  return parsed;
 }
 
 async function runBatches(statements: Array<ReturnType<typeof env.DB.prepare>>) {

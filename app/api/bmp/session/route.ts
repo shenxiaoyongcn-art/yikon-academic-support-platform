@@ -4,18 +4,28 @@ import { bmpConfig } from '@/lib/integrations/config';
 import { BMP_IDENTITY_COOKIE, BMP_SESSION_COOKIE, bmpTokenHash, encodeBmpIdentity, getBmpSessionIdentity, getBmpSessionToken } from '@/lib/security/bmp-session';
 
 type LoginPayload = { name?: unknown; email?: unknown; password?: unknown };
-type BmpLoginResponse = Record<string, unknown> & { data?: Record<string, unknown>; user?: Record<string, unknown> };
+type BmpLoginResponseV1 = {
+  contractVersion: string;
+  accessToken: string;
+  expiresIn: number;
+  user: { id: string; email: string; displayName: string };
+};
+
+const supportedAuthContract = 'yikon-bmp-auth-v1';
 
 export async function GET() {
   const [token, identity] = await Promise.all([getBmpSessionToken(), getBmpSessionIdentity()]);
+  const config = bmpConfig();
   return NextResponse.json(
-    { authenticated: Boolean(token && identity), identity: token && identity ? identity : null },
+    { authenticated: Boolean(token && identity), identity: token && identity ? identity : null, contractVerified: authContractReady(config), contractVersion: config.authContractVersion || null, supportedContractVersion: supportedAuthContract },
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }
 
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) return NextResponse.json({ error: '登录请求来源无效。' }, { status: 403 });
+  const config = bmpConfig();
+  if (!authContractReady(config)) return NextResponse.json({ error: 'BMP身份认证契约尚未经IT验收，平台不接收BMP密码。' }, { status: 501 });
   const body = await request.json().catch(() => ({})) as LoginPayload;
   const name = clean(body.name, 80);
   const email = clean(body.email, 160).toLowerCase();
@@ -24,8 +34,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '请完整填写姓名、BMP 邮箱账号和密码。' }, { status: 400 });
   }
 
-  const config = bmpConfig();
-  if (!config.baseUrl) return NextResponse.json({ error: 'BMP 登录接口尚未配置，请联系 IT。' }, { status: 503 });
+  if (!config.baseUrl || !config.authPath) return NextResponse.json({ error: 'BMP 登录地址或认证路径尚未由 IT 配置。' }, { status: 503 });
 
   try {
     const controller = new AbortController();
@@ -34,24 +43,20 @@ export async function POST(request: NextRequest) {
     try {
       bmpResponse = await fetch(`${config.baseUrl}${config.authPath}`, {
         method: 'POST',
-        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email, email, password }),
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-BMP-Contract-Version': supportedAuthContract },
+        body: JSON.stringify({ contractVersion: supportedAuthContract, email, password }),
         signal: controller.signal,
       });
     } finally {
       clearTimeout(timeout);
     }
 
-    const result = await bmpResponse.json().catch(() => ({})) as BmpLoginResponse;
+    const result = await bmpResponse.json().catch(() => null) as unknown;
     if (!bmpResponse.ok) return NextResponse.json({ error: 'BMP 邮箱账号或密码不正确。' }, { status: 401 });
-    const token = pickString(result, ['accessToken', 'access_token', 'token']) || pickString(result.data, ['accessToken', 'access_token', 'token']);
-    if (!token) return NextResponse.json({ error: 'BMP 登录成功但未返回访问令牌，请 IT 核对接口字段。' }, { status: 502 });
-
-    const user = result.user || (result.data?.user as Record<string, unknown> | undefined) || {};
-    const bmpEmail = pickString(user, ['email', 'username']) || email;
-    const bmpName = pickString(user, ['displayName', 'fullName', 'name']) || name;
-    const bmpUserId = pickString(user, ['id', 'userId', 'externalId']) || `bmp:${bmpEmail.toLowerCase()}`;
-    const expiresIn = boundedExpiry(result.expiresIn ?? result.expires_in ?? result.data?.expiresIn ?? result.data?.expires_in);
+    const accepted = acceptAuthResponse(result, email);
+    if (!accepted) return NextResponse.json({ error: `BMP认证响应不符合已验收契约 ${supportedAuthContract}，未建立平台会话。` }, { status: 502 });
+    const { accessToken: token, expiresIn, user } = accepted;
+    const bmpEmail = user.email.toLowerCase(), bmpName = user.displayName, bmpUserId = user.id;
     await env.DB.prepare('INSERT INTO platform_sessions (token_hash, identity_json, expires_at) VALUES (?, ?, ?) ON CONFLICT(token_hash) DO UPDATE SET identity_json = excluded.identity_json, expires_at = excluded.expires_at').bind(await bmpTokenHash(token), JSON.stringify({ userId: bmpUserId, name: bmpName, email: bmpEmail }), Date.now() + expiresIn * 1000).run();
     const response = NextResponse.json({ authenticated: true, identity: { userId: bmpUserId, name: bmpName, email: bmpEmail } });
     const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax' as const, path: '/', maxAge: expiresIn };
@@ -75,25 +80,23 @@ export async function DELETE(request: NextRequest) {
   return response;
 }
 
-function pickString(value: Record<string, unknown> | undefined, keys: string[]) {
-  if (!value) return '';
-  for (const key of keys) {
-    const candidate = value[key];
-    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
-    if (typeof candidate === 'number' && Number.isFinite(candidate)) return String(candidate);
-  }
-  return '';
-}
-
-function boundedExpiry(value: unknown) {
-  const seconds = Number(value);
-  if (!Number.isFinite(seconds)) return 8 * 60 * 60;
-  return Math.min(12 * 60 * 60, Math.max(15 * 60, Math.round(seconds)));
+function acceptAuthResponse(value: unknown, requestedEmail: string): BmpLoginResponseV1 | null {
+  if (!value || typeof value !== 'object') return null;
+  const candidate = value as Partial<BmpLoginResponseV1>;
+  if (candidate.contractVersion !== supportedAuthContract || typeof candidate.accessToken !== 'string' || candidate.accessToken.length < 16 || candidate.accessToken.length > 3000) return null;
+  if (!Number.isInteger(candidate.expiresIn) || Number(candidate.expiresIn) < 15 * 60 || Number(candidate.expiresIn) > 12 * 60 * 60) return null;
+  const user = candidate.user;
+  if (!user || typeof user.id !== 'string' || !user.id.trim() || user.id.length > 160 || typeof user.email !== 'string' || !validEmail(user.email) || user.email.toLowerCase() !== requestedEmail || typeof user.displayName !== 'string' || !user.displayName.trim() || user.displayName.length > 80) return null;
+  return { contractVersion: candidate.contractVersion, accessToken: candidate.accessToken, expiresIn: Number(candidate.expiresIn), user: { id: user.id.trim(), email: user.email.toLowerCase(), displayName: user.displayName.trim() } };
 }
 
 function sameOrigin(request: NextRequest) {
   const origin = request.headers.get('origin');
   return !origin || origin === request.nextUrl.origin;
+}
+
+function authContractReady(config: ReturnType<typeof bmpConfig>) {
+  return config.authContractVerified && Boolean(config.authPath) && config.authContractVersion === supportedAuthContract;
 }
 
 function validEmail(value: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); }

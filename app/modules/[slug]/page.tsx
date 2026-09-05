@@ -57,7 +57,7 @@ export default async function ModulePage({ params }: Props) {
 
         {platformModule.lifecycle && (
           <section className="lifecycle-card">
-            <div className="card-heading"><div><p className="eyebrow">PGT中心全生命周期</p><h2>从资质申报到诊疗能力建设</h2></div><span className="owner">数据对接 BMP 后自动统计</span></div>
+            <div className="card-heading"><div><p className="eyebrow">PGT中心全生命周期</p><h2>从资质申报到诊疗能力建设</h2></div><span className="owner">资质台账已导入；运营指标待BMP/医检所对接</span></div>
             <div className="lifecycle-flow">
               {platformModule.lifecycle.map((item, index) => (
                 <article key={item.stage}>

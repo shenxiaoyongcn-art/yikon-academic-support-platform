@@ -14,10 +14,21 @@ const moduleActions: Record<ModuleSlug, string[]> = {
 
 export function analyzeModule(module: PlatformModule, context: AnalysisContext, focus: string): AiAnalysisResult {
   const now = Date.now();
-  const findings = analyzeWorkItems(context.workItems, now);
+  const verifiedWorkItems = context.workItems.filter(isVerifiedForBusinessAnalysis);
+  const unverifiedWorkItems = context.workItems.length - verifiedWorkItems.length;
+  const findings = analyzeWorkItems(verifiedWorkItems, now);
+  if (unverifiedWorkItems) {
+    findings.push({
+      id: 'unverified-ledger',
+      level: 'info',
+      title: '有未核验台账，当前只做完整性提示',
+      metric: `${unverifiedWorkItems}条`,
+      evidence: '演示、来源未知、人工草稿及未确认Excel导入不参与阶段、逾期、优先级或经营效果判断。',
+    });
+  }
   if (module.slug === 'analytics') findings.push(...analyzeProducts(context), ...analyzeMedicalLab(context));
   if (module.slug === 'research') findings.push(...analyzeResearch(context));
-  const hasData = context.workItems.length + context.products.length + context.medicalLab.length + context.research.length > 0;
+  const hasData = verifiedWorkItems.length + context.products.length + context.medicalLab.length + context.research.length > 0;
   const recommendations = [...moduleActions[module.slug]];
   if (focus) recommendations.unshift(`围绕“${focus}”建立专项清单，结论必须回到医院、产品、人员、时间和责任动作。`);
   const limitedFindings = findings.slice(0, 8);
@@ -30,12 +41,13 @@ export function analyzeModule(module: PlatformModule, context: AnalysisContext, 
     modelState: 'rules-only',
     modelLabel: '可追溯规则引擎',
     summary: hasData
-      ? `已对${context.workItems.length}条业务记录及${context.products.length + context.medicalLab.length + context.research.length}组专项指标完成结构化检查，识别${limitedFindings.length}个需要关注的判断。`
-      : '当前模块尚无可用于研判的真实记录。先从BMP同步或Excel导入，系统不会用演示数据生成业务结论。',
+      ? `已对${verifiedWorkItems.length}条已核验台账及${context.products.length + context.medicalLab.length + context.research.length}组专项指标完成结构化检查，识别${limitedFindings.length}个待人工复核的判断；另有${unverifiedWorkItems}条未核验台账未进入经营判断。`
+      : '当前模块尚无可用于研判的已核验记录。人工录入和Excel草稿须经确认后才可进入统计，BMP接口须经IT验收后再同步。',
     findings: limitedFindings.length ? limitedFindings : [{ id: 'no-data', level: 'info', title: '真实数据待接入', metric: '0条', evidence: '当前未读取到平台业务记录或专项指标。' }],
     recommendations,
     evidence: [
-      { source: '平台业务台账', records: context.workItems.length, note: '人工录入、Excel导入及BMP同步后的统一记录' },
+      { source: '已核验平台台账', records: verifiedWorkItems.length, note: '仅纳入已验收BMP同步或已确认导入批次' },
+      ...(unverifiedWorkItems ? [{ source: '未核验平台台账', records: unverifiedWorkItems, note: '仅做字段完整性提示，不形成经营结论' }] : []),
       ...(module.slug === 'analytics' ? [
         { source: 'BMP销量事实表', records: context.products.length, note: '按产品汇总医院数、销量及目标量' },
         { source: '医检所运营指标', records: context.medicalLab.length, note: '按医院和周期保留样本分母与结果构成' },
@@ -45,6 +57,12 @@ export function analyzeModule(module: PlatformModule, context: AnalysisContext, 
     limitations: ['AI只做信息整理、异常提示和管理建议，不替代临床诊断、遗传咨询或实施中心技术确认。', '缺失的目标值、样本分母、时间窗或人员映射不会自动补零，必须补齐后再形成正式结论。'],
     reviewRequired: true,
   };
+}
+
+function isVerifiedForBusinessAnalysis(row: WorkItemRow) {
+  const metadata = payloadMetadata(row.payloadJson);
+  return (metadata.source === 'bmp' && metadata.sourceVerified)
+    || (metadata.source === 'excel' && metadata.importStatus === 'confirmed');
 }
 
 function analyzeWorkItems(rows: WorkItemRow[], now: number): AiFinding[] {
@@ -109,10 +127,21 @@ function countBy<T>(rows: T[], key: (row: T) => string) {
 }
 
 function payloadSource(value: string) {
+  const metadata = payloadMetadata(value);
+  if (metadata.source === 'excel') return 'Excel';
+  if (metadata.source === 'manual') return '人工';
+  if (metadata.source === 'bmp') return 'BMP';
+  if (metadata.source === 'demo') return '演示';
+  return '待核验';
+}
+
+function payloadMetadata(value: string) {
   try {
-    const parsed = JSON.parse(value) as { _source?: string };
-    return parsed._source === 'excel' ? 'Excel' : parsed._source === 'manual' ? '人工' : 'BMP';
-  } catch { return '未知'; }
+    const parsed = JSON.parse(value) as { _source?: string; _sourceVerified?: boolean; _importStatus?: string };
+    return { source: parsed._source || 'unknown', sourceVerified: parsed._sourceVerified === true, importStatus: parsed._importStatus || '' };
+  } catch {
+    return { source: 'unknown', sourceVerified: false, importStatus: '' };
+  }
 }
 
 function isClosed(status: string, stage: string) { return /完成|闭环|结题|归档|正式运营|已解决/.test(`${status} ${stage}`); }

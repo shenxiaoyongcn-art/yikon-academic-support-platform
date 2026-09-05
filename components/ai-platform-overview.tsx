@@ -17,7 +17,7 @@ export function AiPlatformOverview() {
         <div><p className="eyebrow">AI ENHANCED MANAGEMENT</p><h2>AI增强的含义：把业务数据变成可复核的管理动作</h2><p>不是替代临床诊断，而是帮助学术支持团队找问题、查证据、追节点、做复盘。计算口径与模型文字分开，避免“看起来聪明、实际不可追溯”。</p></div>
       </div>
       <div className="ai-architecture-flow">{stages.map(([step, title, note], index) => <article key={step}><span>{step}</span><strong>{title}</strong><small>{note}</small>{index < stages.length - 1 && <i>→</i>}</article>)}</div>
-      <div className="ai-overview-actions"><div><strong>当前已落地</strong><span>八模块独立注册 · 规则分析接口 · 知识库连接 · 模型适配层 · 分析审计</span></div><Link href="/modules/analytics">进入数据分析 ↗</Link><PwaInstaller /></div>
+      <div className="ai-overview-actions"><div><strong>当前代码能力</strong><span>八模块独立注册 · 确定性规则分析 · 资料索引与模型适配骨架；外部接口须逐项验收</span></div><Link href="/modules/analytics">进入数据分析 ↗</Link><PwaInstaller /></div>
     </section>
   );
 }

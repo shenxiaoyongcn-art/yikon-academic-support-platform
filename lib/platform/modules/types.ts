@@ -60,6 +60,10 @@ export type MaintenanceConfig = {
   stages: string[];
   defaultStatus: string;
   fields: MaintenanceField[];
+  /** Only set to verified after IT has supplied and accepted the real BMP endpoint contract. */
+  bmpSyncStatus?: 'pending' | 'verified';
+  /** Complex source workbooks must use a dedicated preview/commit importer. */
+  excelImportMode?: 'direct' | 'preview_required';
 };
 
 export type ModuleDefinition = {

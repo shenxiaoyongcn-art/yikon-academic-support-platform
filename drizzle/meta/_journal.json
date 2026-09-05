@@ -29,6 +29,48 @@
       "when": 1788426350765,
       "tag": "0003_nappy_stryfe",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788591984542,
+      "tag": "0004_outgoing_christian_walker",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1788595713499,
+      "tag": "0005_past_justin_hammer",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1788595777712,
+      "tag": "0006_illegal_goliath",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1788599734953,
+      "tag": "0007_ancient_falcon",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1788600802326,
+      "tag": "0008_cynical_human_robot",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1788601125209,
+      "tag": "0009_crazy_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }
