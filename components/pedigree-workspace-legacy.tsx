@@ -2,7 +2,6 @@
 
 import { ChangeEvent, PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './pedigree-workspace.module.css';
-import monogenicCatalog from '../data/monogenic-catalog.json';
 import variantShortcuts from '../data/common-variant-shortcuts.json';
 import { belongsToParentGroup, distributeSiblingGroup } from './pedigree-sibling-layout';
 
@@ -64,6 +63,10 @@ const STORAGE_KEY = 'yikon-pedigree-cases-v1';
 
 type CatalogRecord = [string, string, string, string, string, string];
 type DiseaseOption = { id: string; name: string; records: CatalogRecord[] };
+type MonogenicCatalog = {
+  metadata: { releaseDate: string; relationshipCount: number; diseaseCount: number; geneCount: number };
+  records: CatalogRecord[];
+};
 type VariantShortcut = {
   diseaseGroup: string;
   gene: string;
@@ -75,12 +78,12 @@ type VariantShortcut = {
   clinvarId: string;
 };
 
-const catalog = monogenicCatalog as unknown as {
-  metadata: { releaseDate: string; relationshipCount: number; diseaseCount: number; geneCount: number };
-  records: CatalogRecord[];
-};
-
 const commonVariants = variantShortcuts.records as VariantShortcut[];
+
+const emptyCatalog: MonogenicCatalog = {
+  metadata: { releaseDate: '', relationshipCount: 0, diseaseCount: 0, geneCount: 0 },
+  records: [],
+};
 
 const chineseGeneAliases: Record<string, string> = {
   APC: '家族性腺瘤性息肉病 结直肠癌', ATP7B: '肝豆状核变性 Wilson病', BRCA1: '遗传性乳腺癌 卵巢癌', BRCA2: '遗传性乳腺癌 卵巢癌',
@@ -90,7 +93,17 @@ const chineseGeneAliases: Record<string, string> = {
   'MT-RNR1': '线粒体遗传性耳聋 氨基糖苷类药物性耳聋 耳聋', RB1: '视网膜母细胞瘤', RET: '多发性内分泌腺瘤', SLC26A4: '遗传性耳聋 大前庭导水管 Pendred综合征', SMN1: '脊髓性肌萎缩 SMA', TSC1: '结节性硬化', TSC2: '结节性硬化', VHL: 'VHL综合征 希林二氏病',
 };
 
-const diseaseOptions: DiseaseOption[] = (() => {
+const localDiseaseOption: DiseaseOption = {
+  id: 'LOCAL:HEREDITARY_HEARING_LOSS',
+  name: '遗传性耳聋（常用基因与位点快捷入口）',
+  records: [
+    ['LOCAL:HEREDITARY_HEARING_LOSS', '遗传性耳聋（常用基因与位点快捷入口）', '', 'GJB2', 'Autosomal recessive', 'ClinVar快捷库'],
+    ['LOCAL:HEREDITARY_HEARING_LOSS', '遗传性耳聋（常用基因与位点快捷入口）', '', 'SLC26A4', 'Autosomal recessive', 'ClinVar快捷库'],
+    ['LOCAL:HEREDITARY_HEARING_LOSS', '遗传性耳聋（常用基因与位点快捷入口）', '', 'MT-RNR1', 'Mitochondrial inheritance', 'ClinVar快捷库'],
+  ],
+};
+
+function buildDiseaseOptions(catalog: MonogenicCatalog): DiseaseOption[] {
   const grouped = new Map<string, DiseaseOption>();
   catalog.records.forEach((record) => {
     const key = record[0] || record[1];
@@ -98,16 +111,8 @@ const diseaseOptions: DiseaseOption[] = (() => {
     current.records.push(record);
     grouped.set(key, current);
   });
-  return [{
-    id: 'LOCAL:HEREDITARY_HEARING_LOSS',
-    name: '遗传性耳聋（常用基因与位点快捷入口）',
-    records: [
-      ['LOCAL:HEREDITARY_HEARING_LOSS', '遗传性耳聋（常用基因与位点快捷入口）', '', 'GJB2', 'Autosomal recessive', 'ClinVar快捷库'],
-      ['LOCAL:HEREDITARY_HEARING_LOSS', '遗传性耳聋（常用基因与位点快捷入口）', '', 'SLC26A4', 'Autosomal recessive', 'ClinVar快捷库'],
-      ['LOCAL:HEREDITARY_HEARING_LOSS', '遗传性耳聋（常用基因与位点快捷入口）', '', 'MT-RNR1', 'Mitochondrial inheritance', 'ClinVar快捷库'],
-    ],
-  }, ...Array.from(grouped.values())];
-})();
+  return [localDiseaseOption, ...Array.from(grouped.values())];
+}
 
 const variantTypes = [
   ['single nucleotide variant', '单核苷酸变异（SNV）'],
@@ -469,6 +474,8 @@ export function PedigreeWorkspace() {
   const [dragDeleteReady, setDragDeleteReady] = useState(false);
   const [alignmentGuide, setAlignmentGuide] = useState<{ x?: number; y?: number } | null>(null);
   const [selectedUnionKey, setSelectedUnionKey] = useState<string | null>(null);
+  const [catalog, setCatalog] = useState<MonogenicCatalog>(emptyCatalog);
+  const [catalogState, setCatalogState] = useState<'loading' | 'ready' | 'error'>('loading');
   const importRef = useRef<HTMLInputElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const zoomRef = useRef(zoom);
@@ -497,6 +504,24 @@ export function PedigreeWorkspace() {
   useEffect(() => {
     zoomRef.current = zoom;
   }, [zoom]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void import('../data/monogenic-catalog.json')
+      .then((module) => {
+        if (cancelled) return;
+        setCatalog(module.default as unknown as MonogenicCatalog);
+        setCatalogState('ready');
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCatalogState('error');
+        setNotice('疾病库加载失败，可先画图或手工录入疾病');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -628,6 +653,7 @@ export function PedigreeWorkspace() {
   const siblingSpacing = Math.max(60, Math.min(200, Number(activeCase?.siblingSpacing) || 110));
   const layout = useMemo(() => buildLayout(activeCase?.people || [], siblingSpacing), [activeCase, siblingSpacing]);
   const positionedById = useMemo(() => new Map(layout.people.map((person) => [person.id, person])), [layout.people]);
+  const diseaseOptions = useMemo(() => buildDiseaseOptions(catalog), [catalog]);
 
   const catalogResults = useMemo(() => {
     const queryValue = diseaseQuery.trim().toLowerCase();
@@ -642,7 +668,7 @@ export function PedigreeWorkspace() {
       return [{ option, score }];
     });
     return scored.sort((a, b) => a.score - b.score || a.option.name.localeCompare(b.option.name, 'en')).slice(0, 40).map((item) => item.option);
-  }, [diseaseQuery]);
+  }, [diseaseOptions, diseaseQuery]);
 
   const selectedDisease = diseaseOptions.find((option) => option.id === activeCase?.diseaseId || option.name === activeCase?.disease);
   const geneOptions = useMemo(() => {
@@ -1344,7 +1370,9 @@ export function PedigreeWorkspace() {
         <label><span>家系名称</span><input value={activeCase.name} onChange={(event) => commit((item) => ({ ...item, name: event.target.value }))} /></label>
         <label className={styles.diseasePicker}><span>单基因病</span><input value={diseaseQuery} placeholder="输入疾病、基因或 MONDO 编号" onFocus={() => setDiseaseOpen(true)} onChange={(event) => { setDiseaseQuery(event.target.value); setDiseaseOpen(true); }} onBlur={() => window.setTimeout(() => setDiseaseOpen(false), 120)} />
           {diseaseOpen && <div className={styles.diseaseResults}>
-            <div className={styles.catalogSummary}>GenCC {catalog.metadata.releaseDate} · {catalog.metadata.diseaseCount.toLocaleString()} 种疾病</div>
+            <div className={styles.catalogSummary}>{catalogState === 'ready'
+              ? `GenCC ${catalog.metadata.releaseDate} · ${catalog.metadata.diseaseCount.toLocaleString()} 种疾病`
+              : catalogState === 'loading' ? '疾病库后台加载中，画布可先使用…' : '疾病库暂未载入，可手工输入疾病名称'}</div>
             {catalogResults.length ? catalogResults.map((option) => {
               const genes = Array.from(new Set(option.records.map((record) => record[3])));
               const chineseLabels = Array.from(new Set(genes.map((gene) => chineseGeneAliases[gene]).filter(Boolean)));
@@ -1364,7 +1392,9 @@ export function PedigreeWorkspace() {
           <small className={styles.variantEvidence}>{selectedVariant ? `${selectedVariant.reference} · ${selectedVariant.protein} · ${selectedVariant.classification}` : variantOptions.length ? '可输入 109、235 等关键词筛选；最终按 HGVS 复核' : '暂无快捷位点，可手工输入'}</small>
         </label>
         <label><span>变异类型（选择快捷位点后自动带出）</span><select value={activeCase.variantType || 'other'} onChange={(event) => commit((item) => ({ ...item, variantType: event.target.value }))}>{variantTypes.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-        <div className={styles.privacyNote}><b>本地模式 · GenCC + ClinVar快捷位点</b><span>疾病关系 {catalog.metadata.relationshipCount.toLocaleString()} 条；位点仅辅助录入，临床/PGT使用前必须复核</span></div>
+        <div className={styles.privacyNote}><b>本地模式 · GenCC + ClinVar快捷位点</b><span>{catalogState === 'ready'
+          ? `疾病关系 ${catalog.metadata.relationshipCount.toLocaleString()} 条；位点仅辅助录入，临床/PGT使用前必须复核`
+          : catalogState === 'loading' ? '疾病库后台加载中；画布和本地快捷位点可先使用' : '疾病库加载失败；可手工录入疾病与位点'}</span></div>
       </div>
 
       <div className={styles.mainGrid}>
