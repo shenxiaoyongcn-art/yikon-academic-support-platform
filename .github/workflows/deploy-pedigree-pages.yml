@@ -8,7 +8,10 @@ on:
     paths:
       - android-web/**
       - components/pedigree-workspace.tsx
+      - components/pedigree-workspace-legacy.tsx
       - components/pedigree-workspace.module.css
+      - components/pedigree-mode-switch.module.css
+      - components/svg-pedigree-editor/**
       - data/monogenic-catalog.json
       - data/common-variant-shortcuts.json
       - package.json

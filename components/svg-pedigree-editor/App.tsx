@@ -131,6 +131,8 @@ export function App() {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const drag = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+  const activePointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ distance: number; centerX: number; centerY: number; zoom: number; panX: number; panY: number } | null>(null);
   const personDrag = useRef<{ id: string; x: number; y: number; base: { x: number; y: number } } | null>(null);
   const [previewOffsets, setPreviewOffsets] = useState<Record<string, { x: number; y: number }>>({});
   const fileInput = useRef<HTMLInputElement>(null);
@@ -288,8 +290,28 @@ export function App() {
   function onPointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.button !== 0) return;
     if ((event.target as Element).closest(".person, .relationship")) return;
-    drag.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
+    const bounds = event.currentTarget.getBoundingClientRect();
+    activePointers.current.set(event.pointerId, { x: event.clientX - bounds.left, y: event.clientY - bounds.top });
     event.currentTarget.setPointerCapture(event.pointerId);
+    const points = [...activePointers.current.values()];
+    if (points.length === 1) {
+      drag.current = { x: points[0].x, y: points[0].y, panX: pan.x, panY: pan.y };
+      pinch.current = null;
+      return;
+    }
+    if (points.length === 2) {
+      const centerX = (points[0].x + points[1].x) / 2;
+      const centerY = (points[0].y + points[1].y) / 2;
+      pinch.current = {
+        distance: Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y),
+        centerX,
+        centerY,
+        zoom,
+        panX: pan.x,
+        panY: pan.y,
+      };
+      drag.current = null;
+    }
   }
 
   function onPointerMove(event: PointerEvent<HTMLDivElement>) {
@@ -298,8 +320,27 @@ export function App() {
       setPreviewOffsets({ [current.id]: { x: current.base.x + (event.clientX - current.x) / zoom, y: current.base.y + (event.clientY - current.y) / zoom } });
       return;
     }
+    if (activePointers.current.has(event.pointerId)) {
+      const bounds = event.currentTarget.getBoundingClientRect();
+      activePointers.current.set(event.pointerId, { x: event.clientX - bounds.left, y: event.clientY - bounds.top });
+    }
+    const points = [...activePointers.current.values()];
+    if (pinch.current && points.length >= 2) {
+      const currentDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+      if (pinch.current.distance <= 0) return;
+      const nextZoom = Math.max(.3, Math.min(2.6, pinch.current.zoom * currentDistance / pinch.current.distance));
+      const centerX = (points[0].x + points[1].x) / 2;
+      const centerY = (points[0].y + points[1].y) / 2;
+      const contentX = (pinch.current.centerX - pinch.current.panX) / pinch.current.zoom;
+      const contentY = (pinch.current.centerY - pinch.current.panY) / pinch.current.zoom;
+      setZoom(nextZoom);
+      setPan({ x: centerX - contentX * nextZoom, y: centerY - contentY * nextZoom });
+      return;
+    }
     if (!drag.current) return;
-    setPan({ x: drag.current.panX + event.clientX - drag.current.x, y: drag.current.panY + event.clientY - drag.current.y });
+    const point = activePointers.current.get(event.pointerId);
+    if (!point) return;
+    setPan({ x: drag.current.panX + point.x - drag.current.x, y: drag.current.panY + point.y - drag.current.y });
   }
 
   function unionForSelected() { return selected ? pedigree.unions.find((item) => item.partnerA === selected.id || item.partnerB === selected.id) : undefined; }
@@ -309,13 +350,16 @@ export function App() {
     personDrag.current = { id, x: event.clientX, y: event.clientY, base: pedigree.settings.manualOffsets[id] ?? { x: 0, y: 0 } };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
-  function finishPointer() {
+  function finishPointer(event?: PointerEvent<HTMLDivElement>) {
     if (personDrag.current) {
       const { id } = personDrag.current; const offset = previewOffsets[id]; personDrag.current = null;
       if (offset) change({ ...pedigree, settings: { ...pedigree.settings, manualOffsets: { ...pedigree.settings.manualOffsets, [id]: offset } } }, "已保存个体手动位置。");
       setPreviewOffsets({}); return;
     }
-    drag.current = null;
+    if (event) activePointers.current.delete(event.pointerId);
+    pinch.current = null;
+    const remaining = [...activePointers.current.values()];
+    drag.current = remaining.length === 1 ? { x: remaining[0].x, y: remaining[0].y, panX: pan.x, panY: pan.y } : null;
   }
 
   return <main>
@@ -343,7 +387,7 @@ export function App() {
         </div>
         {unrecoveredDraft && <div className="draft-recovery">{t.draftBroken}<button onClick={() => download(unrecoveredDraft!, "pedigree_unrecovered_draft.json", "application/json")}>{t.downloadBroken}</button><button onClick={() => { unrecoveredDraft = null; setStatus(t.brokenDiscarded); }}>{t.discardBroken}</button></div>}
         {legacyDraft && <div className="draft-recovery">{t.legacyDraft}<button onClick={() => download(legacyDraft, "yikon_legacy_pedigree_cases.json", "application/json")}>{t.downloadLegacy}</button><button onClick={() => setLegacyDraft(null)}>{t.dismissLegacy}</button></div>}
-        <div className="canvas-scroll" onWheel={onWheel} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={finishPointer} onPointerLeave={() => { if (!personDrag.current) drag.current = null; }}>
+        <div className="canvas-scroll" onWheel={onWheel} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={finishPointer} onPointerCancel={finishPointer} onPointerLeave={() => { if (!personDrag.current && activePointers.current.size === 0) drag.current = null; }}>
           <div className="svg-transform" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}>
             <svg ref={svgRef} id="pedigree-svg" width={layout.width} height={layout.height} viewBox={`${layout.viewBoxX} ${layout.viewBoxY} ${layout.width} ${layout.height}`} aria-label={t.canvas} onClick={() => setSelectedId(null)}>
               <defs>

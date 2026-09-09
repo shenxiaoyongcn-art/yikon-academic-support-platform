@@ -3,6 +3,11 @@
     min-width: 0;
   }
 
+  .editorRoot :global(.canvas-scroll) {
+    touch-action: none;
+    overscroll-behavior: contain;
+  }
+
   .editorRoot :global(.toolbar) {
     align-items: flex-start;
     flex-wrap: wrap;
