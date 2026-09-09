@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { addChild, addParents, addSibling, addTwin, addUnion, defaultSpouseGender, emptyPedigree, generationByPerson, makeId, moveSibling, newPerson, removeParentage, removeUnion, validatePedigree } from "./model.ts";
+import { addChild, addParents, addSibling, addTwin, addUnion, defaultSpouseGender, emptyPedigree, generationByPerson, initialPedigree, makeId, moveSibling, newPerson, removeParentage, removeUnion, validatePedigree } from "./model.ts";
 import { computeLayout } from "./layout.ts";
 
 test("new pedigree starts as a centered three-person family", () => {
@@ -14,6 +14,11 @@ test("new pedigree starts as a centered three-person family", () => {
   const positionedUnion = layout.unions.find((item) => item.id === parents.id)!;
   assert.equal(positionedChild.number, "II-1");
   assert.equal(positionedChild.x, positionedUnion.centerX);
+});
+
+test('initial pedestal is deterministic for server and client rendering', () => {
+  assert.deepEqual(initialPedigree(), initialPedigree());
+  assert.deepEqual(initialPedigree().persons.map((person) => person.id), ['initial-male', 'initial-female', 'initial-child']);
 });
 test("parents and child receive consecutive generations", () => {
   const initial = emptyPedigree("single");

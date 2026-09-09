@@ -1,5 +1,5 @@
 import { ChangeEvent, PointerEvent, WheelEvent, useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { addChild, addParents, addSibling, addTwin, addUnion, defaultSpouseGender, emptyPedigree, makeId, moveSibling, newPerson, removeParentage, removePerson, removeUnion, validatePedigree } from "./model";
+import { addChild, addParents, addSibling, addTwin, addUnion, defaultSpouseGender, emptyPedigree, initialPedigree, makeId, moveSibling, newPerson, removeParentage, removePerson, removeUnion, validatePedigree } from "./model";
 import { computeLayout } from './layout';
 import { restorePedigreeDraft, SVG_PEDIGREE_STORAGE_KEY } from './persistence';
 import type { CarrierStatus, Pedigree, Person, PersonType } from './types';
@@ -120,7 +120,7 @@ function buildExample(): Pedigree {
 }
 
 export function App() {
-  const [pedigree, setPedigreeState] = useState<Pedigree>(emptyPedigree);
+  const [pedigree, setPedigreeState] = useState<Pedigree>(initialPedigree);
   const [language, setLanguage] = useState<Language>("cn");
   const [past, setPast] = useState<Pedigree[]>([]);
   const [future, setFuture] = useState<Pedigree[]>([]);

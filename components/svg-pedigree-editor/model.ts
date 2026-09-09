@@ -56,6 +56,32 @@ export function emptyPedigree(initial: "standard" | "single" = "standard"): Pedi
   };
 }
 
+/** A stable first render used before client-only browser storage is restored. */
+export function initialPedigree(): Pedigree {
+  const father = newPerson({ id: 'initial-male', gender: 'male', birthOrder: 1 });
+  const mother = newPerson({ id: 'initial-female', gender: 'female', birthOrder: 2 });
+  const child = newPerson({ id: 'initial-child', gender: 'unknown', birthOrder: 1 });
+  const union: Union = {
+    id: 'initial-union',
+    partnerA: father.id,
+    partnerB: mother.id,
+    consanguineous: false,
+    relationshipNote: '',
+  };
+
+  return {
+    schemaVersion: 1,
+    id: 'initial-pedigree',
+    name: '未命名家系图',
+    updatedAt: '1970-01-01T00:00:00.000Z',
+    persons: [father, mother, child],
+    unions: [union],
+    parentage: [{ id: 'initial-parentage', childId: child.id, unionId: union.id, birthOrder: 1 }],
+    twinGroups: [],
+    settings: { horizontalSpacing: 150, generationSpacing: 215, showUnknownDisease: true, manualOffsets: {}, symbolStyle: 'traditional-teaching' },
+  };
+}
+
 function personIds(pedigree: Pedigree): Set<string> {
   return new Set(pedigree.persons.map((person) => person.id));
 }

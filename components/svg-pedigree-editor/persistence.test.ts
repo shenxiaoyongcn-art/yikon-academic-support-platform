@@ -23,3 +23,15 @@ test('keeps an existing legacy platform draft available for download', () => {
   assert.equal(result.legacyDraft, legacy);
   assert.equal(result.pedigree.persons.length, 3);
 });
+
+test('keeps the legacy draft downloadable when both storage formats exist', () => {
+  const current = emptyPedigree();
+  const legacy = JSON.stringify([{ id: 'legacy-case', people: [] }]);
+  const result = restorePedigreeDraft(storage({
+    'svg-pedigree-editor-v1': JSON.stringify(current),
+    'yikon-pedigree-cases-v1': legacy,
+  }));
+
+  assert.equal(result.pedigree.id, current.id);
+  assert.equal(result.legacyDraft, legacy);
+});

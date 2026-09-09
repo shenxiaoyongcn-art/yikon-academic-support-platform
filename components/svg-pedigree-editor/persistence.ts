@@ -1,4 +1,4 @@
-import { emptyPedigree, validatePedigree } from './model.ts';
+import { initialPedigree, validatePedigree } from './model.ts';
 import type { Pedigree } from './types.ts';
 
 export const SVG_PEDIGREE_STORAGE_KEY = 'svg-pedigree-editor-v1';
@@ -14,26 +14,27 @@ export type DraftRestoreResult = {
 
 export function restorePedigreeDraft(storage: StorageReader): DraftRestoreResult {
   const stored = storage.getItem(SVG_PEDIGREE_STORAGE_KEY);
+  const legacyDraft = storage.getItem(LEGACY_PEDIGREE_STORAGE_KEY);
 
   if (stored) {
     try {
       return {
         pedigree: validatePedigree(JSON.parse(stored)),
-        legacyDraft: null,
+        legacyDraft,
         unrecoveredDraft: null,
       };
     } catch {
       return {
-        pedigree: emptyPedigree(),
-        legacyDraft: storage.getItem(LEGACY_PEDIGREE_STORAGE_KEY),
+        pedigree: initialPedigree(),
+        legacyDraft,
         unrecoveredDraft: stored,
       };
     }
   }
 
   return {
-    pedigree: emptyPedigree(),
-    legacyDraft: storage.getItem(LEGACY_PEDIGREE_STORAGE_KEY),
+    pedigree: initialPedigree(),
+    legacyDraft,
     unrecoveredDraft: null,
   };
 }
