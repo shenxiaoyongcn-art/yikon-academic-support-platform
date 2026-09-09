@@ -72,6 +72,11 @@
 .toolGroup button.deleteTool { border-color: #efc4cc; color: #b4233f; }
 .toolGroup button.deleteTool b { color: #b4233f; }
 .toolGroup button.deleteTool:hover { border-color: #d44a63; background: #fff1f3; color: #9f1530; }
+.spacingControl { padding: 0 8px; border-left: 1px solid #e1e4e9; border-right: 1px solid #e1e4e9; }
+.spacingControl > span { color: #7b6674; font-size: 7px; font-weight: 800; white-space: nowrap; }
+.spacingControl input[type='range'] { width: 92px; margin: 0 2px; accent-color: #951270; cursor: ew-resize; }
+.spacingControl output { min-width: 38px; color: #7d2a66; font-size: 8px; font-weight: 800; text-align: center; }
+.spacingControl button { min-width: 27px; padding-inline: 6px; }
 .symbolCorrection { margin-left: auto; padding-left: 8px; border-left: 1px solid #e1e4e9; }
 .symbolCorrection > span, .phenotypeCorrection > span { color: #7b6674; font-size: 7px; font-weight: 800; white-space: nowrap; }
 .symbolCorrection button { min-width: 30px; padding: 0 5px; }

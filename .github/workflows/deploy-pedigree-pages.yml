@@ -11,6 +11,7 @@ on:
       - components/pedigree-workspace-legacy.tsx
       - components/pedigree-workspace.module.css
       - components/pedigree-mode-switch.module.css
+      - components/pedigree-sibling-layout.ts
       - components/svg-pedigree-editor/**
       - data/monogenic-catalog.json
       - data/common-variant-shortcuts.json
