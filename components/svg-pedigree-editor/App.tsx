@@ -1,9 +1,9 @@
-import { ChangeEvent, PointerEvent, WheelEvent, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, PointerEvent, WheelEvent, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { addChild, addParents, addSibling, addTwin, addUnion, defaultSpouseGender, emptyPedigree, makeId, moveSibling, newPerson, removeParentage, removePerson, removeUnion, validatePedigree } from "./model";
 import { computeLayout } from './layout';
+import { restorePedigreeDraft, SVG_PEDIGREE_STORAGE_KEY } from './persistence';
 import type { CarrierStatus, Pedigree, Person, PersonType } from './types';
 
-const storageKey = "svg-pedigree-editor-v1";
 const symbolSize = 32;
 const exportStyle = `svg{font-family:"Microsoft YaHei UI","Microsoft YaHei",Arial,sans-serif;background:#fff}.person-shape,.legend-shape{fill:#fff;stroke:#1c263e;stroke-width:2}.affected{fill:#161a25}.carrier-dot{fill:#fff;stroke:#1c263e;stroke-width:1.7}.deceased,.marker-arrow,.relationship line,.descent line,.twin line{stroke:#1e2a43;stroke-width:1.8;fill:none}.person-number{font-size:13px;fill:#14203a;font-weight:750}.person-text{font-size:12px;fill:#293956}.export-title{font-size:24px;font-weight:750;fill:#101b31}.legend{font-size:12px;fill:#273651}.legend-title{font-size:14px;font-weight:750}.relationship-note{font-size:11px;fill:#5c3c72;font-weight:700}.marker-label{font-size:11px;fill:#18243d;font-weight:700}`;
 let unrecoveredDraft: string | null = null;
@@ -14,31 +14,21 @@ const copy = {
   cn: {
     app: "家系图编辑器", subtitle: "SVG · 本地保存 · V1", pedigreeName: "家系图名称", new: "新建", sample: "载入示例", importJson: "导入 JSON", exportJson: "导出 JSON", exportSvg: "导出 SVG", exportPng: "导出 PNG", undo: "撤销", redo: "重做", fit: "适应", canvas: "家系图画布", unnamed: "未命名家系图", legend: "图例", male: "男", female: "女", unknownGender: "性别不详", affected: "患病", arCarrier: "AR 携带（半黑）", xlrCarrier: "XLR 携带（圆点）", legendNote: "传统教学画法：AR 半黑，X 连锁隐性携带者圆点；组合状态见文字标注。",
     editor: "个体编辑", selectPerson: "点击画布中的个体进行编辑。", selectRelationship: "关系线可点击编辑近亲婚配及说明。", stableId: "稳定 ID", name: "姓名/备注名", gender: "性别", personType: "个体类型", normalPerson: "普通个体", miscarriage: "自然流产", diseaseStatus: "患病状态", diseaseUnknown: "不详", unaffected: "未患病", marker: "身份标记", none: "无", proband: "先证者", consultand: "咨询者", gestationalAge: "孕周", carrier: "携带状态", ar: "AR 隐性携带", xlr: "X 连锁隐性携带", carrierNone: "未记录携带状态；这不代表检测阴性。", deceased: "已死亡", deathNote: "死亡年龄/年份", genotype: "基因型", variants: "变异", phenotypes: "其他表型（可多行）", annotationLines: "图中注释行", annotationHelp: "仅这些行显示在自动编号下方。姓名、死亡、孕周、基因型、变异和表型均不会自动显示。", addLine: "添加一行", removeLine: "删除", emptyLine: "在图中显示的内容", warning: "先证者通常应为患者；当前记录保留原值，请核对是否应改为“咨询者”。", addRelatives: "添加亲属", addSpouse: "添加配偶", connectExisting: "连接已有个体", addParents: "添加父母", addSibling: "添加兄弟姐妹", addChild: "添加子女", addMiscarriage: "添加自然流产", addMonozygotic: "添加同卵双胎", addDizygotic: "添加异卵双胎", addTwinUnknown: "添加双胎（卵性不详）", siblingLeft: "同胞左移", siblingRight: "同胞右移", removeParentage: "解除父母关系", removeUnion: "解除婚配关系", removePerson: "删除无关系个体", layout: "画布布局", horizontalSpacing: "横向间距", generationSpacing: "代间距", restoreLayout: "恢复自动布局",
-    saved: "已自动保存到当前浏览器。", draft: "草稿保存在当前浏览器。", saveFailed: "浏览器草稿保存失败，请立即导出 JSON。", updated: "已更新。", personUpdated: "个体资料已更新。", annotationUpdated: "图中注释行已更新。", language: "EN", consultandMark: "咨询者", relationshipPrompt: "近亲婚配说明（留空表示无说明）：", relationshipUpdated: "婚配关系已更新。", newConfirm: "新建会替换当前草稿。是否继续？", sampleConfirm: "载入示例会替换当前草稿。是否继续？", importConfirm: "导入将替换当前草稿。建议先导出 JSON。是否继续？", newCreated: "已创建新家系图。", sampleLoaded: "已载入虚构示例。", undoDone: "已撤销。", redoDone: "已重做。", draftBroken: "检测到无法恢复的旧草稿，尚未覆盖。", downloadBroken: "下载原始草稿", discardBroken: "放弃并继续", brokenDiscarded: "已放弃损坏草稿，可继续保存新图。"
+    saved: "已自动保存到当前浏览器。", draft: "草稿保存在当前浏览器。", saveFailed: "浏览器草稿保存失败，请立即导出 JSON。", updated: "已更新。", personUpdated: "个体资料已更新。", annotationUpdated: "图中注释行已更新。", language: "EN", consultandMark: "咨询者", relationshipPrompt: "近亲婚配说明（留空表示无说明）：", relationshipUpdated: "已更新婚配关系。", newConfirm: "新建会替换当前草稿。是否继续？", sampleConfirm: "载入示例会替换当前草稿。是否继续？", importConfirm: "导入将替换当前草稿。建议先导出 JSON。是否继续？", newCreated: "已创建新家系图。", sampleLoaded: "已载入虚构示例。", undoDone: "已撤销。", redoDone: "已重做。", draftBroken: "检测到无法恢复的 SVG 编辑器草稿，尚未覆盖。", downloadBroken: "下载原始草稿", discardBroken: "放弃并继续", brokenDiscarded: "已放弃损坏草稿，可继续保存新图。", legacyDraft: "检测到旧版平台家系图草稿。新编辑器不会覆盖它；请下载保存后再继续。", downloadLegacy: "下载旧版草稿", dismissLegacy: "暂时隐藏提示"
   },
   en: {
     app: "Pedigree Editor", subtitle: "SVG · Local draft · V1", pedigreeName: "Pedigree title", new: "New", sample: "Load example", importJson: "Import JSON", exportJson: "Export JSON", exportSvg: "Export SVG", exportPng: "Export PNG", undo: "Undo", redo: "Redo", fit: "Fit", canvas: "Pedigree canvas", unnamed: "Untitled pedigree", legend: "Legend", male: "Male", female: "Female", unknownGender: "Sex unknown", affected: "Affected", arCarrier: "AR carrier (half-filled)", xlrCarrier: "X-linked carrier (dot)", legendNote: "Traditional teaching notation: AR carriers are half-filled; X-linked recessive carriers have a central dot.",
     editor: "Person editor", selectPerson: "Select a person on the canvas to edit.", selectRelationship: "Select a relationship line to edit consanguinity and its note.", stableId: "Stable ID", name: "Name / internal note", gender: "Sex", personType: "Person type", normalPerson: "Person", miscarriage: "Spontaneous miscarriage", diseaseStatus: "Disease status", diseaseUnknown: "Unknown", unaffected: "Unaffected", marker: "Identity marker", none: "None", proband: "Proband", consultand: "Consultand", gestationalAge: "Gestational age", carrier: "Carrier status", ar: "AR carrier", xlr: "X-linked recessive carrier", carrierNone: "No carrier status recorded; this does not mean a negative test.", deceased: "Deceased", deathNote: "Age / year of death", genotype: "Genotype", variants: "Variant(s)", phenotypes: "Other phenotypes (multiline)", annotationLines: "Displayed annotation lines", annotationHelp: "Only these lines appear below the automatic generation number. Name, death, gestational age, genotype, variants, and phenotypes are never displayed automatically.", addLine: "Add line", removeLine: "Remove", emptyLine: "Text shown on the pedigree", warning: "A proband is usually affected. This record is retained; confirm whether Consultand is more appropriate.", addRelatives: "Add relatives", addSpouse: "Add spouse", connectExisting: "Connect existing person", addParents: "Add parents", addSibling: "Add sibling", addChild: "Add child", addMiscarriage: "Add miscarriage", addMonozygotic: "Add monozygotic twins", addDizygotic: "Add dizygotic twins", addTwinUnknown: "Add twins (zygosity unknown)", siblingLeft: "Move sibling left", siblingRight: "Move sibling right", removeParentage: "Remove parentage", removeUnion: "Remove union", removePerson: "Delete unrelated person", layout: "Canvas layout", horizontalSpacing: "Horizontal spacing", generationSpacing: "Generation spacing", restoreLayout: "Restore automatic layout",
-    saved: "Saved automatically in this browser.", draft: "Draft stored in this browser.", saveFailed: "Browser draft could not be saved. Export JSON now.", updated: "Updated.", personUpdated: "Person details updated.", annotationUpdated: "Displayed annotation lines updated.", language: "CN", consultandMark: "Consultand", relationshipPrompt: "Consanguinity note (leave empty for none):", relationshipUpdated: "Relationship updated.", newConfirm: "Creating a new pedigree replaces the current draft. Continue?", sampleConfirm: "Loading the example replaces the current draft. Continue?", importConfirm: "Import replaces the current draft. Export JSON first if needed. Continue?", newCreated: "New pedigree created.", sampleLoaded: "Fictional example loaded.", undoDone: "Undone.", redoDone: "Redone.", draftBroken: "An unrecoverable prior draft was found and has not been overwritten.", downloadBroken: "Download original draft", discardBroken: "Discard and continue", brokenDiscarded: "Damaged draft discarded. You can save a new pedigree."
+    saved: "Saved automatically in this browser.", draft: "Draft stored in this browser.", saveFailed: "Browser draft could not be saved. Export JSON now.", updated: "Updated.", personUpdated: "Person details updated.", annotationUpdated: "Displayed annotation lines updated.", language: "CN", consultandMark: "Consultand", relationshipPrompt: "Consanguinity note (leave empty for none):", relationshipUpdated: "Relationship updated.", newConfirm: "Creating a new pedigree replaces the current draft. Continue?", sampleConfirm: "Loading the example replaces the current draft. Continue?", importConfirm: "Import replaces the current draft. Export JSON first if needed. Continue?", newCreated: "New pedigree created.", sampleLoaded: "Fictional example loaded.", undoDone: "Undone.", redoDone: "Redone.", draftBroken: "An unrecoverable SVG editor draft was found and has not been overwritten.", downloadBroken: "Download original draft", discardBroken: "Discard and continue", brokenDiscarded: "Damaged draft discarded. You can save a new pedigree.", legacyDraft: "A legacy platform pedigree draft was found. The new editor will not overwrite it; download it before continuing.", downloadLegacy: "Download legacy draft", dismissLegacy: "Hide this notice"
   }
 } as const;
 
 function deepCopy<T>(value: T): T { return structuredClone(value); }
 
-function loadDraft(): Pedigree {
-  try {
-    const stored = localStorage.getItem(storageKey);
-    return stored ? validatePedigree(JSON.parse(stored)) : emptyPedigree();
-  } catch {
-    try { unrecoveredDraft = localStorage.getItem(storageKey); } catch { /* browser storage unavailable */ }
-    return emptyPedigree();
-  }
-}
-
 function persistDraft(pedigree: Pedigree): boolean {
   if (unrecoveredDraft) return true;
   try {
-    localStorage.setItem(storageKey, JSON.stringify(pedigree));
+    localStorage.setItem(SVG_PEDIGREE_STORAGE_KEY, JSON.stringify(pedigree));
     return true;
   } catch {
     return false;
@@ -62,6 +52,10 @@ function carrierText(person: Person, language: Language) {
   if (person.carrier.ar) values.push(language === "en" ? "AR carrier" : "AR携带");
   if (person.carrier.xlr) values.push(language === "en" ? "XLR carrier" : "XLR携带");
   return values.join(language === "en" ? "; " : "；");
+}
+
+function defaultZoomForViewport() {
+  return window.innerWidth <= 760 ? 0.5 : 1;
 }
 
 function PersonSymbol({ person, x, y, selected, onSelect, onDragStart, language }: { person: Person; x: number; y: number; selected: boolean; onSelect: () => void; onDragStart: (event: PointerEvent<SVGGElement>) => void; language: Language }) {
@@ -126,12 +120,14 @@ function buildExample(): Pedigree {
 }
 
 export function App() {
-  const [pedigree, setPedigreeState] = useState<Pedigree>(loadDraft);
+  const [pedigree, setPedigreeState] = useState<Pedigree>(emptyPedigree);
   const [language, setLanguage] = useState<Language>("cn");
   const [past, setPast] = useState<Pedigree[]>([]);
   const [future, setFuture] = useState<Pedigree[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>(copy.cn.draft);
+  const [legacyDraft, setLegacyDraft] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const drag = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
@@ -143,6 +139,17 @@ export function App() {
   const layout = useMemo(() => computeLayout(renderedPedigree), [renderedPedigree]);
   const selected = pedigree.persons.find((person) => person.id === selectedId) ?? null;
   const t = copy[language];
+
+  useEffect(() => {
+    const restored = restorePedigreeDraft(window.localStorage);
+    unrecoveredDraft = restored.unrecoveredDraft;
+    startTransition(() => {
+      setPedigreeState(restored.pedigree);
+      setLegacyDraft(restored.legacyDraft);
+      setStatus(restored.legacyDraft ? copy.cn.legacyDraft : copy.cn.draft);
+      setZoom(defaultZoomForViewport());
+    });
+  }, [startTransition]);
 
   function change(next: Pedigree, message: string = t.updated) {
     setPast((items) => [...items.slice(-49), deepCopy(pedigree)]);
@@ -332,9 +339,10 @@ export function App() {
       <div className="canvas-panel">
         <div className="canvas-toolbar">
           <span>{status}</span>
-          <div><button onClick={() => setZoom(Math.max(.3, zoom - .1))}>−</button><span className="zoom">{Math.round(zoom * 100)}%</span><button onClick={() => setZoom(Math.min(2.6, zoom + .1))}>＋</button><button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>{t.fit}</button></div>
+          <div><button onClick={() => setZoom(Math.max(.3, zoom - .1))}>−</button><span className="zoom">{Math.round(zoom * 100)}%</span><button onClick={() => setZoom(Math.min(2.6, zoom + .1))}>＋</button><button onClick={() => { setZoom(defaultZoomForViewport()); setPan({ x: 0, y: 0 }); }}>{t.fit}</button></div>
         </div>
         {unrecoveredDraft && <div className="draft-recovery">{t.draftBroken}<button onClick={() => download(unrecoveredDraft!, "pedigree_unrecovered_draft.json", "application/json")}>{t.downloadBroken}</button><button onClick={() => { unrecoveredDraft = null; setStatus(t.brokenDiscarded); }}>{t.discardBroken}</button></div>}
+        {legacyDraft && <div className="draft-recovery">{t.legacyDraft}<button onClick={() => download(legacyDraft, "yikon_legacy_pedigree_cases.json", "application/json")}>{t.downloadLegacy}</button><button onClick={() => setLegacyDraft(null)}>{t.dismissLegacy}</button></div>}
         <div className="canvas-scroll" onWheel={onWheel} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={finishPointer} onPointerLeave={() => { if (!personDrag.current) drag.current = null; }}>
           <div className="svg-transform" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}>
             <svg ref={svgRef} id="pedigree-svg" width={layout.width} height={layout.height} viewBox={`${layout.viewBoxX} ${layout.viewBoxY} ${layout.width} ${layout.height}`} aria-label={t.canvas} onClick={() => setSelectedId(null)}>

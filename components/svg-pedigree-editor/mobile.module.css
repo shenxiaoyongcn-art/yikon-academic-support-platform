@@ -1,0 +1,44 @@
+@media (max-width: 760px) {
+  .editorRoot {
+    min-width: 0;
+  }
+
+  .editorRoot :global(.toolbar) {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 9px;
+    padding: 10px 12px;
+  }
+
+  .editorRoot :global(.brand),
+  .editorRoot :global(.title-field) {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .editorRoot :global(.workspace) {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+
+  .editorRoot :global(.canvas-panel) {
+    min-height: 62vh;
+  }
+
+  .editorRoot :global(.editor) {
+    max-height: none;
+    border-top: 1px solid #dce3ee;
+    border-left: 0;
+  }
+
+  .editorRoot :global(.canvas-toolbar) {
+    height: auto;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .editorRoot :global(.svg-transform) {
+    margin: 14px;
+  }
+}
